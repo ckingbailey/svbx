@@ -13,7 +13,10 @@ $queryStr = 'SELECT ' . sprintf($caseStr, $thisDayLastWeek->addDay() , $today, '
     . sprintf($caseStr, $thisDayLastWeek->subWeek()->addDay(), $thisDayLastWeek, 'openLastWeek') . ' FROM CDL';
 $link = new MySqliDB(DB_HOST, DB_USER, DB_PWD, DB_NAME);
 
-// echo $thisDayLastWeek->format('Y:m:d H:i') . PHP_EOL;
-$result = $link->rawQueryOne(sprintf($queryStr, 'Last', $thisDayLastWeek->subWeek()->addDay(), $thisDayLastWeek));
+$result = $link->rawQueryOne($queryStr);
+
+$delta = $result['openThisWeek'] - $result['openLastWeek'];
+
 echo $link->getLastQuery() . PHP_EOL;
 print_r($result) . PHP_EOL;
+echo $delta . PHP_EOL;
