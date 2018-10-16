@@ -17,6 +17,8 @@ $result = $link->rawQueryOne($queryStr);
 
 $delta = $result['openThisWeek'] - $result['openLastWeek'];
 
-echo $link->getLastQuery() . PHP_EOL;
-print_r($result) . PHP_EOL;
-echo $delta . PHP_EOL;
+$loader = new Twig_Loader_Filesystem('templates');
+$twig = new Twig_Environment($loader, [
+    'debug' => (PHP_ENV === 'dev' ? true : false)
+]);
+if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());

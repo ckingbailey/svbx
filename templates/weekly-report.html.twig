@@ -1,0 +1,33 @@
+{% extends "page.html" %}
+
+{# data
+##  'system' => (string),
+##  'openLastWeek' => (int),
+##  'openThisWeek' => (int),
+##  'delta' => (int)
+#}
+
+{% block content %}
+<div id="weeklyReport" class="row item-margin-bottom">
+    <div class="col-sm-2">
+        <div>System</div>
+        <div>{{ system }}</div>
+    </div>
+    <div class="col-sm-2">
+        <div>Testing complete thru</div>
+        <div><input type="text" class="form-control"></div>
+    </div>
+    <div class="col-sm-2">
+        <div>Open this week</div>
+        <div>{{ openThisWeek }}</div>
+    </div>
+    <div class="col-sm-2">
+        <div>Open last week</div>
+        <div>{{ openLastWeek }}</div>
+    </div>
+    <div class="col-sm-2">
+        <div>Delta this week</div>
+        <div>{{ delta }}</div>
+    </div>
+</div>
+{% endblock %}
