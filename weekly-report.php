@@ -12,7 +12,8 @@ $caseStr = "COUNT(CASE WHEN dateClosed <= CAST('%s' AS DATE) THEN defID ELSE NUL
 $selectOpenThisWeek = sprintf($caseStr, $today, 'openThisWeek');
 $selectOpenLastWeek = sprintf($caseStr, $thisDayLastWeek, 'openLastWeek');
 $queryStr = "SELECT s.systemName AS system, $selectOpenThisWeek, $selectOpenLastWeek"
-    . ' FROM CDL c JOIN system s ON c.systemAffected = s.systemID WHERE dateClosed IS NOT NULL GROUP BY c.systemAffected';
+    . ' FROM CDL c JOIN system s ON c.systemAffected = s.systemID'
+    . " WHERE dateClosed IS NOT NULL AND c.requiredBy < 50 GROUP BY c.systemAffected";
 $link = new MySqliDB(DB_HOST, DB_USER, DB_PWD, DB_NAME);
 
 $result = $link->rawQuery($queryStr);
