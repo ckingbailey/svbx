@@ -1,5 +1,6 @@
 <?php
 include('SQLFunctions.php');
+require 'WeeklyDelta.php';
 session_start();
 
 $title = "SVBX - Home";
@@ -111,8 +112,11 @@ $twig = new Twig_Environment($loader, [
 ]);
 if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
+// instantiate report object
+$weeklySIT3delta = new WeeklyDelta('SIT3');
+
 $twig->display('weekly-report.html.twig', [
-  'data' => []
+  'data' => $weeklySIT3delta->getData()
 ]);
 ?>
 </main>

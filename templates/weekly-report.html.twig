@@ -16,20 +16,19 @@
         <div class="col-sm-3">Delta this week</div>
     </div>
     {% for row in data %}
-    <div class="col-sm-2">
-        <div>{{ row.system }}</div>
-    </div>
-    <div class="col-sm-2">
-        <div><input type="text" class="form-control"></div>
-    </div>
-    <div class="col-sm-2">
-        <div>{{ row.openThisWeek }}</div>
-    </div>
-    <div class="col-sm-2">
-        <div>{{ row.openLastWeek }}</div>
-    </div>
-    <div class="col-sm-2">
-        <div>{{ row.openThisWeek - row.openLastWeek }}</div>
+    <div class="row">
+        <div class="col-sm-3">
+            <div>{{ row.system }}</div>
+        </div>
+        <div class="col-sm-3">
+            <div>{{ row.openThisWeek }}</div>
+        </div>
+        <div class="col-sm-3">
+            <div>{{ row.openLastWeek }}</div>
+        </div>
+        <div class="col-sm-3">
+            <div>{{ row.openThisWeek - row.openLastWeek }}</div>
+        </div>
     </div>
     {% endfor %}
 </div>

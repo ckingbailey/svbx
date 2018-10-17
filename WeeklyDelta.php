@@ -58,6 +58,3 @@ class WeeklyDelta {
         print_r($this->getData());
     }
 }
-
-$weeklySIT3Delta = new WeeklyDelta('SIT3');
-echo $weeklySIT3Delta . PHP_EOL;
