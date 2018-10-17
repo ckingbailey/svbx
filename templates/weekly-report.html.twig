@@ -1,33 +1,35 @@
-{% extends "page.html" %}
-
-{# data
-##  'system' => (string),
-##  'openLastWeek' => (int),
-##  'openThisWeek' => (int),
-##  'delta' => (int)
+{# 'data' => [
+##      [
+##          'system' => (string),
+##          'openLastWeek' => (int),
+##          'openThisWeek' => (int),
+##      ]
+##  ]
 #}
 
-{% block content %}
-<div id="weeklyReport" class="row item-margin-bottom">
+<div id="weeklyReport" class="item-margin-bottom">
+    <header>Weekly report of delta in closed Deficiencies that are required for closure prior to Phase 3 start</header>
+    <div class="row">
+        <div class="col-sm-3">System</div>
+        <div class="col-sm-3">Open this week</div>
+        <div class="col-sm-3">Open Last week</div>
+        <div class="col-sm-3">Delta this week</div>
+    </div>
+    {% for row in data %}
     <div class="col-sm-2">
-        <div>System</div>
-        <div>{{ system }}</div>
+        <div>{{ row.system }}</div>
     </div>
     <div class="col-sm-2">
-        <div>Testing complete thru</div>
         <div><input type="text" class="form-control"></div>
     </div>
     <div class="col-sm-2">
-        <div>Open this week</div>
-        <div>{{ openThisWeek }}</div>
+        <div>{{ row.openThisWeek }}</div>
     </div>
     <div class="col-sm-2">
-        <div>Open last week</div>
-        <div>{{ openLastWeek }}</div>
+        <div>{{ row.openLastWeek }}</div>
     </div>
     <div class="col-sm-2">
-        <div>Delta this week</div>
-        <div>{{ delta }}</div>
+        <div>{{ row.openThisWeek - row.openLastWeek }}</div>
     </div>
+    {% endfor %}
 </div>
-{% endblock %}

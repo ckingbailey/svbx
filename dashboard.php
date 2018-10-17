@@ -103,6 +103,17 @@ $link = f_sqlConnect();
     writeDashCard($count, $res, $card);
     $res->close();
   }
+
+// instantiate Twig
+$loader = new Twig_Loader_Filesystem('templates');
+$twig = new Twig_Environment($loader, [
+    'debug' => PHP_ENV === 'dev' ? true : false
+]);
+if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());
+
+$twig->display('weekly-report.html.twig', [
+  'data' => []
+]);
 ?>
 </main>
 <?php
