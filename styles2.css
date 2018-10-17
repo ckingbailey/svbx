@@ -173,7 +173,7 @@ ul li {
     border-bottom: 2px solid black;
 }
 
-.thin-grey-separator {
+.thin-grey-separator:not(:last-child) {
     border-bottom: 1px solid #0002;
 }
 
