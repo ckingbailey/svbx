@@ -78,7 +78,7 @@
             </select>
         </div>
         <div id="container_select_reqBy" class="col-12 col-sm-2 pl-1 pr-1">
-            <label>Res. req'd by</label>
+            <label>Required by</label>
             <select name="requiredBy" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.requiredBy %}
@@ -90,7 +90,7 @@
         </div>
     </div>
     <div class="row item-margin-bottom">
-        <div id="container_input_descrip" class="col-4 col-sm-4 pl-1 pr-1">
+        <div id="container_input_descrip" class="col-6 col-sm-4 pl-1 pr-1">
             <label>Description</label>
             <input type="text" name="description" class="form-control" value="{{values.description}}" />
         </div>
