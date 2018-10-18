@@ -25,10 +25,6 @@ $critSev = 0;
 $majSev = 0;
 $minSev = 0;
 
-//if(!f_tableExists($link, $table, DB_NAME)) {
-//    die('<br>Destination table does not exist: '.$table);
-//}
-
 // array of tables to render as cards
 // each item MUST include TableName, PluralString, ItemString, SqlString
 // if any extra content is needed, add it to index after required items
@@ -94,30 +90,32 @@ $link = f_sqlConnect();
   <h1 class="page-title">Database Information</h1>
 </header>
 <main role="main" class="container main-content dashboard">
-  <?php
-  foreach($cards as $card) {
-    $tableStr = 'SELECT COUNT(*) FROM ' . $card[0];
-    $res = $link->query($tableStr);
-    $count = $res->fetch_row()[0];
-    $res->close();
-    $res = $link->query($queries[$card[0]]);
-    writeDashCard($count, $res, $card);
-    $res->close();
-  }
+<?php
+foreach($cards as $card) {
+  $tableStr = 'SELECT COUNT(*) FROM ' . $card[0];
+  $res = $link->query($tableStr);
+  $count = $res->fetch_row()[0];
+  $res->close();
+  $res = $link->query($queries[$card[0]]);
+  writeDashCard($count, $res, $card);
+  $res->close();
+}
 
-// instantiate Twig
-$loader = new Twig_Loader_Filesystem('templates');
-$twig = new Twig_Environment($loader, [
-    'debug' => PHP_ENV === 'dev' ? true : false
-]);
-if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());
+if (!empty($_SESSION['userID'])) {
+  // instantiate Twig
+  $loader = new Twig_Loader_Filesystem('templates');
+  $twig = new Twig_Environment($loader, [
+      'debug' => PHP_ENV === 'dev' ? true : false
+  ]);
+  if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-// instantiate report object
-$weeklySIT3delta = new WeeklyDelta('SIT3');
+  // instantiate report object
+  $weeklySIT3delta = new WeeklyDelta('SIT3');
 
-$twig->display('weekly-report.html.twig', [
-  'data' => $weeklySIT3delta->getData()
-]);
+  $twig->display('weekly-report.html.twig', [
+    'data' => $weeklySIT3delta->getData()
+  ]);
+}
 ?>
 </main>
 <?php
@@ -131,4 +129,3 @@ window.drawSeverityChart(window.d3, '$blockSev', '$critSev', '$majSev', '$minSev
 </script>
 <!--DO NOT TYPE BELOW THIS LINE-->";
 include('fileend.php');
-?>
