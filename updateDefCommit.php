@@ -41,7 +41,7 @@ unset(
 // if Closed, set dateClosed
 // if Closure Requested, record by whom
 if ($post['status'] === '2') {
-    $post['dateClosed'] = 'NOW()';
+    $post['dateClosed'] = date('Y-m-d');
 } elseif ($post['status'] === '1') {
     $closureReq = $post['closureRequested'] = 0;
     $closeReqBy = $post['closureRequestedBy'] = null;
