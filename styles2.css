@@ -169,6 +169,14 @@ ul li {
     border-top: 2px solid var(--quarter-trans-grey);
 }
 
+.thick-black-line {
+    border-bottom: 2px solid black;
+}
+
+.thin-grey-separator:not(:last-child) {
+    border-bottom: 1px solid #0002;
+}
+
 .item-margin-right:not(:last-child) {
     margin-right: .75rem;
 }

@@ -1,0 +1,38 @@
+{# 'data' => [
+##      [
+##          'system' => (string),
+##          'openLastWeek' => (int),
+##          'openThisWeek' => (int),
+##      ]
+##  ]
+#}
+
+<div id="weeklyReport" class="row item-margin-bottom full-width">
+    <div class="col-sm-10 offset-sm-1">
+        <div class="thin-grey-border border-radius">
+            <header class="pad grey-bg item-margin-bottom">Weekly report of delta in closed Deficiencies that are required for closure prior to Phase 3 start</header>
+            <div class="row thick-black-line ml-0 mr-0 mb-1">
+                <div class="col-sm-3">System</div>
+                <div class="col-sm-3 text-right">Open this week</div>
+                <div class="col-sm-3 text-right">Open Last week</div>
+                <div class="col-sm-3 text-right">Delta this week</div>
+            </div>
+            {% for row in data %}
+            <div class="row thin-grey-separator ml-0 mr-0">
+                <div class="col-sm-3">
+                    <div>{{ row.system }}</div>
+                </div>
+                <div class="col-sm-3 text-right">
+                    <div>{{ row.openThisWeek }}</div>
+                </div>
+                <div class="col-sm-3 text-right">
+                    <div>{{ row.openLastWeek }}</div>
+                </div>
+                <div class="col-sm-3 text-right">
+                    <div>{{ row.openThisWeek - row.openLastWeek }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
