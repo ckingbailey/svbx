@@ -38,7 +38,7 @@
             <select name="safetyCert" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.safetyCert %}
-                    {% set selected = (not values.safetyCert is empty and values.status == value)
+                    {% set selected = (not values.safetyCert is empty and values.safetyCert == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -49,7 +49,7 @@
             <select name="severity" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.severity %}
-                    {% set selected = (not values.severity is empty and values.status == value)
+                    {% set selected = (not values.severity is empty and values.severity == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -60,7 +60,7 @@
             <select name="systemAffected" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.systemAffected %}
-                    {% set selected = (not values.systemAffected is empty and values.status == value)
+                    {% set selected = (not values.systemAffected is empty and values.systemAffected == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -71,7 +71,7 @@
             <select name="groupToResolve" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.groupToResolve %}
-                    {% set selected = (not values.groupToResolve is empty and values.status == value)
+                    {% set selected = (not values.groupToResolve is empty and values.groupToResolve == value)
                             ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -99,7 +99,7 @@
             <select name="location" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.location %}
-                    {% set selected = (not values.location is empty and values.status == value)
+                    {% set selected = (not values.location is empty and values.location == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -110,7 +110,7 @@
             <select name="specLoc" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.specLoc %}
-                    {% set selected = (not values.specLoc is empty and values.status == value)
+                    {% set selected = (not values.specLoc is empty and values.specLoc == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -121,7 +121,7 @@
             <select name="identifiedBy" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.identifiedBy %}
-                    {% set selected = (not values.identifiedBy is empty and values.status == value)
+                    {% set selected = (not values.identifiedBy is empty and values.identifiedBy == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
