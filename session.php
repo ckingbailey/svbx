@@ -1,13 +1,13 @@
 <?php  
 session_start();
 
-if (!isset($_SESSION['userID'])) {
+if (empty($_SESSION['userID'])) {
     /* Redirect If Not Logged In */
     header("Location: login.php");
     exit; /* prevent other code from being executed*/
 } else {
   // check for session timeout
-  if ($_SESSION['timeout'] + 180 * 60 < time()) {
+  if ($_SESSION['timeout'] + 15 * 60 < time()) {
     /* session timed out */
     header("Location: logout.php");
   } else {
