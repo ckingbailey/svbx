@@ -4,11 +4,11 @@
 # for devs eyes only
 config.*
 php.ini
-phpinfo.php
+info.php
 check.php
 test.php
 error_log
-php_errors.log
+php_error.log
 old_*
 bootstrap.*
 webColors.json
