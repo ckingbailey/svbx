@@ -2,10 +2,16 @@
 
 {% block content %}
     {% if bartDefs %}
+    {% set selected, unselected = " btn-light border-dark-blue box-shadow-blue ", " btn-secondary text-white " %}
+    {% if view is same as('BART') %}
+        {% set projectClasslist, bartClasslist = unselected, selected %}
+    {% else %}
+        {% set projectClasslist, bartClasslist = selected, unselected %}
+    {% endif %}
     <div class="row item-margin-bottom">
         <div class="col-12 d-flex">
-            <a href="defs.php" class="btn btn-light border-dark-blue box-shadow-blue flex-grow item-margin-right text-wrap">Project deficiencies</a>
-            <a href="defs.php?view=BART" class="btn btn-secondary text-white flex-grow item-margin-right text-wrap">BART deficiencies</a>
+            <a href="defs.php" class="btn{{- projectClasslist -}} flex-grow item-margin-right text-wrap">Project deficiencies</a>
+            <a href="defs.php?view=BART" class="btn{{- bartClasslist -}} flex-grow item-margin-right text-wrap">BART deficiencies</a>
         </div>
     </div>
     {% endif %}

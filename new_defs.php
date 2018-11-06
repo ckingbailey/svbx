@@ -99,6 +99,7 @@ $context = [
     ],
     'title' => 'Deficiencies List',
     'bartDefs' => $_SESSION['bdPermit'],
+    'view' => $view,
     'pageHeading' => 'Deficiencies',
     'tableName' => $table,
     'dataDisplayName' => 'deficiency',
