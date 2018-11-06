@@ -1,22 +1,6 @@
-{% extends "page.html.twig" %}
 {% import "template_fcns/tables.xml.twig" as tables %}
 
 {% block content %}
-    {% block infobox %}
-        <div class='card item-margin-bottom'>
-            <div class='card-body grey-bg'>
-                <div class='row'>
-                    <div class='col-12 d-flex flex-row flex-wrap justify-content-between align-items-center'>
-                        {% if not errorMsg is empty %}
-                            <p>{{errorMsg}}</p>
-                        {% endif %}
-                        <span>{{ info }}</span>
-                        <a href='/{{ addPath }}' class='btn btn-outline'>Add new {{ dataDisplayName }}</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endblock %}
     {% set headingKeys = tableHeadings | keys %}
     {% set rowKeys = data[0] | keys %}
     {% block table %}

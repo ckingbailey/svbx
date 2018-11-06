@@ -16,7 +16,7 @@ $twig = new Twig_Environment($loader,
     ]
 );
 $twig->addExtension(new Twig_Extension_Debug());
-$template = $twig->load('table.html.twig');
+$template = $twig->load('defs.html.twig');
 
 // base context
 $context = [
