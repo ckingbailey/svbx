@@ -16,7 +16,7 @@
 {% endif %}
 
 {% if navbarHeading is defined and not navbarHeading is empty %}
-    {% set navHeadingText, navHeadingLink = navbarHeading, '/account.php' %}
+    {% set navHeadingText, navHeadingLink = navbarHeading, '/userAccount.php' %}
 {% elseif navbarHeading is empty %}
     {% set navHeadingText, navHeadingLink = '', '/' %}
 {% else %}

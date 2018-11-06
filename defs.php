@@ -247,6 +247,8 @@ list($table, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'B
     ? [ 'BARTDL b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
     : [ 'CDL c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
+if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
+
 $queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
 // function to get filter params
@@ -283,6 +285,16 @@ function getFilterOptions($link, $queryParams) {
     return $options;
 }
 
+function getBartStatusCount($link) {
+    $table = 'BARTDL b';
+    $fields = [
+        'COUNT(CASE WHEN s.statusName = "open" THEN 1 ELSE NULL END) AS statusOpen',
+        'COUNT(CASE WHEN s.statusName = "closed" THEN 1 ELSE NULL END) AS statusClosed'
+    ];
+    $link->join('status s', 'b.status = s.statusID', 'LEFT');
+    return $link->getOne($table, $fields);
+}
+
 // base context
 $context = [
     'navbarHeading' => !empty($_SESSION['username'])
@@ -302,23 +314,24 @@ $context = [
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
     'bartDefs' => $_SESSION['bdPermit'],
+    'role' => $_SESSION['role'],
+    'info' => 'Click Deficiency ID number to see full details',
+    'addPath' => $addPath,
+    // filter vars
     'resetScript' => 'resetSearch',
     'values' => $get,
     'collapse' => empty($get),
     'view' => $view,
+    // table vars
     'tableName' => $table,
     'dataDisplayName' => 'deficiency',
-    'info' => 'Click Deficiency ID number to see full details',
-    'addPath' => $addPath,
     'tableHeadings' => $tableHeadings
 ];
 
-$title = "View Deficiencies";
-$role = $_SESSION['role'];
-$view = isset($_GET['view']) ? $_GET['view'] : '';
-
 try {
     $link = connect();
+
+    if ($view === 'BART') $context['statusData'] = getBartStatusCount($link);
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($link, $filters);

@@ -19,3 +19,19 @@
     {% include view is same as('BART') ? "bartDefsFilter.html.twig" : "defsFilter.html.twig" %}
     {% include "table.html.twig" %}
 {% endblock %}
+{% block scripts %}
+    <script src='js/reset_search.js'></script>
+    <script src='https://d3js.org/d3.v5.js'></script>
+    <script src='js/pie_chart.js'></script>
+    {% if view is same as('BART') %}
+    <script>
+        const openCloseChart = new PieChart(
+            window.d3,
+            'dataContainer',
+            { open: '{{ statusData.statusOpen }}', closed: '{{ statusData.statusClosed }}' },
+            { red: 'var(--red)', green: 'var(--green)' }
+        );
+        openCloseChart.draw();
+    </script>
+    {% endif %}
+{% endblock %}
