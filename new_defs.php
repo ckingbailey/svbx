@@ -6,8 +6,19 @@ require_once 'SQLFunctions.php';
 
 include 'html_functions/htmlTables.php';
 
+// check which view to show
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_SPECIAL_CHARS) : '';
+
+// check for search params
+// if no search params show all defs that are not 'deleted'
+if(!empty($_GET['search'])) {
+    $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+    $get = array_filter($get); // filter to remove falsey values -- is this necessary?
+    unset($get['search'], $get['view']);
+} else {
+    $get = null;
+}
 
 // instantiate Twig
 $loader = new Twig_Loader_Filesystem('./templates');
@@ -19,6 +30,7 @@ $twig = new Twig_Environment($loader,
 $twig->addExtension(new Twig_Extension_Debug());
 $template = $twig->load('defs.html.twig');
 
+// set view-dependent variables
 $bartTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '' ],
@@ -81,6 +93,128 @@ list($table, $addPath, $tableHeadings, $fields, $joins) = $view === 'BART'
 
 $queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
+// set filter fields and define function to get filter params
+$filterSelects = [
+    "status" => [
+        'table' => 'status s',
+        'fields' => ['statusID', 'statusName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'c.status = s.statusID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.statusID',
+        'where' => [
+            'field' => 'statusID',
+            'value' => '3',
+            'comparison' => '<>'
+        ]
+    ],
+    "safetyCert" => [
+        'table' => 'yesNo y',
+        'fields' => ['yesNoID', 'yesNoName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'c.safetyCert = y.yesNoID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'y.yesNoID'
+    ],
+    "severity" => [
+        'table' => 'severity s',
+        'fields' => ['severityID', 'severityName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.severityID = c.severity',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.severityID'
+    ],
+    "systemAffected" => [
+        'table' => 'system s',
+        'fields' => ['systemID', 'systemName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.systemID = c.systemAffected',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.systemID'
+    ],
+    "groupToResolve" => [
+        'table' => 'system s',
+        'fields' => ['systemID', 'systemName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.systemID = c.groupToResolve',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.systemID'
+    ],
+    "location" => [
+        'table' => 'location l',
+        'fields' => ['locationID', 'locationName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'l.locationID = c.location',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'l.locationID'
+    ],
+    "specLoc" => [
+        'table' => 'CDL',
+        'fields' => 'specLoc',
+        'groupBy' => 'specLoc'
+    ],
+    "identifiedBy" => [
+        'table' => 'CDL',
+        'fields' => 'identifiedBy',
+        'groupBy' => 'identifiedBy'
+    ],
+    'requiredBy' => [
+        'table' => 'requiredBy r',
+        'fields' => 'reqByID, r.requiredBy',
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'r.reqByID = c.requiredBy',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'reqByID'
+    ]
+];
+
+function getFilterOptions($link, $queryParams) {
+    $options = [];
+    foreach ($queryParams as $fieldName => $params) {
+        $table = $params['table'];
+        $fields = $params['fields'];
+        if (!empty($params['join']))
+            $link->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
+        if (!empty($params['where'])) {
+            if (gettype($params['where']) === 'string')
+            // if where is string, use it as raw where query
+                $link->where($params['where']);
+            elseif (!empty($params['where']['comparison']))
+                $link->where($params['where']['field'], $params['where']['value'], $params['where']['comparison']);
+            else $link->where($params['where']['field'], $params['where']['value']);
+        }
+        if (!empty($params['groupBy'])) $link->groupBy($params['groupBy']);
+        if (!empty($params['orderBy'])) $link->orderBy($params['orderBy']);
+        if ($result = $link->get($table, null, $fields)) {
+            $options[$fieldName] = [];
+            foreach ($result as $row) {
+                $fieldNames = array_keys($row);
+                $value = $row[$fieldNames[0]];
+                if (count($fieldNames) > 1) $text = $row[$fieldNames[1]];
+                else $text = $value;
+                $options[$fieldName][$value] = $text;
+            }
+        } else {
+            $options[$fieldName] = "Unable to retrieve $fieldName list";
+        }
+    }
+    return $options;
+}
+
 // base context
 $context = [
     'navbarHeading' => !empty($_SESSION['username'])
@@ -98,9 +232,12 @@ $context = [
         'Logout' => '/logout.php'
     ],
     'title' => 'Deficiencies List',
-    'bartDefs' => $_SESSION['bdPermit'],
-    'view' => $view,
     'pageHeading' => 'Deficiencies',
+    'bartDefs' => $_SESSION['bdPermit'],
+    'resetScript' => 'resetSearch',
+    'values' => $get,
+    'collapse' => empty($get),
+    'view' => $view,
     'tableName' => $table,
     'dataDisplayName' => 'deficiency',
     'info' => 'Click Deficiency ID number to see full details',
@@ -112,35 +249,12 @@ $title = "View Deficiencies";
 $role = $_SESSION['role'];
 $view = isset($_GET['view']) ? $_GET['view'] : '';
 
-// query to see if user has permission to view BART defs
 try {
     $link = connect();
-    // $link->where('userid', $_SESSION['userID']);
-    // $result = $link->getOne('users_enc', [ 'bdPermit' ]);
-    // $bartPermit = $result['bdPermit'];
-} catch (Exception $e) {
-    echo "<h1 style='font-size: 4rem; font-family: monospace; color: red;'>{$e->getMessage()}</h1>";
-    exit;
-}
 
-// check for search params
-// if no search params show all defs that are not 'deleted'
-if(!empty($_GET['search'])) {
-    $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
-    $get = array_filter($get); // filter to remove falsey values -- is this necessary??
-    unset($get['search']);
-} else {
-    $get = null;
-}
-// render Project Defs table and Search Fields
-try {
-    // printSearchBar($link, $get, ['method' => 'GET', 'action' => 'defs.php']);
-} catch (Exception $e) {
-    echo "<h1 id='searchBarCatch' style='color: #fa0;'>print search bar got issues: {$e}</h1>";
-}
+    // get filter select options, showing those that are currently filtered on
+    $context['selectOptions'] = getFilterOptions($link, $filterSelects);
 
-
-try {
     foreach ($queryParams['joins'] as $tableName => $on) {
         $link->join($tableName, $on, 'LEFT');
     }
