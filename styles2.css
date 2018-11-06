@@ -817,8 +817,8 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
+    /* position: fixed;
+    bottom: 0; */
     background: var(--vta-dark-blue);
     color: var(--bs-jumbo-grey);
     text-align: center;
