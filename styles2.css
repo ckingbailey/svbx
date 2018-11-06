@@ -237,6 +237,10 @@ ul li {
     background-color: var(--green);
 }
 
+.bg-dark-blue {
+    background-color: var(--vta-dark-blue);
+}
+
 .striped:nth-child(2n+1) {
     background-color: var(--bs-jumbo-grey);
 }

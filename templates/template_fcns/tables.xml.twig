@@ -12,9 +12,9 @@
 #}
 {% macro createTable(data, headings) %}
     {% import _self as tables %}
-    <table class='table table-responsive table-layout-fixed'>
+    <table class='table table-responsive table-layout-fixed table-striped'>
         <thead>
-            <tr>
+            <tr class="bg-dark-blue text-white">
                 {{ tables.createHeadings(headings) }}
             </tr>
         </thead>
