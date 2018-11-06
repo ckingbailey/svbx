@@ -6,7 +6,8 @@ require_once 'SQLFunctions.php';
 
 include 'html_functions/htmlTables.php';
 
-$table = 'CDL';
+$view = !empty(($_GET['view']))
+    ? filter_var($_GET['view'], FILTER_SANITIZE_SPECIAL_CHARS) : '';
 
 // instantiate Twig
 $loader = new Twig_Loader_Filesystem('./templates');
@@ -17,6 +18,68 @@ $twig = new Twig_Environment($loader,
 );
 $twig->addExtension(new Twig_Extension_Debug());
 $template = $twig->load('defs.html.twig');
+
+$bartTableHeadings = [
+    'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?bartDefID=' ],
+    'status' => [ 'value' => 'Status', 'cellWd' => '' ],
+    'date_created'=> [ 'value' => 'Date created', 'cellWd' => '' ],
+    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '' ],
+    'next_step'=> [ 'value' => 'Next step', 'cellWd' => '' ],
+    'edit'=> [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
+];
+
+$projectTableHeadings = [
+    'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?defID=' ],
+    'location' => [ 'value' => 'Location', 'cellWd' => '', 'collapse' => 'sm' ],
+    'severity' => [ 'value' => 'Severity', 'cellWd' => '', 'collapse' => 'xs' ],
+    'dueDate' => [ 'value' => 'Due date', 'cellWd' => '', 'collapse' => 'md' ],
+    'status' => [ 'value' => 'Status', 'cellWd' => '' ],
+    'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '', 'collapse' => 'sm' ],
+    'description' => [ 'value' => 'Description', 'cellWd' => '' ],
+    'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '', 'collapse' => 'md' ],
+    'requiredBy' => [ 'value' => 'Required By', 'cellWd' => '', 'collapse' => 'md' ],
+    'edit' => [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateDef.php?defID=' ]
+];
+
+$bartFields = [
+    'ID',
+    's.statusName as status',
+    'date_created',
+    'SUBSTR(descriptive_title_vta, 1, 132) AS descriptive_title_vta',
+    'SUBSTR(resolution_vta, 1, 132) AS resolution_vta',
+    'n.nextStepName AS next_step'
+];
+
+$projectFields = [
+    "c.defID AS ID",
+    "l.locationName AS location",
+    "s.severityName AS severity",
+    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
+    "t.statusName AS status",
+    "y.systemName AS systemAffected",
+    "SUBSTR(c.description, 1, 50) AS description",
+    "c.specLoc AS specLoc",
+    "r.requiredBy AS requiredBy"
+];
+
+$bartJoins = [
+    'status s' => 'b.status = s.statusID',
+    'bdNextStep n' => 'b.next_step = n.bdNextStepID'
+];
+
+$projectJoins = [
+    "location l" => "c.location = l.locationID",
+    "requiredBy r" => "c.requiredBy = r.reqByID",
+    "severity s" => "c.severity = s.severityID",
+    "status t" => "c.status = t.statusID",
+    "system y" => "c.systemAffected = y.systemID"
+];
+
+list($table, $addPath, $tableHeadings, $fields, $joins) = $view === 'BART'
+    ? [ 'BARTDL b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins ]
+    : [ 'CDL c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins ];
+
+$queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
 // base context
 $context = [
@@ -35,23 +98,13 @@ $context = [
         'Logout' => '/logout.php'
     ],
     'title' => 'Deficiencies List',
+    'bartDefs' => $_SESSION['bdPermit'],
     'pageHeading' => 'Deficiencies',
     'tableName' => $table,
     'dataDisplayName' => 'deficiency',
     'info' => 'Click Deficiency ID number to see full details',
     'addPath' => 'newDef.php',
-    'tableHeadings' => [
-        'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?defID=' ],
-        'location' => [ 'value' => 'Location', 'cellWd' => '', 'collapse' => 'sm' ],
-        'severity' => [ 'value' => 'Severity', 'cellWd' => '', 'collapse' => 'xs' ],
-        'dueDate' => [ 'value' => 'Due date', 'cellWd' => '', 'collapse' => 'md' ],
-        'status' => [ 'value' => 'Status', 'cellWd' => '' ],
-        'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '', 'collapse' => 'sm' ],
-        'description' => [ 'value' => 'Description', 'cellWd' => '' ],
-        'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '', 'collapse' => 'md' ],
-        'requiredBy' => [ 'value' => 'Required By', 'cellWd' => '', 'collapse' => 'md' ],
-        'edit' => [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateDef.php?defID=' ]
-    ]
+    'tableHeadings' => $tableHeadings
 ];
 
 $title = "View Deficiencies";
@@ -87,25 +140,7 @@ try {
 
 
 try {
-    $fields = [
-        "c.defID AS ID",
-        "l.locationName AS location",
-        "s.severityName AS severity",
-        "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
-        "t.statusName AS status",
-        "y.systemName AS systemAffected",
-        "SUBSTR(c.description, 1, 50) AS description",
-        "c.specLoc AS specLoc",
-        "r.requiredBy AS requiredBy"
-    ];
-    $joins = [
-        "location l" => "c.location = l.locationID",
-        "requiredBy r" => "c.requiredBy = r.reqByID",
-        "severity s" => "c.severity = s.severityID",
-        "status t" => "c.status = t.statusID",
-        "system y" => "c.systemAffected = y.systemID"
-    ];
-    foreach ($joins as $tableName => $on) {
+    foreach ($queryParams['joins'] as $tableName => $on) {
         $link->join($tableName, $on, 'LEFT');
     }
 
@@ -117,9 +152,9 @@ try {
     }
 
     $link->orderBy('ID', 'ASC');
-    $link->where('c.status', 'closed', '<>');
+    // $link->where('c.status', 'closed', '<>');
     
-    $context['data'] = $result = $link->get("$table c", null, $fields);
+    $context['data'] = $result = $link->get("$table", null, $queryParams['fields']);
     $template->display($context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();

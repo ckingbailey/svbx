@@ -1,8 +1,6 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
 {% block content %}
-    {% set headingKeys = tableHeadings | keys %}
-    {% set rowKeys = data[0] | keys %}
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}
