@@ -87,14 +87,75 @@ $projectJoins = [
     "system y" => "c.systemAffected = y.systemID"
 ];
 
-list($table, $addPath, $tableHeadings, $fields, $joins) = $view === 'BART'
-    ? [ 'BARTDL b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins ]
-    : [ 'CDL c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins ];
+$bartFilters = [
+    'status' => [
+        'table' => 'status s',
+        'fields' => ['statusID', 'statusName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 's.statusID = b.status',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.statusID',
+        'where' => [
+            'field' => 's.statusID',
+            'value' => '3',
+            'comparison' => '<>'
+        ]
+    ],
+    'next_step' => [
+        'table' => 'bdNextStep n',
+        'fields' => ['bdNextStepID', 'nextStepName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'b.next_step = n.bdNextStepID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'n.bdNextStepID',
+        'where' => [
+            'field' => 'n.bdNextStepID',
+            'value' => '0',
+            'comparison' => '<>'
+        ]
+    ],
+    'bic' => [
+        'table' => 'bdParties p',
+        'fields' => ['partyID', 'partyName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'p.partyID = b.creator',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'p.partyID',
+        'where' => [
+            'field' => 'p.partyID',
+            'value' => '0',
+            'comparison' => '<>'
+        ]
+    ],
+    'safety_cert_vta' => [
+        'table' => 'yesNo y',
+        'fields' => ['yesNoID', 'yesNoName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'y.yesNoID = b.safety_cert_vta',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'y.yesNoID'
+    ],
+    'resolution_disputed' => [
+        'table' => 'BARTDL',
+        'fields' => ['resolution_disputed', '(CASE WHEN resolution_disputed = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
+        'groupBy' => 'resolution_disputed'
+    ],
+    'structural' => [
+        'table' => 'BARTDL',
+        'fields' => ['structural', '(CASE WHEN structural = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
+        'groupBy' => 'structural'
+    ]
+];
 
-$queryParams = [ 'fields' => $fields, 'joins' => $joins ];
-
-// set filter fields and define function to get filter params
-$filterSelects = [
+$projectFilters = [
     "status" => [
         'table' => 'status s',
         'fields' => ['statusID', 'statusName'],
@@ -182,6 +243,13 @@ $filterSelects = [
     ]
 ];
 
+list($table, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
+    ? [ 'BARTDL b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
+    : [ 'CDL c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+
+$queryParams = [ 'fields' => $fields, 'joins' => $joins ];
+
+// function to get filter params
 function getFilterOptions($link, $queryParams) {
     $options = [];
     foreach ($queryParams as $fieldName => $params) {
@@ -253,7 +321,7 @@ try {
     $link = connect();
 
     // get filter select options, showing those that are currently filtered on
-    $context['selectOptions'] = getFilterOptions($link, $filterSelects);
+    $context['selectOptions'] = getFilterOptions($link, $filters);
 
     // build defs query
     foreach ($queryParams['joins'] as $tableName => $on) {

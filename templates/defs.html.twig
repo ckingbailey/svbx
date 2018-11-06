@@ -16,6 +16,6 @@
     </div>
     {% endif %}
     {% include "infobox.html.twig" %}
-    {% include "defsFilter.html.twig" %}
+    {% include view is same as('BART') ? "bartDefsFilter.html.twig" : "defsFilter.html.twig" %}
     {% include "table.html.twig" %}
 {% endblock %}
