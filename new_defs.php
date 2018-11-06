@@ -25,6 +25,15 @@ $context = [
             ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
             : $_SESSION['username'] )
         : '',
+    'navItems' => [
+        'Home' => '/dashboard.php',
+        'Help' => '/help.php',
+        'Deficiencies' => $_SESSION['bdPermit']
+            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
+            : '/defs.php',
+        'Safety Certs' => '/ViewSC.php',
+        'Logout' => '/logout.php'
+    ],
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
     'tableName' => $table,

@@ -1,12 +1,14 @@
 {% set defaultNavItems = navbarHeading
     ? {
         'Home': '/dashboard.php',
-        'Assets': '/assets.php',
+        'Help': '/help.php',
         'Deficiencies': '/defs.php',
+        'Safety Certs': '/ViewSC.php',
         'Logout': '/logout.php'
       }
     : {
-        'Home': '/dashboard.php'
+        'Home': '/dashboard.php',
+        'Help': '/help.php'
       }
 %}
 {% if not navItems is iterable and navItems is empty %}
@@ -30,11 +32,23 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarCollapseMenu">
         <ul class="navbar-nav mr-auto">
-            {% for name, href in navItems %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ href }}">{{ name }}</a>
-                </li>
-            {% endfor %}
+        {% for item, link in navItems %}
+            {# For now, Deficiencies is the only possible dropdown nav menu #}
+            {% if link is iterable %}
+            <li class="nav-item dropdown" role="menu">
+                <a class="nav-link dropdown-toggle" href="#" id="defsDropdown" role="button" data-toggle="dropdown" aria-expanded="false">{{ item }}</a>
+                <div class="dropdown-menu" aria-labelledby="defsDropdown">
+                {% for name, href in link %}
+                    <a href="{{ href }}" class="dropdown-item" role="menu-item">{{ name }}</a>
+                {% endfor %}
+                </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ link }}">{{ item }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
         </ul>
     </div>
 </nav>
