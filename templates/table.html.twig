@@ -17,6 +17,7 @@
             </div>
         </div>
     {% endblock %}
+    <pre>{{ dump(data) }}</pre>
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}

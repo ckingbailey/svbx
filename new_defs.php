@@ -35,12 +35,12 @@ $context = [
         'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?defID=' ],
         'location' => [ 'value' => 'Location', 'cellWd' => '', 'collapse' => 'sm' ],
         'severity' => [ 'value' => 'Severity', 'cellWd' => '', 'collapse' => 'xs' ],
-        'dateCreated' => [ 'value' => 'Date created', 'cellWd' => '', 'collapse' => 'md' ],
+        'dueDate' => [ 'value' => 'dueDate', 'cellWd' => '', 'collapse' => 'md' ],
         'status' => [ 'value' => 'Status', 'cellWd' => '' ],
         'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '', 'collapse' => 'sm' ],
         'description' => [ 'value' => 'Description', 'cellWd' => '' ],
         'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '', 'collapse' => 'md' ],
-        'lastUpdated' => [ 'value' => 'Last updated', 'cellWd' => '', 'collapse' => 'md' ],
+        'requiredBy' => [ 'value' => 'requiredBy', 'cellWd' => '', 'collapse' => 'md' ],
         'edit' => [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateDef.php?defID=' ]
     ]
 ];
@@ -82,12 +82,12 @@ try {
         "c.defID AS ID",
         "l.locationName AS location",
         "s.severityName AS severity",
-        "DATE_FORMAT(c.dateCreated, '%d %b %Y') AS dateCreated",
+        "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
         "t.statusName AS status",
         "y.systemName AS systemAffected",
         "SUBSTR(c.description, 1, 50) AS description",
         "c.specLoc AS specLoc",
-        "c.lastUpdated AS lastUpdated"
+        "c.requiredBy AS requiredBy"
     ];
     $joins = [
         "location l" => "c.location = l.locationID",
