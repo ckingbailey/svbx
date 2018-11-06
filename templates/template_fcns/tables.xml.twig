@@ -102,7 +102,7 @@
             after iterating over row fields, add any [field] that is on headings[] but not on row[]
             e.g., edit, delete
         #}
-        {% for fieldName, field in headings if row[fieldName] is empty %}
+        {% for fieldName, field in headings if fieldName not in (row | keys) %}
             {% if fieldName is same as("edit") %}
                 {% set href = not headings[fieldName].href|trim|last is same as(equalSign)
                     ? headings[fieldName].href|trim
