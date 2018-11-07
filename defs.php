@@ -45,12 +45,12 @@ $projectTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?defID=' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '', 'collapse' => 'xs' ],
-    'dueDate' => [ 'value' => 'Due date', 'cellWd' => '', 'collapse' => 'md' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '' ],
     'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '', 'collapse' => 'sm' ],
     'description' => [ 'value' => 'Description', 'cellWd' => '' ],
     'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '', 'collapse' => 'md' ],
     'requiredBy' => [ 'value' => 'Required By', 'cellWd' => '', 'collapse' => 'md' ],
+    'dueDate' => [ 'value' => 'Due date', 'cellWd' => '', 'collapse' => 'md' ],
     'edit' => [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateDef.php?defID=' ]
 ];
 
@@ -67,12 +67,12 @@ $projectFields = [
     "c.defID AS ID",
     "l.locationName AS location",
     "s.severityName AS severity",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
     "t.statusName AS status",
     "y.systemName AS systemAffected",
     "SUBSTR(c.description, 1, 50) AS description",
     "c.specLoc AS specLoc",
-    "r.requiredBy AS requiredBy"
+    "r.requiredBy AS requiredBy",
+    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
 ];
 
 $bartJoins = [
