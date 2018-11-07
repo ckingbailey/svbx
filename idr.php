@@ -577,6 +577,6 @@ if ($userAuth < 10) {
     }
 }
 
-if (!empty($link) && is_a($link, mysqli)) $link->close();
+if (!empty($link) && is_a($link, 'mysqli')) $link->close();
 include('fileend.php');
 ?>
