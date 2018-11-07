@@ -303,15 +303,6 @@ $context = [
             ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
             : $_SESSION['username'] )
         : '',
-    'navItems' => [
-        'Home' => '/dashboard.php',
-        'Help' => '/help.php',
-        'Deficiencies' => $_SESSION['bdPermit']
-            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-            : '/defs.php',
-        'Safety Certs' => '/ViewSC.php',
-        'Logout' => '/logout.php'
-    ],
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
     'bartDefs' => $_SESSION['bdPermit'],
@@ -328,6 +319,28 @@ $context = [
     'dataDisplayName' => 'deficiency',
     'tableHeadings' => $tableHeadings
 ];
+
+// get nav items for user permissions level
+$context['navItems'] = $_SESSION['inspector']
+    ? [
+        'Home' => '/dashboard.php',
+        'Help' => '/help.php',
+        'Deficiencies' => $_SESSION['bdPermit']
+            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
+            : '/defs.php',
+        'Safety Certs' => '/ViewSC.php',
+        'Daily Report' => 'idr.php',
+        'Logout' => '/logout.php'
+    ]
+    : [
+        'Home' => '/dashboard.php',
+        'Help' => '/help.php',
+        'Deficiencies' => $_SESSION['bdPermit']
+            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
+            : '/defs.php',
+        'Safety Certs' => '/ViewSC.php',
+        'Logout' => '/logout.php'
+    ];
 
 try {
     $link = connect();
