@@ -233,7 +233,7 @@ try {
                             <button type='reset' class='btn btn-primary btn-lg'>Reset</button>";
                     } else {
                         echo "
-                            <button type='button' onclick='return reopenDef(event)'>Re-open Deficiency</button>";
+                            <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>";
                     }
             echo "
                     </div>
@@ -256,7 +256,7 @@ try {
             function reopenDef(ev) {
                 const form = document.forms[0];
                 document.forms[0].status.value = 1;
-                forms.submit();
+                form.submit();
             }
         </script>";
 } catch (Exception $e) {

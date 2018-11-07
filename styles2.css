@@ -366,7 +366,7 @@ ul li {
 /* Content CSS */
 .main-content {
     flex-grow: 1;
-    /* margin-bottom: 4.5rem; */
+    padding-bottom: .75rem;
 }
 
 .logo-md {
