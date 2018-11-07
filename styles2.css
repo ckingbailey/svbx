@@ -237,6 +237,10 @@ ul li {
     background-color: var(--green);
 }
 
+.bg-dark-blue {
+    background-color: var(--vta-dark-blue);
+}
+
 .striped:nth-child(2n+1) {
     background-color: var(--bs-jumbo-grey);
 }
@@ -817,8 +821,8 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
+    /* position: fixed;
+    bottom: 0; */
     background: var(--vta-dark-blue);
     color: var(--bs-jumbo-grey);
     text-align: center;

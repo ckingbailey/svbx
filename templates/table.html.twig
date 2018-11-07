@@ -1,0 +1,7 @@
+{% import "template_fcns/tables.xml.twig" as tables %}
+
+{% block content %}
+    {% block table %}
+        {{ tables.createTable(data, tableHeadings) }}
+    {% endblock %}
+{% endblock %}
