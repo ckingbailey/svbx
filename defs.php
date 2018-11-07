@@ -366,6 +366,7 @@ try {
 
     $link->orderBy('ID', 'ASC');
     
+    // fetch table data and append it to $context for display by Twig template
     $context['data'] = $result = $link->get($table, null, $queryParams['fields']);
     $template->display($context);
 } catch (Twig_Error $e) {

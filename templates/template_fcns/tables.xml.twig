@@ -12,16 +12,24 @@
 #}
 {% macro createTable(data, headings) %}
     {% import _self as tables %}
-    <table class='table table-responsive table-layout-fixed table-striped'>
+    {% set classList = not data is empty
+        ? "table table-responsive table-layout-fixed table-striped"
+        : "table table-layout-fixed table-striped"
+    %}
+    <table class='{{ classList }}'>
         <thead>
-            <tr class="bg-dark-blue text-white">
+            <tr scope="col" class="bg-dark-blue text-white">
                 {{ tables.createHeadings(headings) }}
             </tr>
         </thead>
         <tbody style='width: 100%'>
+        {% if not data is empty %}
             {% for row in data %}
                 {{ tables.createRow(row, headings) }}
             {% endfor %}
+        {% else %}
+            <tr><td colspan="{{ headings | length }}"><h4 class="text-secondary text-center">No data to display</h4></td></tr>
+        {% endif %}
         </tbody>
     </table>
 {% endmacro %}
