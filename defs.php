@@ -35,6 +35,7 @@ $bartTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '' ],
     'date_created'=> [ 'value' => 'Date created', 'cellWd' => '' ],
+    'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '' ],
     'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '' ],
     'next_step'=> [ 'value' => 'Next step', 'cellWd' => '' ],
     'edit'=> [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
