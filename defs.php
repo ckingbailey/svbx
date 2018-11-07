@@ -244,15 +244,15 @@ $projectFilters = [
     ]
 ];
 
-list($table, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
-    ? [ 'BARTDL b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
-    : [ 'CDL c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+list($table, $tableAbbrev, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
+    ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
+    : [ 'CDL c', 'c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
 $queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
-// function to get filter params
+// function to get filter options to display in <select> elements
 function getFilterOptions($link, $queryParams) {
     $options = [];
     foreach ($queryParams as $fieldName => $params) {
@@ -261,12 +261,13 @@ function getFilterOptions($link, $queryParams) {
         if (!empty($params['join']))
             $link->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
         if (!empty($params['where'])) {
-            if (gettype($params['where']) === 'string')
+            $whereParams = $params['where'];
+            if (gettype($whereParams) === 'string')
             // if where is string, use it as raw where query
-                $link->where($params['where']);
-            elseif (!empty($params['where']['comparison']))
-                $link->where($params['where']['field'], $params['where']['value'], $params['where']['comparison']);
-            else $link->where($params['where']['field'], $params['where']['value']);
+                $link->where($whereParams);
+            elseif (!empty($whereParams['comparison']))
+                $link->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
+            else $link->where($whereParams['field'], $whereParams['value']);
         }
         if (!empty($params['groupBy'])) $link->groupBy($params['groupBy']);
         if (!empty($params['orderBy'])) $link->orderBy($params['orderBy']);
@@ -355,16 +356,17 @@ try {
         $link->join($tableName, $on, 'LEFT');
     }
 
+    // filter on user-selected query params
     if ($get) {
         foreach ($get as $param => $val) {
             if ($param === 'description' || $param === 'defID') $link->where($param, "%{$val}%", 'LIKE');
-            else $link->where($param, $val);
+            else $link->where("$tableAbbrev.$param", $val);
         }
     }
 
     $link->orderBy('ID', 'ASC');
     
-    $context['data'] = $result = $link->get("$table", null, $queryParams['fields']);
+    $context['data'] = $result = $link->get($table, null, $queryParams['fields']);
     $template->display($context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
