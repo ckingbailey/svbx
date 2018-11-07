@@ -1,0 +1,4 @@
+<footer class="footer pb-1">
+    <p class='mb-0'>{{ footerText | default("This information belongs to the <a href='http://www.vta.org'>Valley Transportation Authority</a> and is not to be used without written authorisation from the VTA.") | raw }}</p>
+    <p class='mb-0'><a href="{{ copyrightLink | default('http://www.vta.org') }}">{{ copyrightText | default("&copy; Valley Transportation Authority") | raw }}</a></p>
+</footer>

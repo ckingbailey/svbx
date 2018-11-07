@@ -1,0 +1,37 @@
+{% extends "page.html.twig" %}
+
+{% block content %}
+    {% if bartDefs %}
+    {% set selected, unselected = " btn-light border-dark-blue box-shadow-blue ", " btn-secondary text-white " %}
+    {% if view is same as('BART') %}
+        {% set projectClasslist, bartClasslist = unselected, selected %}
+    {% else %}
+        {% set projectClasslist, bartClasslist = selected, unselected %}
+    {% endif %}
+    <div class="row item-margin-bottom">
+        <div class="col-12 d-flex">
+            <a href="defs.php" class="btn{{- projectClasslist -}} flex-grow item-margin-right text-wrap">Project deficiencies</a>
+            <a href="defs.php?view=BART" class="btn{{- bartClasslist -}} flex-grow item-margin-right text-wrap">BART deficiencies</a>
+        </div>
+    </div>
+    {% endif %}
+    {% include "infobox.html.twig" %}
+    {% include view is same as('BART') ? "bartDefsFilter.html.twig" : "defsFilter.html.twig" %}
+    {% include "table.html.twig" %}
+{% endblock %}
+{% block scripts %}
+    <script src='js/reset_search.js'></script>
+    <script src='https://d3js.org/d3.v5.js'></script>
+    <script src='js/pie_chart.js'></script>
+    {% if view is same as('BART') %}
+    <script>
+        const openCloseChart = new PieChart(
+            window.d3,
+            'dataContainer',
+            { open: '{{ statusData.statusOpen }}', closed: '{{ statusData.statusClosed }}' },
+            { red: 'var(--red)', green: 'var(--green)' }
+        );
+        openCloseChart.draw();
+    </script>
+    {% endif %}
+{% endblock %}
