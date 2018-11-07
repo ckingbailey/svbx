@@ -23,8 +23,12 @@
 }
 
 body {
-   margin:0;
-   background-color:#FFFFFF;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    min-height: 100vh;
+    margin:0;
+    background-color:#FFFFFF;
 }
 
 a:hover {
@@ -336,7 +340,7 @@ ul li {
 }
 
 .page-header {
-    margin-bottom: .35rem;
+    /* margin-bottom: .35rem; */
     padding-top: .5rem; padding-bottom: .6rem;
 }
 
@@ -361,7 +365,8 @@ ul li {
 
 /* Content CSS */
 .main-content {
-    margin-bottom: 4.5rem;
+    flex-grow: 1;
+    /* margin-bottom: 4.5rem; */
 }
 
 .logo-md {
