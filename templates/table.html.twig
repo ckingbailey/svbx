@@ -22,10 +22,8 @@
 <script type="text/javascript">
     document.getElementById('getCsvBtn').addEventListener('click', event => {
         const jsonData = {{ dataWithHeadings | json_encode | raw }}
-        console.log('input data', jsonData)
         getCsv(event, jsonData, res => {
-            console.log('output', res)
-            download(res, `def_dump_${Date.now()}.csv`, 'text/csv')
+            //download(res, `def_dump_${Date.now()}.csv`, 'text/csv')
         })
     })
 </script>

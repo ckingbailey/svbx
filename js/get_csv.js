@@ -11,8 +11,11 @@ function getCsv(ev, data, callback) {
             "Content-Type": "application/json"
         }
     }).then((res, rej) => { // TODO: see THolowachuk article about handling fetch errors
-        if (res.ok) return res.text()
-    }).then(blob => {
-        callback(blob)
+        if (!res.ok) throw Error(`${res.status} ${res.statusText}`)
+        return res.text()
+    }).then(text => {
+        callback(text)
+    }).catch(err => {
+        console.error(err)
     })
 }

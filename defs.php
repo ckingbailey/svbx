@@ -368,6 +368,7 @@ try {
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
+    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
     $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
 
     $template->display($context);
