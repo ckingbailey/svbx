@@ -19,12 +19,14 @@ function writeToFile($data) {
 
 // function to write csv to string
 if (!function_exists('str_putcsv')) {
-    function str_putcsv($input, $delimiter = ',', $enclosure = '"') {
-        $fp = fopen('php://temp', 'r+b');
-        fputcsv($fp, $input, $delimiter, $enclosure);
-        rewind($fp);
-        $data = rtrim(stream_get_contents($fp), "\n");
-        fclose($fp);
+    function str_putcsv(array $input, $delimiter = ',', $enclosure = '"') {
+        $pointer = fopen('php://temp', 'r+b');
+        foreach ($input as $line) {
+            fputcsv($pointer, $line, $delimiter, $enclosure); // puts a single line
+        }
+        rewind($pointer);
+        $data = rtrim(stream_get_contents($pointer), "\n");
+        fclose($pointer);
         return $data;
     }
 }

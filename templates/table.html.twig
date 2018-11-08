@@ -1,6 +1,7 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
 {% block content %}
+    <pre>{{ dump(tableHeadings) }}</pre>
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}
@@ -16,29 +17,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.js"></script>
+<script type="text/javascript" src="./js/get_csv.js"></script>
 <script type="text/javascript">
-// TODO:
-// register event handler
-// fetch probably needs more headers, e.g., Accept
-function getCsv(ev, data) {
-    ev.preventDefault();
-    fetch('/api/def/csv.php', {
-        method: 'POST',
-        body: data,
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }).then((res, rej) => { // TODO: see THolowachuk article about handling fetch errors
-        if (res.ok) return res.text()
-    }).then(blob => {
-        console.log(blob)
+    document.getElementById('getCsvBtn').addEventListener('click', event => {
+        const jsonData = {{ data | json_encode | raw }}
+        console.log(jsonData)
+        console.log(window.download)
+        getCsv(event, jsonData, res => download(res, `def_dump_${Date.now()}.csv`, 'text/csv'))
     })
-}
-
-document.getElementById('getCsvBtn').addEventListener('click', event => {
-    const jsonData = JSON.stringify({{ data | json_encode | raw }})
-    console.log(jsonData);
-    getCsv(event, jsonData)
-})
 </script>
 {% endblock %}
