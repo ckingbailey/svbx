@@ -2,9 +2,6 @@
 require_once 'session.php';
 require_once 'vendor/autoload.php';
 require_once 'SQLFunctions.php';
-// require_once 'routes/assetRoutes.php';
-
-include 'html_functions/htmlTables.php';
 
 // check which view to show
 $view = !empty(($_GET['view']))
@@ -367,7 +364,10 @@ try {
     $link->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template
-    $context['data'] = $result = $link->get($table, null, $queryParams['fields']);
+    $data = $result = $link->get($table, null, $queryParams['fields']);
+    $context['data'] = $data;
+    $context['fileLink'] = json_encode($data);
+
     $template->display($context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
@@ -377,3 +377,4 @@ try {
 
 $link->disconnect();
 
+exit;

@@ -4,4 +4,41 @@
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}
+
+    {% set btnClasslist = not data is empty
+        ? "btn btn-lg btn-success"
+        : "btn btn-lg disabled"
+    %}
+    {% set disable = data is empty ? "disabled" : "" %}
+    <div class="text-right">
+        <button id="getCsvBtn" type="button" class="{{ btnClasslist }}" {{ disable }}>Download this data</button>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+// TODO:
+// register event handler
+// fetch probably needs more headers, e.g., Accept
+function getCsv(ev, data) {
+    ev.preventDefault();
+    fetch('/api/def/csv.php', {
+        method: 'POST',
+        body: data,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((res, rej) => { // TODO: see THolowachuk article about handling fetch errors
+        if (res.ok) return res.text()
+    }).then(blob => {
+        console.log(blob)
+    })
+}
+
+document.getElementById('getCsvBtn').addEventListener('click', event => {
+    const jsonData = JSON.stringify({{ data | json_encode | raw }})
+    console.log(jsonData);
+    getCsv(event, jsonData)
+})
+</script>
 {% endblock %}
