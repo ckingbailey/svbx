@@ -1,7 +1,7 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
 {% block content %}
-    <pre>{{ dump(tableHeadings) }}</pre>
+    <pre>{{ dump(dataWithHeadings) }}</pre>
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}
@@ -21,10 +21,12 @@
 <script type="text/javascript" src="./js/get_csv.js"></script>
 <script type="text/javascript">
     document.getElementById('getCsvBtn').addEventListener('click', event => {
-        const jsonData = {{ data | json_encode | raw }}
-        console.log(jsonData)
-        console.log(window.download)
-        getCsv(event, jsonData, res => download(res, `def_dump_${Date.now()}.csv`, 'text/csv'))
+        const jsonData = {{ dataWithHeadings | json_encode | raw }}
+        console.log('input data', jsonData)
+        getCsv(event, jsonData, res => {
+            console.log('output', res)
+            download(res, `def_dump_${Date.now()}.csv`, 'text/csv')
+        })
     })
 </script>
 {% endblock %}

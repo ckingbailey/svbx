@@ -21,7 +21,7 @@ if(!empty($_GET['search'])) {
 $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader,
     [
-        'debug' => true
+        'debug' => $_ENV['PHP_ENV'] === 'dev'
     ]
 );
 $twig->addExtension(new Twig_Extension_Debug());
@@ -366,7 +366,9 @@ try {
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
     $context['data'] = $data;
-    $context['fileLink'] = json_encode($data);
+    $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
+    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
+    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
 
     $template->display($context);
 } catch (Twig_Error $e) {

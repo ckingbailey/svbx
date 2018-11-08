@@ -1,4 +1,6 @@
 <?php
+// Thanks go to this gist in writing this code:
+// https://gist.github.com/johanmeiring/2894568
 // function to dump def query to file readable by spreadsheet program
 function writeToFile($data) {
     $curTime = time();
@@ -42,7 +44,6 @@ $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
 
 header('Content-type: text/csv', true);
 
-error_log(print_r($post[0], true));
 echo str_putcsv($post);
 
 exit;
