@@ -89,9 +89,9 @@
                 {% set collapse = headings[fieldName].collapse is empty ? '' : 'collapse-' ~ headings[fieldName].collapse %}
                 {% set cellContent %}
                     {% if not href is empty %}
-                        {{ tables.anchorTag(href, id|trim) }}
+                        {{ tables.anchorTag(href, id | trim) }}
                     {% elseif not field is empty %}
-                        {{ field|trim }}
+                        {{ field | slice(0,100) | trim | nl2br }}
                     {% else %}
                         {{ '—' }}
                     {% endif %}
