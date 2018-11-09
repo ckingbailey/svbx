@@ -55,8 +55,8 @@ $bartFields = [
     'ID',
     's.statusName as status',
     'date_created',
-    'SUBSTR(descriptive_title_vta, 1, 132) AS descriptive_title_vta',
-    'SUBSTR(resolution_vta, 1, 132) AS resolution_vta',
+    'descriptive_title_vta',
+    'resolution_vta',
     'n.nextStepName AS next_step'
 ];
 
@@ -66,7 +66,7 @@ $projectFields = [
     "s.severityName AS severity",
     "t.statusName AS status",
     "y.systemName AS systemAffected",
-    "SUBSTR(c.description, 1, 50) AS description",
+    "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
     "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
