@@ -2,9 +2,6 @@
 require_once 'session.php';
 require_once 'vendor/autoload.php';
 require_once 'SQLFunctions.php';
-// require_once 'routes/assetRoutes.php';
-
-include 'html_functions/htmlTables.php';
 
 // check which view to show
 $view = !empty(($_GET['view']))
@@ -24,7 +21,7 @@ if(!empty($_GET['search'])) {
 $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader,
     [
-        'debug' => true
+        'debug' => $_ENV['PHP_ENV'] === 'dev'
     ]
 );
 $twig->addExtension(new Twig_Extension_Debug());
@@ -58,8 +55,8 @@ $bartFields = [
     'ID',
     's.statusName as status',
     'date_created',
-    'SUBSTR(descriptive_title_vta, 1, 132) AS descriptive_title_vta',
-    'SUBSTR(resolution_vta, 1, 132) AS resolution_vta',
+    'descriptive_title_vta',
+    'resolution_vta',
     'n.nextStepName AS next_step'
 ];
 
@@ -69,7 +66,7 @@ $projectFields = [
     "s.severityName AS severity",
     "t.statusName AS status",
     "y.systemName AS systemAffected",
-    "SUBSTR(c.description, 1, 50) AS description",
+    "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
     "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
@@ -367,7 +364,13 @@ try {
     $link->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template
-    $context['data'] = $result = $link->get($table, null, $queryParams['fields']);
+    $data = $result = $link->get($table, null, $queryParams['fields']);
+    $context['data'] = $data;
+    $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
+    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
+    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
+    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
+
     $template->display($context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
@@ -377,3 +380,4 @@ try {
 
 $link->disconnect();
 
+exit;
