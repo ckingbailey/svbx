@@ -7,7 +7,8 @@ function getCsv(ev, data, callback) {
         method: 'POST',
         body: stringJson,
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "text/csv"
         }
     }).then(res => {
         if (!res.ok) throw res
