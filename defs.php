@@ -1,7 +1,5 @@
 <?php
-require_once 'session.php';
 require_once 'vendor/autoload.php';
-require_once 'SQLFunctions.php';
 
 // check which view to show
 $view = !empty(($_GET['view']))
@@ -341,7 +339,7 @@ $context['navItems'] = $_SESSION['inspector']
     ];
 
 try {
-    $link = connect();
+    $link = new MySqliDB(DB_CREDENTIALS);
 
     if ($view === 'BART') $context['statusData'] = getBartStatusCount($link);
 
@@ -371,7 +369,8 @@ try {
     $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
     $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
 
-    $context['meta'] = $_SESSION + [ 'inc_path' => get_include_path() ];
+    $context['meta'] = $_SERVER;
+    $context['count'] = $link->count;
 
     $template->display($context);
 } catch (Twig_Error $e) {

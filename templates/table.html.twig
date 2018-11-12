@@ -1,7 +1,9 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
 {% block content %}
-    <pre>{{ dump(meta) }}</pre>
+    <h1 style="color: green">{{ dump(count) }}</h1>
+    <h2 style="color: blue">{{ meta.REQUEST_METHOD }}</h2>
+    <pre>{{ dump(dataWithHeadings[0:2]) }}</pre>
     {% block table %}
         {{ tables.createTable(data, tableHeadings) }}
     {% endblock %}
