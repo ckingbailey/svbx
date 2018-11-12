@@ -1,4 +1,6 @@
 <?php
+require 'vendor/autoload.php';
+
 // Thanks go to this gist in writing this code:
 // https://gist.github.com/johanmeiring/2894568
 // function to dump def query to file readable by spreadsheet program
@@ -33,25 +35,74 @@ if (!function_exists('str_putcsv')) {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Allow: POST', true, 405);
+if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
+    header('Access-Control-Allow-Methods: POST', true, 405);
     exit;
 }
 
+if (empty($_SESSION) // if POST lacks Session Cookie, forbidden
+    || empty($_SESSION['username'])
+    || empty($_SESSION['userID'])
+    || empty($_SESSION['firstname'])
+    || empty($_SESSION['lastname'])
+    || empty($_SESSION['role'])
+    || empty($_SESSION['timeout']))
+{
+    header('Status: 403 Forbidden', true, 403);
+    exit;
+}
+
+// check Session vars against DB
+$link = new MySqliDB(DB_CREDENTIALS);
+$fields = [ 'username', 'userID', 'firstname', 'lastname', 'role' ];
+
+$link->where('userID', $_SESSION['userID']);
+$result = $link->getOne('users_enc', $fields);
+
+if ($result['username'] !== $_SESSION['username']
+    || $result['role'] !== $_SESSION['role']
+    || $result['firstname'] !== $_SESSION['firstname']
+    || $result['lastname'] !== $_SESSION['lastname'])
+{
+    header('Status: 403 Forbidden', true, 403);
+    exit;
+}
+
+// if Auth ok, validate fields on first data element of POST against fields in DB
+// note: element at index 0 is heading names, not table data
 $post = trim(file_get_contents('php://input'));
 $post = json_decode($post, true);
 $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
 
-header('Content-type: text/csv', true);
+$link->where('table_name', 'CDL');
+$link->orWhere('table_name', 'BARTDL');
+$cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
+$cols = array_map('strtolower', $cols);
+
+$postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]);
+
+if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]);
+
+foreach ($postKeys as $key) {
+    if (array_search(strtolower($key), $cols) === false) {
+        header('Status: 400 Bad Request', true, 400);
+        exit;
+    }
+}
+
+// concat the schema/host/port tuple
+$host = substr($_SERVER['SERVER_PROTOCOL'], 0, strpos($_SERVER['SERVER_PROTOCOL'], '/')) . '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'];
+
+header('Content-Type: text/csv', true);
+header("Access-Control-Allow-Origin: $host");
+
+if (empty($_SERVER['HTTP_ORIGIN']) || strcasecmp($_SERVER['HTTP_ORIGIN'], $host)) {
+    header('No cors allowed, buddy', true, 403);
+    exit;
+}
 
 echo str_putcsv($post);
 
-exit;
+if (is_a($link, 'MySqliDB')) $link->disconnect();
 
-/* TODO:
-    1. user clicks download button
-    2. fetch POST, send form-encoded def data to endpoint
-    3. PHP endpoint process form-encoded data to csv
-    4. PHP echoes csv string as response to fetch request
-    5. fetch blob-ifies the response and sends it to browser for download
-*/
+exit;
