@@ -371,6 +371,8 @@ try {
     $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
     $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
 
+    $context['meta'] = $_SESSION + [ 'inc_path' => get_include_path() ];
+
     $template->display($context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
