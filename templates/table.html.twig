@@ -1,32 +1,12 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
-{% block content %}
-    <h1 style="color: green">{{ dump(count) }}</h1>
-    <h2 style="color: blue">{{ meta.REQUEST_METHOD }}</h2>
-    <pre>{{ dump(dataWithHeadings[0:2]) }}</pre>
-    {% block table %}
-        {{ tables.createTable(data, tableHeadings) }}
-    {% endblock %}
+{{ tables.createTable(data, tableHeadings) }}
 
-    {% set btnClasslist = not data is empty
-        ? "btn btn-lg btn-success"
-        : "btn btn-lg disabled"
-    %}
-    {% set disable = data is empty ? "disabled" : "" %}
-    <div class="text-right">
-        <button id="getCsvBtn" type="button" class="{{ btnClasslist }}" {{ disable }}>Download this data</button>
-    </div>
-{% endblock %}
-
-{% block scripts %}
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.js"></script>
-<script type="text/javascript" src="./js/get_csv.js"></script>
-<script type="text/javascript">
-    document.getElementById('getCsvBtn').addEventListener('click', event => {
-        const jsonData = {{ dataWithHeadings | json_encode | raw }}
-        getCsv(event, jsonData, res => {
-            download(res, `def_dump_${Date.now()}.csv`, 'text/csv')
-        })
-    })
-</script>
-{% endblock %}
+{% set btnClasslist = not data is empty
+    ? "btn btn-lg btn-success"
+    : "btn btn-lg disabled"
+%}
+{% set disable = data is empty ? "disabled" : "" %}
+<div class="text-right">
+    <button id="getCsvBtn" type="button" class="{{ btnClasslist }}" {{ disable }}>Download this data</button>
+</div>
