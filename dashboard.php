@@ -105,9 +105,9 @@ if (!empty($_SESSION['userID'])) {
   // instantiate Twig
   $loader = new Twig_Loader_Filesystem('templates');
   $twig = new Twig_Environment($loader, [
-      'debug' => PHP_ENV === 'dev' ? true : false
+      'debug' => getenv('PHP_ENV') === 'dev'
   ]);
-  if (PHP_ENV === 'dev') $twig->addExtension(new Twig_Extension_Debug());
+  if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
   // instantiate report object
   $weeklySIT3delta = new WeeklyDelta('SIT3');
