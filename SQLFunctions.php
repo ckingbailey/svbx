@@ -1,6 +1,6 @@
 <?php
     require_once 'vendor/autoload.php';
-    include('config.php');
+
     $rejectredirecturl = 'Fail.html';
     $successredirecturl = 'dashboard.php';
     $duplicate = 'duplicate.php'; // this file doesn't exist
