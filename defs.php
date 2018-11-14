@@ -1,5 +1,6 @@
 <?php
 require_once 'vendor/autoload.php';
+require_once 'session.php';
 
 // check which view to show
 $view = !empty(($_GET['view']))

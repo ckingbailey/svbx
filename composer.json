@@ -9,6 +9,6 @@
         "nesbot/carbon": "^2.4"
     },
     "autoload": {
-        "files": [ "session.php", "config.php" ]
+        "files": [ "config.php" ]
     }
 }
