@@ -1,5 +1,6 @@
 <?php
 require 'vendor/autoload.php';
+session_start();
 
 // Thanks go to this gist in writing this code:
 // https://gist.github.com/johanmeiring/2894568
