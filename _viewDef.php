@@ -90,7 +90,7 @@ try {
     }
 
     $context = [
-        'meta' => $_SESSION,
+        'session' => $_SESSION,
         'pageHeading' => "Deficiency No. ",
         'data' => $data
     ];
@@ -98,7 +98,7 @@ try {
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
-    $_ENV['PHP_ENV'] === 'dev' && $twig->addExtension(new Twig_Extension_Debug());
+    $twig->addExtension(new Twig_Extension_Debug());
     $template = $twig->load('def.html.twig');
 
     $template->display($context);
@@ -120,6 +120,7 @@ try {
 
 } catch (Twig_Error $e) {
     echo "Unable to render template";
+    error_log($e);
 } catch (Exception $e) {
     echo "Unable to retrieve record";
     error_log($e);
