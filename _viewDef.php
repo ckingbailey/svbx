@@ -14,7 +14,7 @@ $projectFields = [
     'dueDate',
     'grp.systemName as groupToResolve',
     'req.requiredBy',
-    'contractName as contractID',
+    'contractName as contract',
     'identifiedBy',
     'defTypeName as defType',
     'description',
@@ -27,9 +27,9 @@ $projectFields = [
     'evidenceLink',
     'closureComments',
     'c.dateCreated',
-    "CONCAT(cre.firstname, ' ', cre.lastName) as createdBy",
+    "CONCAT(cre.firstname, ' ', cre.lastName) as created_by",
     'c.lastUpdated',
-    "CONCAT(upd.firstname, ' ', upd.lastName) as updatedBy",
+    "CONCAT(upd.firstname, ' ', upd.lastName) as updated_by",
     'dateClosed',
     "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy"
 ];
@@ -118,10 +118,11 @@ try {
 
     // $photos =
 
+} catch (Twig_Error $e) {
+    echo "Unable to render template";
 } catch (Exception $e) {
     echo "Unable to retrieve record";
     error_log($e);
-    exit;
 } finally {
     $link->disconnect();
     exit;

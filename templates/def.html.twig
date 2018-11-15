@@ -2,84 +2,83 @@
 
 {% block pageHeader %}
 <header class='container page-header'>
-    <h1 class='page-title {# TODO: set heading color per status #}'>{{ pageHeading }}</h1>
-    <h1>Maybe show def closure</h1>
+    <h1 class='page-title {# TODO: set heading color per status #}'>{{ pageHeading }}{{ data.ID }}</h1>
+    <h1>{{ data.closureRequested or '' }}</h1>
 </header>
 {% endblock %}
 
 {% block content %}
-<pre>{{ dump(data) }}</pre>
 <h5 class='grey-bg pad'>Required Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Safety Certifiable</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>safetyCert</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.safetyCert }}</p></div>
     <div class='col-md-3'><p>System Affected</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>sysAffected</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.systemAffected }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>General Location</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>Loc</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.location }}</p></div>
     <div class='col-md-3'><p>Specific Location</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>specLoc</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.specLoc }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Status</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>stat</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.status }}</p></div>
     <div class='col-md-3'><p>Severity</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>sev</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.severity }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Due Date</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>dueDate</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.dueDate }}</p></div>
     <div class='col-md-3'><p>Group to resolve</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>group</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.groupToResolve }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Resolution required by</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>reqBy</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.requiredBy }}</p></div>
     <div class='col-md-3'><p>Contract</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>contract</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.contract }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Identified By</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>idBy</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.identifiedBy }}</p></div>
     <div class='col-md-3'><p>Deficiency type</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>defType</p></div>
+    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.defType }}</p></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Deficiency description</p>
-        <p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>descrip</p>
+        <p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.description }}</p>
     </div>
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-2'><p>Spec or Code</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>spec</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.spec }}</span></div>
     <div class='col-md-2'><p>Action Owner</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>owner</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.actionOwner }}</span></div>
     <div class='col-md-2'><p>Old Id</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>oldID</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.oldID }}</span></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>More information</p>
-        <span class='d-block full-width pad-less thin-grey-border border-radius'></span>
+        <span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.comments }}</span>
     </div>
 </div>
 <h5 class='grey-bg pad'>Closure Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-2'><p>Evidence Type</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>eviType</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.evidenceType }}</span></div>
     <div class='col-md-2'><p>Evidence Repository</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>repo</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.repo }}</span></div>
     <div class='col-md-2'><p>Repository No.</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>eviLink</span></div>
+    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.evidenceLink }}</span></div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Closure comments</p>
-        <span class='d-block full-width pad-less thin-grey-border border-radius grey-bg fake-input'></span>
+        <span class='d-block full-width pad-less thin-grey-border border-radius grey-bg fake-input'>{{ data.closureComments }}</span>
     </div>
 </div>
 {# TODO: conditionally show comments area #}
@@ -98,12 +97,12 @@
 </h5>
 <section id='modHistory' class='collapse'>
     <div class='row item-margin-bottom'>
-        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>dateCreated</p></div>
-        <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>created_by</p></div>
+        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ data.dateCreated | date("m-d-Y") }}</p></div>
+        <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
-        <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>lastUpdated</p></div>
-        <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>updated_by</p></div>
+        <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
+        <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
     </div>
 </section>
 {# TODO: conditionally show photos area #}
