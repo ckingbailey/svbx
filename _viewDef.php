@@ -121,11 +121,15 @@ try {
     $twig->addExtension(new Twig_Extension_Debug());
     // $template = $twig->load();
 
-    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function ($str) {
+    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
         $decoded = html_entity_decode($str, ENT_QUOTES);
         return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
     });
+    $filter_stripslashes = new Twig_Filter('unescape', function($str) {
+        return stripcslashes($str);
+    });
     $twig->addFilter($html_sanitize_decode);
+    $twig->addFilter($filter_stripslashes);
 
     $twig->display('def.html.twig', $context);
 

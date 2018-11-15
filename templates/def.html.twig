@@ -92,7 +92,7 @@
     {% for comment in data.comments %}
     <div class='thin-grey-border pad mb-3'>
         <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y G:i') }}</span></h6>
-        <p>{{ comment.commentText }}</p>
+        <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
     </div>
     {% endfor %}
 </section>
