@@ -2,6 +2,8 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
+
+// project def params
 $projectFields = [
     'defID as ID',
     'yesNoName as safetyCert',
@@ -21,7 +23,7 @@ $projectFields = [
     'spec',
     'actionOwner',
     'oldID',
-    'comments',
+    'comments as moreInfo',
     'eviTypeName as evidenceType',
     'repoName as repo',
     'evidenceLink',
@@ -55,21 +57,32 @@ $projectTableName = 'CDL';
 $projectTableAlias = 'c';
 $projectIdField = 'defID';
 
+$projectCommentsTable = 'cdlComments';
+$projectComments = 'cdlCommText';
+
+// bart def params
+$bartFields = [];
+$bartJoins = [];
+$bartTableName = 'bartDL';
+$bartTableAlias = 'b';
+$bartIdField = 'ID';
+$bartCommentTable = 'bartdlComments';
+$bartComments = 'bdCommText';
+
 if (!empty($_GET['defID'])) $defID = filter_input(INPUT_GET, 'defID');
 elseif (!empty($_GET['bartDefID'])) $defID = filter_input(INPUT_GET, 'bartDefID');
 else $defID = null;
 
-list($id, $idField, $tableName, $tableAlias, $fields, $joins) = (!empty($_GET['defID']) // TODO: clean GET var before using it
-    ? [ $_GET['defID'], $projectIdField, $projectTableName, $projectTableAlias, $projectFields, $projectJoins ]
+list($id, $idField, $tableName, $tableAlias, $fields, $joins, $commentTable, $commentTextField) = (!empty($_GET['defID']) // TODO: clean GET var before using it
+    ? [ $_GET['defID'], $projectIdField, $projectTableName, $projectTableAlias, $projectFields, $projectJoins, $projectCommentsTable, $projectComments ]
     : (!empty($_GET['bartDefID'])
-        ? '123456' // TODO: put the BART values in here
-        : 'abcdef'));
+        ? [ $_GET['bartDefID'], $bartIdField, $bartTableName, $bartTableAlias, $bartFields, $bartJoins, $bartCommentTable, $bartComments] // TODO: put the BART values in here
+        : array_fill(0, 8, null)));
 
 $role = $_SESSION['role'];
 $title = "Deficiency No. " . $defID;
 
 // echo '<pre>Query terms: '; print_r([$id, $idField, $tableName, $tableAlias, $fields, $joins]); echo '</pre>';
-// $sql = file_get_contents("viewDef.sql").$defID;
 
 try {
     $link = new MySqliDB(DB_CREDENTIALS);
@@ -95,23 +108,26 @@ try {
         'data' => $data
     ];
 
+    // query for comments associated with this Def
+    $link->join('users_enc u', "$commentTable.userID = u.userID");
+    $link->orderBy("$commentTable.date_created", 'DESC');
+    $link->where($idField, $id);
+    $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
+    $context['meta'] = $link->getLastQuery();
+
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
-    $template = $twig->load('def.html.twig');
+    // $template = $twig->load();
 
-    $template->display($context);
+    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function ($str) {
+        $decoded = html_entity_decode($str, ENT_QUOTES);
+        return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
+    });
+    $twig->addFilter($html_sanitize_decode);
 
-    // // query for comments associated with this Def
-    // $sql = "SELECT firstname, lastname, date_created, cdlCommText
-    //     FROM cdlComments c
-    //     JOIN users_enc u
-    //     ON c.userID=u.userID
-    //     WHERE c.defID=?
-    //     ORDER BY c.date_created DESC";
-
-    // $comments =
+    $twig->display('def.html.twig', $context);
 
     // // query for photos linked to this Def
     // if (!$stmt = $link->prepare("SELECT pathToFile FROM CDL_pics WHERE defID=?"))
