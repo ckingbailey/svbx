@@ -1,17 +1,68 @@
 <?php
 require 'vendor/autoload.php';
 require 'session.php';
-// include('html_functions/bootstrapGrid.php');
-// include('html_functions/htmlFuncs.php');
-// include('html_components/defComponents.php');
-// include('sql_functions/stmtBindResultArray.php');
-// include('error_handling/sqlErrors.php');
+
+$projectFields = [
+    'ID',
+    'yesNoName as safetyCert',
+    'sys.systemName as systemAffected',
+    'locationName as location',
+    'specLoc',
+    'statusName as status',
+    'closureRequested',
+    'severityName as severity',
+    'dueDate',
+    'grp.systemName as groupToResolve',
+    'req.requiredBy',
+    'contractName as contractID',
+    'identifiedBy',
+    'defTypeName as defType',
+    'description',
+    'spec',
+    'actionOwner',
+    'oldID',
+    'comments',
+    'eviTypeName as evidenceType',
+    'repoName as repo',
+    'evidenceLink',
+    'closureComments',
+    'dateCreated',
+    "CONCAT(cre.firstname, ' ', cre.lastName) as createdBy",
+    'lastUpdated',
+    "CONCAT(upd.firstname, ' ', upd.lastName) as updatedBy",
+    'dateClosed',
+    "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy"
+];
+
+$projectJoins = [
+    'yesNo' => 'c.safetyCert = yesNo.yesNoID',
+    'system' => 'c.systemAffected = system.systemID',
+    'location' => 'c.location = location.locationID',
+    'status' => 'c.status = status.statusID',
+    'severity' => 'c.severity = severity.severityID',
+    'system grp' => 'c.groupToResolve = grp.systemID',
+    'contract' => 'c.contractID = contract.contractID',
+    'defType' => 'c.defType = defType.defTypeID',
+    'evidenceType' => 'c.evidenceType = evidenceType.eviTypeID',
+    'repo' => 'c.repo = repo.repoID',
+    'users_enc cre' => 'c.created_by = cre.username',
+    'users_enc upd' => 'c.updated_by = upd.username',
+    'users_enc close' => 'c.closureRequestedBy = close.username'
+];
+
+$projectTableName = 'CDL';
+$projectTableAlias = 'c';
+$pojectIdField = 'defID';
 
 if (!empty($_GET['defID'])) $defID = filter_input(INPUT_GET, 'defID');
 elseif (!empty($_GET['bartDefID'])) $defID = filter_input(INPUT_GET, 'bartDefID');
 else $defID = null;
 
-// TODO set $id, $tableName, $fields all in one shot with list()
+list($id, $idField, $tableName, $tableAlias, $fields, $joins) = !empty($_GET['defID'])
+    ? [ $_GET['defID'], $projectIdField, $projectTableName, $projectTableAlias, $projectFields, $projectJoins ]
+    : !empty($_GET['bartDefID'])
+        ? Array() // TODO: put the BART values in here
+        : Array();
 
 $role = $_SESSION['role'];
 $title = "Deficiency No. " . $defID;
@@ -22,46 +73,19 @@ if (!empty($_GET['defID'])) {
     try {
         $link = new MySqliDB(DB_CREDENTIALS);
 
-        $fields = [
-            'ID',
-            'yesNoName as safetyCert', // JOIN
-            'sys.systemName as systemAffected', // JOIN
-            'locationName as location', // JOIN
-            'specLoc',
-            'statusName as status', // JOIN
-            'closureRequested',
-            'severityName as severity', // JOIN
-            'dueDate',
-            'grp.systemName as groupToResolve', // JOIN
-            'req.requiredBy',
-            'contractName as contractID', // JOIN
-            'identifiedBy',
-            'defTypeName as defType', // JOIN
-            'description',
-            'spec',
-            'actionOwner',
-            'oldID',
-            'comments',
-            'eviTypeName as evidenceType', // JOIN
-            'repoName as repo', // JOIN
-            'evidenceLink',
-            'closureComments',
-            'dateCreated',
-            "CONCAT(cre.firstname, ' ', cre.lastName) as createdBy", // JOIN
-            'lastUpdated',
-            "CONCAT(upd.firstname, ' ', upd.lastName) as updatedBy", // JOIN
-            'dateClosed',
-            "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy" // JOIN
-        ];
+        foreach ($join as $joinTable => $onCondition) {
+            $link->join($joinTable, $onCondition, 'LEFT');
+        }
 
-        $joins = [
+        $link->where('statusName', 'deleted', '<>');
+        $link->where($idField, $id);
 
-        ];
+        $data = $link->getOne("$tableName $tableAlias");
 
-            if ($Status == "Open") {
+        if (strcasecmp($data['status'], "open") === 0) {
                 $color = "bg-red text-white";
             } else {
-                $color = "bg-success text-white";
+                $color = "bg-green text-white";
             }
             echo "
                 <header class='container page-header'>
