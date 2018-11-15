@@ -68,7 +68,7 @@ list($id, $idField, $tableName, $tableAlias, $fields, $joins) = (!empty($_GET['d
 $role = $_SESSION['role'];
 $title = "Deficiency No. " . $defID;
 
-echo '<pre>Query terms: '; print_r([$id, $idField, $tableName, $tableAlias, $fields, $joins]); echo '</pre>';
+// echo '<pre>Query terms: '; print_r([$id, $idField, $tableName, $tableAlias, $fields, $joins]); echo '</pre>';
 // $sql = file_get_contents("viewDef.sql").$defID;
 
 try {
@@ -83,10 +83,6 @@ try {
 
     $data = $link->getOne("$tableName $tableAlias", $fields);
 
-    echo '<pre>Data: ';
-    var_dump($data);
-    echo '</pre>';
-
     if (strcasecmp($data['status'], "open") === 0) {
         $color = "bg-red text-white";
     } else {
@@ -98,6 +94,14 @@ try {
         'pageHeading' => "Deficiency No. ",
         'data' => $data
     ];
+
+    // instantiate Twig
+    $loader = new Twig_Loader_Filesystem('./templates');
+    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
+    $_ENV['PHP_ENV'] === 'dev' && $twig->addExtension(new Twig_Extension_Debug());
+    $template = $twig->load('def.html.twig');
+
+    $template->display($context);
 
     // // query for comments associated with this Def
     // $sql = "SELECT firstname, lastname, date_created, cdlCommText
