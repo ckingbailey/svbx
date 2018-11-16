@@ -8,13 +8,11 @@
 {% import _self as page %}
 
 {% block pageHeader %}
-{% set status = data.status | lower %}
-{% set closed = status is same as('closed') %}
-{% set color = closed ? ' bg-green' : ' bg-red' %}
-<header class='container page-header'>
-    <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
-    <h2>{{ data.closureRequested or '' }}</h2>
-</header>
+    {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
+    <header class='container page-header'>
+        <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+        <h2>{{ data.closureRequested or '' }}</h2>
+    </header>
 {% endblock %}
 
 {% block content %}
@@ -63,12 +61,11 @@
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'>
                     <label for='resolution_disputed' class='form-check-label check-label-left'>Resolution disputed</label>
-                    {# TODO: macro to create checkbox and assign it value #}
-                    <input type='checkbox' value='1' class='x-checkbox' disabled >
+                    <input type='checkbox' value='{{ data.resolution_disputed }}' class='x-checkbox' disabled {{ data.resolution_disputed > 0 ? ' checked' : '' }}>
                 </div>
                 <div class='col-md-6'>
                     <label for='structural' class='form-check-label check-label-left'>Structural</label>
-                    <input type='checkbox' value='1' class='x-checkbox' disabled >
+                    <input type='checkbox' value='{{ data.structural }}' class='x-checkbox' disabled {{ data.structural > 0 ? ' checked' : '' }}>
                 </div>
             </div>
         </div>
@@ -123,6 +120,7 @@
         </div>
     </div>
 </div>
+<pre>{{ dump(data) }}</pre>
 {% if session.role > 10 %}
 <div class='center-content'>
     <a href='updateBartDef.php?bartDefID=2' class='btn btn-primary btn-lg'>Update</a>
