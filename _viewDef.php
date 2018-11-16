@@ -65,16 +65,16 @@ $projectTemplate = 'def.html.twig';
 // bart def params
 $bartFields = [
     'ID',
-    'creator', // JOIN
-    'next_step', // JOIN
-    'bic', // JOIN
-    'status', // JOIN
+    'creator.partyName as creator',
+    'nextStepName as next_step',
+    'bic.partyName as bic',
+    'statusName as status',
     'descriptive_title_vta',
     'root_prob_vta',
     'resolution_vta',
     'priority_vta',
-    'agree_vta', // JOIN
-    'safety_cert_vta', // JOIN
+    'agreeDisagreeName as agree_vta',
+    'yesNoName as safety_cert_vta',
     'resolution_disputed',
     'structural',
     'id_bart',
@@ -86,9 +86,9 @@ $bartFields = [
     'dateOpen_bart',
     'dateClose_bart',
     'date_created',
-    'b.created_by', // JOIN
+    "CONCAT(cre.firstname, ' ', cre.lastname)",
     'Form_Modified',
-    'b.updated_by' // JOIN
+    "CONCAT(upd.firstname, ' ', upd.lastname)"
 ];
 
 $bartJoins = [
@@ -178,7 +178,7 @@ try {
 
     $context = [
         'session' => $_SESSION,
-        'pageHeading' => "Deficiency No. ",
+        'pageHeading' => "Deficiency No. $id",
         'data' => $data
     ];
 

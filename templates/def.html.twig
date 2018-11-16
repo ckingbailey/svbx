@@ -12,7 +12,7 @@
 {% set closed = status is same as('closed') %}
 {% set color = closed ? ' bg-green' : ' bg-red' %}
 <header class='container page-header'>
-    <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}{{ data.ID }}</h1>
+    <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
     <h2>{{ data.closureRequested or '' }}</h2>
 </header>
 {% endblock %}

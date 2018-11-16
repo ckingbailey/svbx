@@ -7,8 +7,17 @@
 
 {% import _self as page %}
 
+{% block pageHeader %}
+{% set status = data.status | lower %}
+{% set closed = status is same as('closed') %}
+{% set color = closed ? ' bg-green' : ' bg-red' %}
+<header class='container page-header'>
+    <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+    <h2>{{ data.closureRequested or '' }}</h2>
+</header>
+{% endblock %}
+
 {% block content %}
-<pre>{{dump(data)}}</pre>
 <div class='row item-margin-bottom'>
     <div class='col-md-6'>
         <div class='row item-margin-bottom'>
