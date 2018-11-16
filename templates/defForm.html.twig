@@ -1,5 +1,13 @@
 {% extends "page.html.twig" %}
 
+{% macro renderOptions(options, curVal) %}
+    {% for options in options %}
+        <option></option>
+    {% endfor %}
+{% endmacro %}
+
+{% import _self as form %}
+
 {# TODO: can this template extend def.html.twig? #}
 {% block pageHeader %}
     {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
@@ -10,20 +18,17 @@
 {% endblock %}
 
 {% block content %}
-{{ meta }}
 <pre>{{ dump(data) }}</pre>
 <form action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
     <input type='hidden' name='defID' value='{{ data.ID }}'>
-    <div class='row'>
-        <div class='col-12'><h4 class='pad grey-bg'>Deficiency No. 188</h4></div>
-    </div>
+    <h4 class='pad grey-bg'>Deficiency No. 188</h4>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='safetyCert' class='required'>Safety Certifiable</label></div>
                 <div class='col-md-6'>
                     <select name='safetyCert' id='safetyCert' class='form-control' required>
-                        <option value=''></option><option value='2' selected>No</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -33,7 +38,7 @@
                 <div class='col-md-6'><label for='systemAffected' class='required'>System Affected</label></div>
                 <div class='col-md-6'>
                     <select name='systemAffected' id='systemAffected' class='form-control' required>
-                        <option value=''></option><option value='20'>VMS</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -45,7 +50,7 @@
                 <div class='col-md-6'><label for='location' class='required'>General Location</label></div>
                 <div class='col-md-6'>
                     <select name='location' id='location' class='form-control' required>
-                        <option value=''></option><option value='20'>GBS SXC</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -63,7 +68,7 @@
                 <div class='col-md-6'><label for='status' class='required'>Status</label></div>
                 <div class='col-md-6'>
                     <select name='status' id='status' class='form-control' required>
-                        <option value=''></option><option value='1'>Open</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -73,7 +78,7 @@
                 <div class='col-md-6'><label for='severity' class='required'>Severity</label></div>
                 <div class='col-md-6'>
                     <select name='severity' id='severity' class='form-control' required>
-                        <option value=''></option><option value='4'>Blocker</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -83,7 +88,7 @@
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='dueDate' class='required'>To be resolved by</label></div>
-                <div class='col-md-6'><input type='date' name='dueDate' id='dueDate' value='2018-05-31' class='form-control' required></div>
+                <div class='col-md-6'><input type='date' name='dueDate' id='dueDate' value='' class='form-control' required></div>
             </div>
         </div>
         <div class='col-md-6'>
@@ -91,7 +96,7 @@
                 <div class='col-md-6'><label for='groupToResolve' class='required'>Group to Resolve</label></div>
                 <div class='col-md-6'>
                     <select name='groupToResolve' id='groupToResolve' class='form-control' required>
-                        <option value=''></option><option value='19'>Access Control System</option>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -101,19 +106,19 @@
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='requiredBy' class='required'>Required for</label></div>
-                    <div class='col-md-6'>
-                        <select name='requiredBy' id='requiredBy' class='form-control' required>
-                            <option value=''></option><option value='20'>FFT</option>
-                        </select>
-                    </div>
+                <div class='col-md-6'>
+                    <select name='requiredBy' id='requiredBy' class='form-control' required>
+                        {{ form.renderOptions() }}
+                    </select>
                 </div>
             </div>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='contractID' class='required'>Contract</label></div>
-                    <div class='col-md-6'>
-                        <select name='contractID' id='contractID' class='form-control' required>
-                        <option value=''></option><option value='1'>C700</option>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='contractID' class='required'>Contract</label></div>
+                <div class='col-md-6'>
+                    <select name='contractID' id='contractID' class='form-control' required>
+                        {{ form.renderOptions() }}
                     </select>
                 </div>
             </div>
@@ -123,122 +128,122 @@
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='identifiedBy' class='required'>Identified By</label></div>
-                    <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='Amy Fauria' required></div>
+                <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='' required></div>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='defType' class='required'>Deficiency type</label></div>
+                <div class='col-md-6'>
+                    <select name='defType' id='defType' class='form-control' required>
+                        {{ form.renderOptions() }}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6 offset-md-3'>
+            <label for='description' class='required'>Deficiency description</label>
+            <textarea name='description' id='description' class='form-control' maxlength='1000' required></textarea>
+        </div>
+    </div>
+    <h5 class='grey-bg pad'>
+        <a data-toggle='collapse' href='#optionalInfo' role='button' aria-expanded='false' aria-controls='optionalInfo' class='collapsed'>Optional Information<i class='typcn typcn-arrow-sorted-down'></i></a>
+    </h5>
+    <div id='optionalInfo' class='collapse item-margin-bottom'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='spec'>Spec or Code</label></div>
+                    <div class='col-md-6'><input type='text' name='spec' id='spec' value='' class='form-control'></div>
                 </div>
             </div>
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='defType' class='required'>Deficiency type</label></div>
+                    <div class='col-md-6'><label for='actionOwner'>Action Owner</label></div>
+                    <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='' class='form-control'></div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='oldID'>Old Id</label></div>
+                    <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='' class='form-control'></div>
+                </div>
+            </div>
+            <div class='col-md-6'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='CDL_pics'>Upload Photo</label></div>
+                    <div class='col-md-6'><input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'></div>
+                </div>
+            </div>
+        </div>
+        <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
+    </div>
+    <h5 class='grey-bg pad'>
+        <a data-toggle='collapse' href='#closureInfo' role='button' aria-expanded='false' aria-controls='closureInfo' class='collapsed'>Closure Information<i class='typcn typcn-arrow-sorted-down'></i></a>
+    </h5>
+    <div id='closureInfo' class='collapse item-margin-bottom'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-4'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='evidenceType'>Evidence Type</label></div>
                     <div class='col-md-6'>
-                        <select name='defType' id='defType' class='form-control' required>
-                            <option value=''></option><option value='1'>test</option><option value='2'>punchlist</option>
+                        <select name='evidenceType' id='evidenceType' class='form-control'>
+                            {{ form.renderOptions() }}
                         </select>
                     </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='repo'>Evidence Repository</label></div>
+                    <div class='col-md-6'>
+                        <select name='repo' id='repo' class='form-control'>
+                            {{ form.renderOptions() }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='evidenceLink'>Repository Number</label></div>
+                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value=''></div>
                 </div>
             </div>
         </div>
         <div class='row item-margin-bottom'>
             <div class='col-md-6 offset-md-3'>
-                <label for='description' class='required'>Deficiency description</label>
-                <textarea name='description' id='description' class='form-control' maxlength='1000' required>ALARM MISSING FROM HMI, SI NO 231</textarea>
+                <label for='closureComments'>Closure Comments</label>
+                <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'></textarea>
             </div>
         </div>
-        <h5 class='grey-bg pad'>
-            <a data-toggle='collapse' href='#optionalInfo' role='button' aria-expanded='false' aria-controls='optionalInfo' class='collapsed'>Optional Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-        </h5>
-        <div id='optionalInfo' class='collapse item-margin-bottom'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'>
-                    <div class='row item-margin-bottom'>
-                        <div class='col-md-6'><label for='spec'>Spec or Code</label></div>
-                        <div class='col-md-6'><input type='text' name='spec' id='spec' value='SKR SIT Procedure IO List' class='form-control'></div>
-                    </div>
-                </div>
-                <div class='col-md-6'>
-                    <div class='row item-margin-bottom'>
-                        <div class='col-md-6'><label for='actionOwner'>Action Owner</label></div>
-                            <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='KAPSCH' class='form-control'></div>
-                        </div>
-                    </div>
-                </div>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'>
-                        <div class='row item-margin-bottom'>
-                            <div class='col-md-6'><label for='oldID'>Old Id</label></div>
-                            <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='SKR-57' class='form-control'></div>
-                        </div>
-                    </div>
-                    <div class='col-md-6'>
-                        <div class='row item-margin-bottom'>
-                            <div class='col-md-6'><label for='CDL_pics'>Upload Photo</label></div>
-                            <div class='col-md-6'><input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'></div>
-                        </div>
-                    </div>
-                </div>
-                <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
-            </div>
-            <h5 class='grey-bg pad'>
-                <a data-toggle='collapse' href='#closureInfo' role='button' aria-expanded='false' aria-controls='closureInfo' class='collapsed'>Closure Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-            </h5>
-        <div id='closureInfo' class='collapse item-margin-bottom'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-4'>
-                    <div class='row item-margin-bottom'>
-                        <div class='col-md-6'><label for='evidenceType'>Evidence Type</label></div>
-                        <div class='col-md-6'>
-                            <select name='evidenceType' id='evidenceType' class='form-control'>
-                                <option value=''></option><option value='8'>Change Request</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-md-4'>
-                    <div class='row item-margin-bottom'>
-                        <div class='col-md-6'><label for='repo'>Evidence Repository</label></div>
-                        <div class='col-md-6'>
-                            <select name='repo' id='repo' class='form-control'>
-                                <option value=''></option><option value='2'>Aconex</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-md-4'>
-                    <div class='row item-margin-bottom'>
-                        <div class='col-md-6'><label for='evidenceLink'>Repository Number</label></div>
-                        <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value=''></div>
-                    </div>
-                </div>
-            </div>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6 offset-md-3'>
-                    <label for='closureComments'>Closure Comments</label>
-                    <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'></textarea>
-                </div>
-            </div>
-        </div>
-        <h5 class='grey-bg pad'>
-            <a data-toggle='collapse' href='#comments' role='button' aria-expanded='false' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
-        </h5>
-        <div id='comments' class='collapse item-margin-bottom'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-8 offset-md-2'>
-                    <label for='cdlCommText'>Add comment</label>
-                    <textarea name='cdlCommText' id='cdlCommText' class='form-control' maxlength='1000'></textarea>
-                </div>
-            </div>
-        </div>
+    </div>
+    <h5 class='grey-bg pad'>
+        <a data-toggle='collapse' href='#comments' role='button' aria-expanded='false' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
+    </h5>
+    <div id='comments' class='collapse item-margin-bottom'>
         <div class='row item-margin-bottom'>
-            <div class='col-12 center-content'>
-                <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>
+            <div class='col-md-8 offset-md-2'>
+                <label for='cdlCommText'>Add comment</label>
+                <textarea name='cdlCommText' id='cdlCommText' class='form-control' maxlength='1000'></textarea>
             </div>
         </div>
-    </form>
-    <form action='DeleteDef.php' method='POST' onsubmit=''>
-        <div class='row'>
-            <div class='col-12 center-content'>
-                <button class='btn btn-danger btn-lg' type='submit' name='q' value='188'
-                    onclick='return confirm(`ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.`)'>delete</button>
-            </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-12 center-content'>
+            <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>
         </div>
-    </form>
+    </div>
+</form>
+<form action='DeleteDef.php' method='POST' onsubmit=''>
+    <div class='row'>
+        <div class='col-12 center-content'>
+            <button class='btn btn-danger btn-lg' type='submit' name='q' value='188'
+                onclick='return confirm(`ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.`)'>delete</button>
+        </div>
+    </div>
+</form>
 {% endblock %}
