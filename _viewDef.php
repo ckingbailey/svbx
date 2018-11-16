@@ -64,8 +64,45 @@ $projectAttachmentsTable = 'CDL_pics';
 $projectPathField = 'pathToFile';
 
 // bart def params
-$bartFields = [];
-$bartJoins = [];
+$bartFields = [
+    'ID',
+    'creator', // JOIN
+    'next_step', // JOIN
+    'bic', // JOIN
+    'status', // JOIN
+    'descriptive_title_vta',
+    'root_prob_vta',
+    'resolution_vta',
+    'priority_vta',
+    'agree_vta', // JOIN
+    'safety_cert_vta', // JOIN
+    'resolution_disputed',
+    'structural',
+    'id_bart',
+    'description_bart',
+    'cat1_bart',
+    'cat2_bart',
+    'cat3_bart',
+    'level_bart',
+    'dateOpen_bart',
+    'dateClose_bart',
+    'date_created',
+    'b.created_by', // JOIN
+    'Form_Modified',
+    'b.updated_by' // JOIN
+];
+
+$bartJoins = [
+    'yesNo' => 'b.safety_cert_vta = yesNo.yesNoID',
+    'users_enc upd' => 'b.updated_by = upd.userID',
+    'bdNextStep' => 'b.next_step = bdNextStep.bdNextStepID',
+    'bdParties creator' => 'b.creator = creator.partyID',
+    'bdParties bic' => 'b.bic = bic.partyID',
+    'status' => 'b.status = status.statusID',
+    'agreeDisagree' => 'b.agree_vta = agreeDisagree.agreeDisagreeID',
+    'users_enc cre' => 'b.created_by = cre.userID'
+];
+
 $bartTableName = 'bartDL';
 $bartTableAlias = 'b';
 $bartIdField = 'ID';
@@ -113,11 +150,10 @@ list(
             $bartAttachmentsTable,
             $bartPathField
           ]
-        : array_fill(0, 8, null)));
+        : array_fill(0, 9, null)));
+// TODO: handle case of no def ID
 
 $role = $_SESSION['role'];
-
-// echo '<pre>Query terms: '; print_r([$id, $idField, $tableName, $tableAlias, $fields, $joins]); echo '</pre>';
 
 try {
     $link = new MySqliDB(DB_CREDENTIALS);
