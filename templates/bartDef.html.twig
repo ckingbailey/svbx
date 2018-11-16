@@ -75,7 +75,15 @@
                     <label for='bartdlAttachments'>Attachments</label>
                     <div class='border-radius thin-grey-border pad scroll-y' style='height: 6.8rem'>
                         {# TODO: iterate over attachments #}
-                        <ul class='pl-0 mb-0'></ul>
+                        <ul class='pl-0 mb-0'>
+                        {% if data.attachments %}
+                            {% for attachment in data.attachments %}
+                            <li>
+                                <a href="uploads/bartdlUploads/tumblr_ll9hmjBTlf1qb4qe5o1_500.png" target="_blank">{{ attachment.filepath }}</a>
+                            </li>
+                            {% endfor %}
+                        {% endif %}
+                        </ul>
                     </div>
                 </div>
             </div>
