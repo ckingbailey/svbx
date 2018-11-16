@@ -1,0 +1,142 @@
+{% extends 'page.html.twig' %}
+
+{% macro input_like(datum) %}
+    {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+{% endmacro %}
+
+{% import _self as page %}
+
+{% block pageHeader %}
+{% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
+<header class='container page-header'>
+    <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+    <h2>{{ data.closureRequested or '' }}</h2>
+</header>
+{% endblock %}
+
+{% block content %}
+<h5 class='grey-bg pad'>Required Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Safety Certifiable</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.safetyCert) }}</div>
+    <div class='col-md-3'><p>System Affected</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.systemAffected) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>General Location</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.location) }}</div>
+    <div class='col-md-3'><p>Specific Location</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.specLoc) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Status</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.status) }}</div>
+    <div class='col-md-3'><p>Severity</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.severity) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Due Date</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.dueDate) }}</div>
+    <div class='col-md-3'><p>Group to resolve</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.groupToResolve) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Resolution required by</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.requiredBy) }}</div>
+    <div class='col-md-3'><p>Contract</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.contract) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Identified By</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.identifiedBy) }}</div>
+    <div class='col-md-3'><p>Deficiency type</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.defType) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6 offset-md-3'>
+        <p>Deficiency description</p>
+        {{ page.input_like(data.description) }}
+    </div>
+</div>
+<h5 class='grey-bg pad'>Optional Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-2'><p>Spec or Code</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.spec) }}</div>
+    <div class='col-md-2'><p>Action Owner</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.actionOwner) }}</div>
+    <div class='col-md-2'><p>Old Id</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.oldID) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6 offset-md-3'>
+        <p>More information</p>
+        {{ page.input_like(data.moreInfo) }}
+    </div>
+</div>
+<h5 class='grey-bg pad'>Closure Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-2'><p>Evidence Type</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.evidenceType) }}</div>
+    <div class='col-md-2'><p>Evidence Repository</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.repo) }}</div>
+    <div class='col-md-2'><p>Repository No.</p></div>
+    <div class='col-md-2'>{{ page.input_like(data.evidenceLink) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6 offset-md-3'>
+        <p>Closure comments</p>
+        {{ page.input_like(data.closureComments) }}
+    </div>
+</div>
+{% if not data.comments is empty %}
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#comments' role='button' aria-expanded='' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<section id='comments' class='collapse'>
+    {% for comment in data.comments %}
+    <div class='row mb-3'>
+        <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
+            <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
+            <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<section id='modHistory' class='collapse'>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ data.dateCreated | date("n-j-Y") }}</p></div>
+        <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
+        <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
+    </div>
+</section>
+{% if not data.photos is empty %}
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<section id='defPics' class='collapse item-margin-bottom'>
+    {% for row in data.photos %}
+    <div class='row item-margin-bottom'>
+        {% for photo in row %}
+        <div class='col-md-4'><img src='{{ photo.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+{% if session.role > 10 %}
+<div class='row item-margin-botom'>
+    <div class='col-12 center-content'>
+        <a href='updateDef.php?defID=1' class='btn btn-primary btn-lg'>Update</a>
+        <a href='cloneDef.php?defID=1' class='btn btn-primary btn-lg'>Clone</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
