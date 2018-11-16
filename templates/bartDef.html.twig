@@ -1,5 +1,7 @@
 {% extends "page.html.twig" %}
 
+
+{# TODO: make this template extend def.html.twig #}
 {% macro input_like(datum) %}
     {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
     <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
