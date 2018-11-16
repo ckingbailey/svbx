@@ -2,7 +2,6 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
-
 // project def params
 $projectFields = [
     'defID as ID',
@@ -156,8 +155,6 @@ list(
         : array_fill(0, 9, null)));
 // TODO: handle case of no def ID
 
-$role = $_SESSION['role'];
-
 try {
     $link = new MySqliDB(DB_CREDENTIALS);
 
@@ -204,7 +201,8 @@ try {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
-
+    
+    // TODO: check for permission before rendering BART def
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);

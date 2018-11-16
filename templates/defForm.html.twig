@@ -1,0 +1,14 @@
+{% extends "page.html.twig" %}
+
+{# TODO: can this template extend def.html.twig? #}
+{% block pageHeader %}
+    {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
+    <header class='container page-header'>
+        <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+        <h2>{{ data.closureRequested or '' }}</h2>
+    </header>
+{% endblock %}
+
+{% block content %}
+<pre>{{ meta }}{{ dump(data) }}</pre>
+{% endblock %}
