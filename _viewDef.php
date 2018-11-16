@@ -191,16 +191,20 @@ try {
     // query for photos linked to this Def
     // keep BART and Project photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
+    error_log($tableName);
+    error_log($idField);
+    error_log($attachmentsTable);
+    
     if ($tableName === 'CDL') {
         $link->where($idField, $id);
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
-        $context['data']['photos'] = array_chunk($attachments, 3);
+        $context['data']['photos'] = array_chunk($photos, 3);
     }
-    if ($tableName = 'BARTLDL') {
+    if ($tableName === 'BARTLDL') {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
-    
+
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
