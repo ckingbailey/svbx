@@ -56,12 +56,11 @@ $projectJoins = [
 $projectTableName = 'CDL';
 $projectTableAlias = 'c';
 $projectIdField = 'defID';
-
 $projectCommentsTable = 'cdlComments';
 $projectComments = 'cdlCommText';
-
 $projectAttachmentsTable = 'CDL_pics';
 $projectPathField = 'pathToFile';
+$projectTemplate = 'def.html.twig';
 
 // bart def params
 $bartFields = [
@@ -110,6 +109,7 @@ $bartCommentTable = 'bartdlComments';
 $bartComments = 'bdCommText';
 $bartAttachmentsTable = 'bartdlAttachments';
 $bartPathField = 'bdaFilepath';
+$bartTemplate = 'bartDef.html.twig';
 
 if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -123,7 +123,8 @@ list(
     $commentTable,
     $commentTextField,
     $attachmentsTable,
-    $pathField
+    $pathField,
+    $templatePath
 ) = (!empty($get['defID'])
     ? [
         $get['defID'],
@@ -135,7 +136,8 @@ list(
         $projectCommentsTable,
         $projectComments,
         $projectAttachmentsTable,
-        $projectPathField
+        $projectPathField,
+        $projectTemplate
         ]
         : (!empty($get['bartDefID'])
         ? [
@@ -148,7 +150,8 @@ list(
             $bartCommentTable,
             $bartComments,
             $bartAttachmentsTable,
-            $bartPathField
+            $bartPathField,
+            $bartTemplate
           ]
         : array_fill(0, 9, null)));
 // TODO: handle case of no def ID
@@ -207,7 +210,7 @@ try {
     $twig->addFilter($html_sanitize_decode);
     $twig->addFilter($filter_stripslashes);
 
-    $twig->display('def.html.twig', $context);
+    $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);

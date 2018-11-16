@@ -1,0 +1,122 @@
+{% extends "page.html.twig" %}
+
+{% macro input_like(datum) %}
+    {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+{% endmacro %}
+
+{% import _self as page %}
+
+{% block content %}
+<pre>{{dump(data)}}</pre>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>ID</div><div class='col-md-6'>{{ page.input_like(data.ID) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Creator</div><div class='col-md-6'>{{ page.input_like(data.creator) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Next step</div><div class='col-md-6'>{{ page.input_like(data.next_step) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>BIC</div><div class='col-md-6'>{{ page.input_like(data.bic) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Status</div><div class='col-md-6'>{{ page.input_like(data.status) }}</div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta) }}</p></div>
+        </div>
+    </div>
+</div>
+<h5 class='grey-bg pad'>VTA Information</h5>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'><p>Root problem</p><p>{{ page.input_like(data.root_problem_vta) }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta) }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Priority</div><div class='col-md-6'>{{ page.input_like(data.priority) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Agree</div><div class='col-md-6'>{{ page.input_like(data.agree) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Safety Certifiable</div><div class='col-md-6'>{{ page.input_like(data.safety_cert_vta) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <label for='resolution_disputed' class='form-check-label check-label-left'>Resolution disputed</label>
+                    {# TODO: macro to create checkbox and assign it value #}
+                    <input type='checkbox' value='1' class='x-checkbox' disabled >
+                </div>
+                <div class='col-md-6'>
+                    <label for='structural' class='form-check-label check-label-left'>Structural</label>
+                    <input type='checkbox' value='1' class='x-checkbox' disabled >
+                </div>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'>
+                    <label for='bartdlAttachments'>Attachments</label>
+                    <div class='border-radius thin-grey-border pad scroll-y' style='height: 6.8rem'>
+                        {# TODO: iterate over attachments #}
+                        <ul class='pl-0 mb-0'></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h5 class='grey-bg pad'>BART Information</h5>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart) }}</p></div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.root_problem_vta) }}</p></div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><p>Cat1</p></div><div class='col-md-6'>{{ page.input_like(data.cat1_bart) }}</div>
+            </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Cat2</p></div><div class='col-md-6'>{{ page.input_like(data.cat2_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Cat3</p></div><div class='col-md-6'>{{ page.input_like(data.cat3_bart) }}</div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Level</p></div><div class='col-md-6'>{{ page.input_like(data.level_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Date open</p></div><div class='col-md-6'>{{ page.input_like(data.dateOpen_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(data.dateClosed_bart) }}</div>
+        </div>
+    </div>
+</div>
+{% if session.role > 10 %}
+<div class='center-content'>
+    <a href='updateBartDef.php?bartDefID=2' class='btn btn-primary btn-lg'>Update</a>
+</div>
+{% endif %}
+{% endblock %}
