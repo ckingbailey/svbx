@@ -128,7 +128,17 @@
         </div>
     </div>
 </div>
-<pre>{{ dump(data) }}</pre>
+{% if not data.comments is empty %}
+<h5 class='grey-bg pad'>Comments</h5>
+{% for comment in data.comments %}
+<div class='row mb-3'>
+    <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
+        <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
+        <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
 {% if session.role > 10 %}
 <div class='center-content'>
     <a href='updateBartDef.php?bartDefID=2' class='btn btn-primary btn-lg'>Update</a>
