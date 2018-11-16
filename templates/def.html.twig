@@ -110,18 +110,22 @@
         <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
     </div>
 </section>
-{# TODO: conditionally show photos area #}
+{% if not data.attachments is empty %}
 <h5 class='grey-bg pad'>
     <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
 </h5>
 <section id='defPics' class='collapse item-margin-bottom'>
     {# TODO: iterate over photos #}
+    <pre>{{ meta }}{{ dump(data.attachments )}}</pre>
+    {% for row in data.attachments %}
     <div class='row item-margin-bottom'>
-        <div class='col-md-4'><img src='/img_uploads/ckingb_0000000001_1526425153.jpg' alt='photo related to deficiency number 1'></div>
-        <div class='col-md-4'><img src='/img_uploads/ckingb_0000000001_1526492145.jpg' alt='photo related to deficiency number 1'></div>
-        <div class='col-md-4'><img src='/img_uploads/ckingb_0000000001_1526492929.jpg' alt='photo related to deficiency number 1'></div>
+        {% for attachment in row %}
+        <div class='col-md-4'><img src='{{ attachment.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+        {% endfor %}
     </div>
+    {% endfor %}
 </section>
+{% endif %}
 {# TODO: show buttons only for role > 10 #}
 <div class='row item-margin-botom'>
     <div class='col-12 center-content'>

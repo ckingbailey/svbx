@@ -60,6 +60,9 @@ $projectIdField = 'defID';
 $projectCommentsTable = 'cdlComments';
 $projectComments = 'cdlCommText';
 
+$projectAttachmentsTable = 'CDL_pics';
+$projectPathField = 'pathToFile';
+
 // bart def params
 $bartFields = [];
 $bartJoins = [];
@@ -68,19 +71,51 @@ $bartTableAlias = 'b';
 $bartIdField = 'ID';
 $bartCommentTable = 'bartdlComments';
 $bartComments = 'bdCommText';
+$bartAttachmentsTable = 'bartdlAttachments';
+$bartPathField = 'bdaFilepath';
 
-if (!empty($_GET['defID'])) $defID = filter_input(INPUT_GET, 'defID');
-elseif (!empty($_GET['bartDefID'])) $defID = filter_input(INPUT_GET, 'bartDefID');
-else $defID = null;
+if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
 
-list($id, $idField, $tableName, $tableAlias, $fields, $joins, $commentTable, $commentTextField) = (!empty($_GET['defID']) // TODO: clean GET var before using it
-    ? [ $_GET['defID'], $projectIdField, $projectTableName, $projectTableAlias, $projectFields, $projectJoins, $projectCommentsTable, $projectComments ]
-    : (!empty($_GET['bartDefID'])
-        ? [ $_GET['bartDefID'], $bartIdField, $bartTableName, $bartTableAlias, $bartFields, $bartJoins, $bartCommentTable, $bartComments] // TODO: put the BART values in here
+list(
+    $id,
+    $idField,
+    $tableName,
+    $tableAlias,
+    $fields,
+    $joins,
+    $commentTable,
+    $commentTextField,
+    $attachmentsTable,
+    $pathField
+) = (!empty($get['defID'])
+    ? [
+        $get['defID'],
+        $projectIdField,
+        $projectTableName,
+        $projectTableAlias,
+        $projectFields,
+        $projectJoins,
+        $projectCommentsTable,
+        $projectComments,
+        $projectAttachmentsTable,
+        $projectPathField
+        ]
+        : (!empty($get['bartDefID'])
+        ? [
+            $get['bartDefID'],
+            $bartIdField,
+            $bartTableName,
+            $bartTableAlias,
+            $bartFields,
+            $bartJoins,
+            $bartCommentTable,
+            $bartComments,
+            $bartAttachmentsTable,
+            $bartPathField
+          ]
         : array_fill(0, 8, null)));
 
 $role = $_SESSION['role'];
-$title = "Deficiency No. " . $defID;
 
 // echo '<pre>Query terms: '; print_r([$id, $idField, $tableName, $tableAlias, $fields, $joins]); echo '</pre>';
 
@@ -111,8 +146,13 @@ try {
     // query for comments associated with this Def
     $link->join('users_enc u', "$commentTable.userID = u.userID");
     $link->orderBy("$commentTable.date_created", 'DESC');
-    $link->where($idField, $id);
+    $link->where(($idField === 'defID' ?: 'bartdlID'), $id);
     $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
+
+    // query for photos linked to this Def
+    $link->where(($idField === 'defID' ? 'defID' : 'bartdlID'), $id);
+    $attachments = $link->get($attachmentsTable, null, "$pathField as filepath");
+    $context['data']['attachments'] = array_chunk($attachments, 3);
     $context['meta'] = $link->getLastQuery();
 
     // instantiate Twig
@@ -124,20 +164,14 @@ try {
     $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
         $decoded = html_entity_decode($str, ENT_QUOTES);
         return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
-    });
+    });    
     $filter_stripslashes = new Twig_Filter('unescape', function($str) {
         return stripcslashes($str);
-    });
+    });    
     $twig->addFilter($html_sanitize_decode);
     $twig->addFilter($filter_stripslashes);
 
     $twig->display('def.html.twig', $context);
-
-    // // query for photos linked to this Def
-    // if (!$stmt = $link->prepare("SELECT pathToFile FROM CDL_pics WHERE defID=?"))
-
-    // $photos =
-
 } catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);
