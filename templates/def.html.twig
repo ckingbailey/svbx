@@ -1,5 +1,12 @@
 {% extends 'page.html.twig' %}
 
+{% macro input_like(datum) %}
+    {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+{% endmacro %}
+
+{% import _self as page %}
+
 {% block pageHeader %}
 {% set status = data.status | lower %}
 {% set closed = status is same as('closed') %}
@@ -14,74 +21,74 @@
 <h5 class='grey-bg pad'>Required Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Safety Certifiable</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.safetyCert }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.safetyCert) }}</div>
     <div class='col-md-3'><p>System Affected</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.systemAffected }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.systemAffected) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>General Location</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.location }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.location) }}</div>
     <div class='col-md-3'><p>Specific Location</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.specLoc }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.specLoc) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Status</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.status }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.status) }}</div>
     <div class='col-md-3'><p>Severity</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.severity }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.severity) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Due Date</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.dueDate }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.dueDate) }}</div>
     <div class='col-md-3'><p>Group to resolve</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.groupToResolve }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.groupToResolve) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Resolution required by</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.requiredBy }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.requiredBy) }}</div>
     <div class='col-md-3'><p>Contract</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.contract }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.contract) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Identified By</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.identifiedBy }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.identifiedBy) }}</div>
     <div class='col-md-3'><p>Deficiency type</p></div>
-    <div class='col-md-3'><p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.defType }}</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.defType) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Deficiency description</p>
-        <p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>{{ data.description }}</p>
+        {{ page.input_like(data.description) }}
     </div>
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-2'><p>Spec or Code</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.spec }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.spec) }}</div>
     <div class='col-md-2'><p>Action Owner</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.actionOwner }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.actionOwner) }}</div>
     <div class='col-md-2'><p>Old Id</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.oldID }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.oldID) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>More information</p>
-        <span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.moreInfo }}</span>
+        {{ page.input_like(data.moreInfo) }}
     </div>
 </div>
 <h5 class='grey-bg pad'>Closure Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-2'><p>Evidence Type</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.evidenceType }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.evidenceType) }}</div>
     <div class='col-md-2'><p>Evidence Repository</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.repo }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.repo) }}</div>
     <div class='col-md-2'><p>Repository No.</p></div>
-    <div class='col-md-2'><span class='d-block full-width pad-less thin-grey-border border-radius'>{{ data.evidenceLink }}</span></div>
+    <div class='col-md-2'>{{ page.input_like(data.evidenceLink) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Closure comments</p>
-        <span class='d-block full-width pad-less thin-grey-border border-radius grey-bg fake-input'>{{ data.closureComments }}</span>
+        {{ page.input_like(data.closureComments) }}
     </div>
 </div>
 {% if not data.comments is empty %}
@@ -90,9 +97,11 @@
 </h5>
 <section id='comments' class='collapse'>
     {% for comment in data.comments %}
-    <div class='thin-grey-border pad mb-3'>
-        <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y G:i') }}</span></h6>
-        <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+    <div class='row mb-3'>
+        <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
+            <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y G:i') }}</span></h6>
+            <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+        </div>
     </div>
     {% endfor %}
 </section>
@@ -110,17 +119,15 @@
         <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
     </div>
 </section>
-{% if not data.attachments is empty %}
+{% if not data.photos is empty %}
 <h5 class='grey-bg pad'>
     <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
 </h5>
 <section id='defPics' class='collapse item-margin-bottom'>
-    {# TODO: iterate over photos #}
-    <pre>{{ meta }}{{ dump(data.attachments )}}</pre>
-    {% for row in data.attachments %}
+    {% for row in data.photos %}
     <div class='row item-margin-bottom'>
-        {% for attachment in row %}
-        <div class='col-md-4'><img src='{{ attachment.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+        {% for photo in row %}
+        <div class='col-md-4'><img src='{{ photo.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
         {% endfor %}
     </div>
     {% endfor %}

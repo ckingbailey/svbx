@@ -152,7 +152,7 @@ try {
     // query for photos linked to this Def
     $link->where(($idField === 'defID' ? 'defID' : 'bartdlID'), $id);
     $attachments = $link->get($attachmentsTable, null, "$pathField as filepath");
-    $context['data']['attachments'] = array_chunk($attachments, 3);
+    $context['data']['photos'] = array_chunk($attachments, 3);
     $context['meta'] = $link->getLastQuery();
 
     // instantiate Twig
