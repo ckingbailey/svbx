@@ -350,16 +350,11 @@ try {
 
     $data = $link->getOne("$tableName $tableAlias", $fields);
 
-    if (strcasecmp($data['status'], "open") === 0) {
-        $color = "bg-red text-white";
-    } else {
-        $color = "bg-green text-white";
-    }
-
     $context = [
         'session' => $_SESSION,
         'pageHeading' => "Deficiency No. $id",
-        'data' => $data
+        'data' => $data,
+        'options' => $options
     ];
 
     // query for comments associated with this Def
@@ -380,8 +375,6 @@ try {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
-
-    $context['meta'] = $options;
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
