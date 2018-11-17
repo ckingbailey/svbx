@@ -173,8 +173,6 @@ class Deficiency
      // in that case it would have to take a Defificency object as argument
     static function getLookUpOptions() {
         try {
-            error_log('MysqliDb exists ' . class_exists('MysqliDb'));
-            error_log(print_r(DB_CREDENTIALS, true));
             $link = new MysqliDb(DB_CREDENTIALS);
             $options = [];
             
