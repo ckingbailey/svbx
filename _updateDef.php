@@ -2,6 +2,7 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
+use SVBX\Deficiency;
 // include('html_components/defComponents.php');
 // include('html_functions/bootstrapGrid.php');
 // include('sql_functions/stmtBindResultArray.php');
@@ -60,6 +61,94 @@ $projectJoins = [
     'users_enc close' => 'c.closureRequestedBy = close.username'
 ];
 
+$projectFilters = [
+    "status" => [
+        'table' => 'status s',
+        'fields' => ['statusID', 'statusName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'c.status = s.statusID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.statusID',
+        'where' => [
+            'field' => 'statusID',
+            'value' => '3',
+            'comparison' => '<>'
+        ]
+    ],
+    "safetyCert" => [
+        'table' => 'yesNo y',
+        'fields' => ['yesNoID', 'yesNoName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'c.safetyCert = y.yesNoID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'y.yesNoID'
+    ],
+    "severity" => [
+        'table' => 'severity s',
+        'fields' => ['severityID', 'severityName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.severityID = c.severity',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.severityID'
+    ],
+    "systemAffected" => [
+        'table' => 'system s',
+        'fields' => ['systemID', 'systemName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.systemID = c.systemAffected',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.systemID'
+    ],
+    "groupToResolve" => [
+        'table' => 'system s',
+        'fields' => ['systemID', 'systemName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 's.systemID = c.groupToResolve',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.systemID'
+    ],
+    "location" => [
+        'table' => 'location l',
+        'fields' => ['locationID', 'locationName'],
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'l.locationID = c.location',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'l.locationID'
+    ],
+    "specLoc" => [
+        'table' => 'CDL',
+        'fields' => 'specLoc',
+        'groupBy' => 'specLoc'
+    ],
+    "identifiedBy" => [
+        'table' => 'CDL',
+        'fields' => 'identifiedBy',
+        'groupBy' => 'identifiedBy'
+    ],
+    'requiredBy' => [
+        'table' => 'requiredBy r',
+        'fields' => 'reqByID, r.requiredBy',
+        'join' => [
+            'joinTable' => 'CDL c',
+            'joinOn' => 'r.reqByID = c.requiredBy',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'reqByID'
+    ]
+];
+
 $projectTableName = 'CDL';
 $projectTableAlias = 'c';
 $projectIdField = 'defID';
@@ -107,6 +196,74 @@ $bartJoins = [
     'status' => 'b.status = status.statusID',
     'agreeDisagree' => 'b.agree_vta = agreeDisagree.agreeDisagreeID',
     'users_enc cre' => 'b.created_by = cre.userID'
+];
+
+$bartFilters = [
+    'status' => [
+        'table' => 'status s',
+        'fields' => ['statusID', 'statusName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 's.statusID = b.status',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 's.statusID',
+        'where' => [
+            'field' => 's.statusID',
+            'value' => '3',
+            'comparison' => '<>'
+        ]
+    ],
+    'next_step' => [
+        'table' => 'bdNextStep n',
+        'fields' => ['bdNextStepID', 'nextStepName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'b.next_step = n.bdNextStepID',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'n.bdNextStepID',
+        'where' => [
+            'field' => 'n.bdNextStepID',
+            'value' => '0',
+            'comparison' => '<>'
+        ]
+    ],
+    'bic' => [
+        'table' => 'bdParties p',
+        'fields' => ['partyID', 'partyName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'p.partyID = b.creator',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'p.partyID',
+        'where' => [
+            'field' => 'p.partyID',
+            'value' => '0',
+            'comparison' => '<>'
+        ]
+    ],
+    'safety_cert_vta' => [
+        'table' => 'yesNo y',
+        'fields' => ['yesNoID', 'yesNoName'],
+        'join' => [
+            'joinTable' => 'BARTDL b',
+            'joinOn' => 'y.yesNoID = b.safety_cert_vta',
+            'joinType' => 'INNER'
+        ],
+        'groupBy' => 'y.yesNoID'
+    ],
+    'resolution_disputed' => [
+        'table' => 'BARTDL',
+        'fields' => ['resolution_disputed', '(CASE WHEN resolution_disputed = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
+        'groupBy' => 'resolution_disputed'
+    ],
+    'structural' => [
+        'table' => 'BARTDL',
+        'fields' => ['structural', '(CASE WHEN structural = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
+        'groupBy' => 'structural'
+    ]
 ];
 
 $bartTableName = 'bartDL';
@@ -173,9 +330,9 @@ list(
 // }
 
 try {
-    $link = new MySqliDB(DB_CREDENTIALS);
-    // $sql = "SELECT $fieldList FROM CDL WHERE defID=?";
+    $options = Deficiency::getLookUpOptions();
 
+    $link = new MySqliDB(DB_CREDENTIALS);
     // $defStatus = $elements['status']['value'];
     // // special options for Contractor level when Def is Open
     // if ($role === 15 && $defStatus === 1) {
@@ -219,12 +376,12 @@ try {
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
         $context['data']['photos'] = array_chunk($photos, 3);
     }
-    if ($tableName = 'BARTLDL') {
+    if ($tableName === 'BARTLDL') {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
-    
-    $context['meta'] = $_ENV['SVBX_TIMEOUT'];
+
+    $context['meta'] = $options;
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
@@ -260,167 +417,7 @@ try {
 
     // $photos = stmtBindResultArray($stmt);
 
-    // $toggleBtn = '<a data-toggle=\'collapse\' href=\'#%1$s\' role=\'button\' aria-expanded=\'false\' aria-controls=\'%1$s\' class=\'collapsed\'>%2$s<i class=\'typcn typcn-arrow-sorted-down\'></i></a>';
-
-    // $requiredRows = [
-    //     [
-    //         $elements['safetyCert'],
-    //         $elements['systemAffected']
-    //     ],
-    //     [
-    //         $elements['location'],
-    //         $elements['specLoc']
-    //     ],
-    //     [
-    //         $elements['status'],
-    //         $elements['severity']
-    //     ],
-    //     [
-    //         $elements['dueDate'],
-    //         $elements['groupToResolve']
-    //     ],
-    //     [
-    //         $elements['requiredBy'],
-    //         $elements['contractID']
-    //     ],
-    //     [
-    //         $elements['identifiedBy'],
-    //         $elements['defType']
-    //     ],
-    //     [
-    //         $elements['description']
-    //     ]
-    // ];
-
-    // $optionalRows = [
-    //     [
-    //         $elements['spec'],
-    //         $elements['actionOwner']
-    //     ],
-    //     [
-    //         $elements['oldID'],
-    //         $elements['CDL_pics']
-    //     ]
-    // ];
-
-    // $closureRows = [
-    //     [
-    //         $elements['evidenceType'],
-    //         $elements['repo'],
-    //         $elements['evidenceLink']
-    //     ],
-    //     [
-    //         $elements['closureComments']
-    //     ]
-    // ];
-    
-    // $color = ($defStatus === 1 ? "bg-red " : "bg-success ") . "text-white";
-
-    // echo "
-    //     <header class='container page-header'>
-    //         <h1 class='page-title $color pad'>Update Deficiency ".$defID."</h1>";
-    //         if (!empty($closureRequested)) {
-    //             echo "<h4 class='bg-yellow text-light pad-less'>Closure requested</h4>";
-    //         }
-    // echo "
-    //     </header>
-    //     <main class='container main-content'>
-    //     <form action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
-    //         <input type='hidden' name='defID' value='$defID'>
-    //         <div class='row'>
-    //             <div class='col-12'>
-    //                 <h4 class='pad grey-bg'>Deficiency No. $defID</h4>
-    //             </div>
-    //         </div>";
-
-    //         foreach ($requiredRows as $gridRow) {
-    //             $options = [ 'required' => true ];
-    //             if (count($gridRow) > 1) $options['inline'] = true;
-    //             else $options['colWd'] = 6;
-    //             print returnRow($gridRow, $options);
-    //         }
-
-    //     echo "
-    //         <h5 class='grey-bg pad'>
-    //             <a data-toggle='collapse' href='#optionalInfo' role='button' aria-expanded='false' aria-controls='optionalInfo' class='collapsed'>Optional Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-    //         </h5>
-    //         <div id='optionalInfo' class='collapse item-margin-bottom'>";
-    //         foreach ($optionalRows as $gridRow) {
-    //             $options = [ 'required' => true ];
-    //             if (count($gridRow) > 1) $options['inline'] = true;
-    //             else $options['colWd'] = 6;
-    //             print returnRow($gridRow, $options);
-    //         }
-    //     echo "
-    //             <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
-    //         </div>
-    //         <h5 class='grey-bg pad'>
-    //             <a data-toggle='collapse' href='#closureInfo' role='button' aria-expanded='false' aria-controls='closureInfo' class='collapsed'>Closure Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-    //         </h5>
-    //         <div id='closureInfo' class='collapse item-margin-bottom'>";
-    //         foreach ($closureRows as $gridRow) {
-    //             $options = [ 'required' => true ];
-    //             if (count($gridRow) > 1) $options['inline'] = true;
-    //             else $options['colWd'] = 6;
-    //             print returnRow($gridRow, $options);
-    //         }
-    //     echo "
-    //         </div>
-    //         <h5 class='grey-bg pad'>";
-    //     printf($toggleBtn, 'comments', 'Comments');
-    //     echo "
-    //         </h5>
-    //         <div id='comments' class='collapse item-margin-bottom'>";
-    //     echo returnRow([ $optionalElements['cdlCommText'] ], [ 'colWd' => 8 ]);
-    //         foreach ($comments as $comment) {
-    //             $userFullName = $comment['firstname'].' '.$comment['lastname'];
-    //             $text = stripcslashes($comment['cdlCommText']);
-    //             printf($commentFormat, $userFullName, $comment['date_created'], $text);
-    //         }
-    //     echo "</div>";
-
-    //     if (count($photos)) {
-    //         print returnCollapseSection(
-    //             'Photos',
-    //             'defPics',
-    //             returnPhotoSection(
-    //                 $photos,
-    //                 "<img src='%s' alt='photo related to deficiency number {$defID}'>"
-    //             ),
-    //             'item-margin-bottom'
-    //         );
-    //     }
-
-    //         echo "
-    //             <div class='row item-margin-bottom'>
-    //                 <div class='col-12 center-content'>";
-    //                 // if Def is not Closed, show submit btn
-    //                 // if Def is Closed, show "Re-open" btn
-    //                 if ($defStatus !== 2) {
-    //                     echo "
-    //                         <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
-    //                         <button type='reset' class='btn btn-primary btn-lg'>Reset</button>";
-    //                 } else {
-    //                     echo "
-    //                         <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>";
-    //                 }
-    //         echo "
-    //                 </div>
-    //             </div>
-    //         </form>";
     // if ($role >= 40) {
-    //     echo "
-    //         <form action='DeleteDef.php' method='POST' onsubmit=''>
-    //             <div class='row'>
-    //                 <div class='col-12 center-content'>
-    //                     <button class='btn btn-danger btn-lg' type='submit' name='q' value='$defID'
-    //                         onclick='return confirm(`ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.`)'>delete</button>
-    //                 </div>
-    //             </div>
-    //         </form>";
-    // }
-    // echo "</main>";
-    // echo "
     //     <script>
     //         function reopenDef(ev) {
     //             const form = document.forms[0];
@@ -428,13 +425,13 @@ try {
     //             form.submit();
     //         }
     //     </script>";
-} catch (Twig_Exception $e) {
+} catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);
 } catch (Exception $e) {
     echo "Unable to retrieve record";
     error_log($e);
 } finally {
-    if (is_a($link, 'MySqliDB')) $link->disconnect();
+    if (!empty($link) && is_a($link, 'MySqliDB')) $link->disconnect();
     exit;
 }

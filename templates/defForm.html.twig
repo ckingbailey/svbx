@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block content %}
-<pre>{{ dump(data) }}</pre>
+<pre>{{ dump(meta) }}</pre>
 <form action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
     <input type='hidden' name='defID' value='{{ data.ID }}'>
     <h4 class='pad grey-bg'>Deficiency No. 188</h4>
