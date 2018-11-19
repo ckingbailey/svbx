@@ -386,16 +386,6 @@ try {
     $twig->addFilter($filter_stripslashes);
 
     $twig->display($templatePath, $context);
-
-    // TODO: if role is high enough, allow Re-open Def
-    // if ($role >= 40) {
-    //     <script>
-    //         function reopenDef(ev) {
-    //             const form = document.forms[0];
-    //             document.forms[0].status.value = 1;
-    //             form.submit();
-    //         }
-    //     </script>";
 } catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);

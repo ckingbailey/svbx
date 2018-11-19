@@ -191,10 +191,6 @@ try {
     // query for photos linked to this Def
     // keep BART and Project photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
-    error_log($tableName);
-    error_log($idField);
-    error_log($attachmentsTable);
-    
     if ($tableName === 'CDL') {
         $link->where($idField, $id);
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");

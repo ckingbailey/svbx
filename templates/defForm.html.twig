@@ -20,12 +20,12 @@
 {% endblock %}
 
 {% block content %}
-<a data-toggle='collapse' href='#data' role='button' aria-expanded='false' aria-controls='data' class='collapsed text-yellow bg-green pad'>data<i class='typcn typcn-arrow-sorted-down'></i></a>
+<a data-toggle='collapse' href='#data' role='button' aria-expanded='false' aria-controls='data' class='collapsed text-yellow bg-green pad' style='border: 2px solid var(--red)'>data<i class='typcn typcn-arrow-sorted-down'></i></a>
 <div class="row collapse" id="data">
     <div class="col-6"><pre>{{ dump(data) }}</pre></div>
     <div class="col-6"><pre>{{ dump(options) }}</pre></div>
 </div>
-<form action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
+<form name="defForm" action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
     <input type='hidden' name='defID' value='{{ data.ID }}'>
     <h4 class='pad grey-bg'>Deficiency No. 188</h4>
     <div class='row item-margin-bottom'>
@@ -215,8 +215,8 @@
             </div>
             <div class='col-md-4'>
                 <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='evidenceLink'>Repository Number</label></div>
-                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='data.evidenceLink'></div>
+                    <div class='col-md-6'><label for='evidenceLink'>Document Number</label></div>
+                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink }}'></div>
                 </div>
             </div>
         </div>
@@ -247,7 +247,19 @@
         {% endfor %}
     </div>
     {# TODO: show mod history #}
-    {# TODO: iterate over photos #}
+    <h5 class='grey-bg pad'>
+        <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
+    </h5>
+    <section id='modHistory' class='collapse'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ data.dateCreated | date("n-j-Y") }}</p></div>
+            <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
+            <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
+        </div>
+    </section>
     {% if not data.photos is empty %}
     <h5 class='grey-bg pad'>
         <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
@@ -262,19 +274,33 @@
         {% endfor %}
     </section>
     {% endif %}
-    <div class='row item-margin-bottom'>
-        <div class='col-12 center-content'>
+    <div class='item-margin-bottom center-content'>
+        {% if (data.status | lower) is same as('closed') %}
             <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>
-        </div>
+        {% else %}
+            <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
+            <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
+        {% endif %}
     </div>
 </form>
-{# TODO: show different buttons for different Def states #}
+{% if session.role >= 40 %}
 <form action='DeleteDef.php' method='POST' onsubmit=''>
     <div class='row'>
         <div class='col-12 center-content'>
-            <button class='btn btn-danger btn-lg' type='submit' name='q' value='188'
-                onclick='return confirm(`ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.`)'>delete</button>
+            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.ID }}'
+                onclick='return confirm("ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.")'>delete</button>
         </div>
     </div>
 </form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function reopenDef(ev) { // TODO: do we want a window.alert here?
+        const form = document.forms['defForm'];
+        form.status.value = 1;
+        form.submit();
+    }
+</script>
 {% endblock %}
