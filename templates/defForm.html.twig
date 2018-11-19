@@ -248,12 +248,27 @@
     </div>
     {# TODO: show mod history #}
     {# TODO: iterate over photos #}
+    {% if not data.photos is empty %}
+    <h5 class='grey-bg pad'>
+        <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
+    </h5>
+    <section id='defPics' class='collapse item-margin-bottom'>
+        {% for row in data.photos %}
+        <div class='row item-margin-bottom'>
+            {% for photo in row %}
+            <div class='col-md-4'><img src='{{ photo.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
     <div class='row item-margin-bottom'>
         <div class='col-12 center-content'>
             <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>
         </div>
     </div>
 </form>
+{# TODO: show different buttons for different Def states #}
 <form action='DeleteDef.php' method='POST' onsubmit=''>
     <div class='row'>
         <div class='col-12 center-content'>

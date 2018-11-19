@@ -2,6 +2,9 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
+// TODO: test for permission and return 403 if it's no good
+
+// TODO: move these fields and queries into the Deficiency class
 // project def params
 $projectFields = [
     'defID as ID',

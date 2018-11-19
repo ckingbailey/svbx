@@ -3,11 +3,8 @@ require 'vendor/autoload.php';
 require 'session.php';
 
 use SVBX\Deficiency;
-// include('html_components/defComponents.php');
-// include('html_functions/bootstrapGrid.php');
-// include('sql_functions/stmtBindResultArray.php');
 
-// $title = "SVBX - Update Deficiency";
+// TODO: return 403 if user does not have permission
 // $role = $_SESSION['role'];
 $get = !empty($_GET) ? filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS) : null;
 
@@ -317,13 +314,7 @@ list(
           ]
         : array_fill(0, 11, null)));
 
-// prepare sql statement
-// $fieldList = preg_replace('/\s+/', '', file_get_contents('updateDef.sql'));
-// $fieldsArr = array_fill_keys(explode(',', $fieldList), '?');
-
-// include('filestart.php');
-
-// if (isset($_SESSION['errorMsg'])) {
+// if (!empty($_SESSION['errorMsg'])) {
 //     echo "
 //         <h1 style='font-size: 4rem; font-family: monospace; color: red;'>{$_SESSION['errorMsg']}</h1>";
 //     unset($_SESSION['errorMsg']);
@@ -333,6 +324,8 @@ try {
     $options = Deficiency::getLookUpOptions();
 
     $link = new MySqliDB(DB_CREDENTIALS);
+
+    // TODO: show special contractor options
     // $defStatus = $elements['status']['value'];
     // // special options for Contractor level when Def is Open
     // if ($role === 15 && $defStatus === 1) {
@@ -364,7 +357,7 @@ try {
     $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
 
     // query for photos linked to this Def
-    // keep BART and Project photos | attachments separate for now
+    // keep BART | Project, photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
     if ($tableName === 'CDL') {
         $link->where($idField, $id);
@@ -393,23 +386,8 @@ try {
     $twig->addFilter($filter_stripslashes);
 
     $twig->display($templatePath, $context);
-    // // query for comments associated with this Def
-    // $sql = "SELECT firstname, lastname, date_created, cdlCommText
-    //     FROM cdlComments c
-    //     JOIN users_enc u
-    //     ON c.userID=u.userID
-    //     WHERE c.defID=?
-    //     ORDER BY c.date_created DESC";
 
-    // if (!$stmt = $link->prepare($sql)) throw new mysqli_sql_exception($link->error);
-
-    // $comments = stmtBindResultArray($stmt) ?: [];
-
-    // // query for photos linked to this Def
-    // if (!$stmt = $link->prepare("SELECT pathToFile FROM CDL_pics WHERE defID=?"))
-
-    // $photos = stmtBindResultArray($stmt);
-
+    // TODO: if role is high enough, allow Re-open Def
     // if ($role >= 40) {
     //     <script>
     //         function reopenDef(ev) {
