@@ -20,14 +20,9 @@
 {% endblock %}
 
 {% block content %}
-<a data-toggle='collapse' href='#data' role='button' aria-expanded='false' aria-controls='data' class='collapsed text-yellow bg-green pad' style='border: 2px solid var(--red)'>data<i class='typcn typcn-arrow-sorted-down'></i></a>
-<div class="row collapse" id="data">
-    <div class="col-6"><pre>{{ dump(data) }}</pre></div>
-    <div class="col-6"><pre>{{ dump(options) }}</pre></div>
-</div>
 <form name="defForm" action='updateDefCommit.php' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
     <input type='hidden' name='defID' value='{{ data.ID }}'>
-    <h4 class='pad grey-bg'>Deficiency No. 188</h4>
+    <h4 class='pad grey-bg'>Required Information</h4>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
@@ -73,7 +68,7 @@
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='status' class='required'>Status</label></div>
                 <div class='col-md-6'>
-                    <select name='status' id='status' class='form-control' required>
+                    <select name='status' id='status' onchange='return onSelectStatusClosed(event)' class='form-control' required>
                         {{ form.renderOptions(options.status, data.status) }}
                     </select>
                 </div>
@@ -246,7 +241,6 @@
         </div>
         {% endfor %}
     </div>
-    {# TODO: show mod history #}
     <h5 class='grey-bg pad'>
         <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
     </h5>
@@ -297,10 +291,31 @@
 
 {% block scripts %}
 <script>
+    function onSelectStatusClosed(ev) {
+        const form = document.forms['defForm']
+        const selectedStatus = form['status'].selectedOptions[0].innerText.toLowerCase()
+        const requiredFields = [ 'repo', 'evidenceType', 'evidenceLink' ]
+
+        if (selectedStatus === 'closed') {
+            requiredFields.forEach(field => {
+                document.querySelector(`label[for="${field}"]`).classList.add('required')
+                form[field].setAttribute('required', '')
+                $('#closureInfo').collapse('show')
+            })
+        }
+
+        if (selectedStatus === 'open') {
+            requiredFields.forEach(field => {
+                document.querySelector(`label[for="${field}"]`).classList.remove('required')
+                form[field].removeAttribute('required')
+            })
+        }
+    }
+
     function reopenDef(ev) { // TODO: do we want a window.alert here?
-        const form = document.forms['defForm'];
-        form.status.value = 1;
-        form.submit();
+        const form = document.forms['defForm']
+        form.status.value = 1
+        form.submit()
     }
 </script>
 {% endblock %}
