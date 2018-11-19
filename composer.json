@@ -10,7 +10,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SVBX\\": "model/"
+            "SVBX\\": [ "model/", "src/"]
         },
         "files": [ "config.php" ]
     }

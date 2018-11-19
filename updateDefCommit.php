@@ -1,12 +1,13 @@
 <?php
 use Mailgun\Mailgun;
+use SVBX\WindowHack;
 
 session_start();
 include 'vendor/autoload.php';
 include 'SQLFunctions.php';
 include 'uploadImg.php';
 
-// // prepare POST and sql string for commit
+// prepare POST and sql string for commit
 $post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 $defID = $post['defID'];
 $userID = $_SESSION['userID'];
@@ -16,9 +17,18 @@ $role = $_SESSION['role'];
 // validate POST data
 // if it's empty then file upload exceeds post_max_size
 // bump user back to form
-if (!count($post) || !$defID) {
-    include('js/emptyPostRedirect.php');
+if (!count($post) || empty($defID)) {
+    WindowHack::goBack('No data received. Did you try to upload a file that was larger than 4 MB?');
     exit;
+}
+// if Closed, Validate fields required for closure [ evidenceType, repo, evidenceLink ]
+if ($post['status'] === 2) {
+    if (empty($post['evidenceType'])
+    || empty($post['repo'])
+    || empty($post['evidenceLink'])) {
+        WindowHack::goBack('Required data for closure was not received.');
+        exit;
+    }
 }
 
 // if photo in POST it will be committed to a separate table
@@ -64,8 +74,6 @@ try {
 
     // if INSERT succesful, prepare, upload, and INSERT photo
     if ($CDL_pics) {
-        // $sql = "INSERT CDL_pics (defID, pathToFile) values (?, ?)";
-
         // execute save image and hold onto its new file path
         try {
             $pathToFile = saveImgToServer($_FILES['CDL_pics'], $defID);

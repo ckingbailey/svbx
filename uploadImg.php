@@ -97,4 +97,3 @@ function saveImgToServer($file, $assocID = null) {
         exit;
     }
 }
-?>

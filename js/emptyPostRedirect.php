@@ -1,6 +1,12 @@
-<script>
-    (function () {
-        window.history.go(-1);
-        window.alert('No POST data received. File upload size may be too large.');
-    })();
-</script>
+<?php
+namespace SVBX;
+
+class WindowHack {
+    public function goBack(string $alertMsg) {
+        echo "
+        <script src='/js/window_hack.js'></script>
+        <script>
+            (new WindowHack()).goBack('$alertMsg')
+        </script>";
+    }
+}
