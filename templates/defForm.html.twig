@@ -1,6 +1,7 @@
 {% extends "page.html.twig" %}
 
 {% macro renderOptions(options, curVal) %}
+    <option></option>
     {% for option in options %}
         {% set selected = option.name is same as(curVal) ? " selected" : "" %}
         <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
@@ -15,7 +16,12 @@
     {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
     <header class='container page-header'>
         <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+        {% if data.closureRequested %}
         <h2>{{ data.closureRequested or '' }}</h2>
+        {% endif %}
+        {% if session.errorMsg %}
+        <h1 class='bg-yellow thin-grey-border'>{{ session.errorMsg }}</h1>
+        {% endif %}
     </header>
 {% endblock %}
 
@@ -175,9 +181,12 @@
                 </div>
             </div>
             <div class='col-md-6'>
-                <div class='row item-margin-bottom'> {# TODO: display upload max size in red #}
+                <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='CDL_pics'>Upload Photo</label></div>
-                    <div class='col-md-6'><input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'></div>
+                    <div class='col-md-6'>
+                        <input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'>
+                        <p class="mb-2 text-red">Max. upload size is 4MB</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -188,7 +197,7 @@
     </h5>
     <div id='closureInfo' class='collapse item-margin-bottom'>
         <div class='row item-margin-bottom'>
-            <div class='col-md-4'>
+            <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='evidenceType'>Evidence Type</label></div>
                     <div class='col-md-6'>
@@ -198,9 +207,9 @@
                     </div>
                 </div>
             </div>
-            <div class='col-md-4'>
+            <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='repo'>Evidence Repository</label></div>
+                    <div class='col-md-6'><label for='repo'>Document Repository</label></div>
                     <div class='col-md-6'>
                         <select name='repo' id='repo' class='form-control'>
                             {{ form.renderOptions(options.repo, data.repo) }}
@@ -208,9 +217,17 @@
                     </div>
                 </div>
             </div>
-            <div class='col-md-4'>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='evidenceLink'>Document Number</label></div>
+                    <div class='col-md-6'><label for='evidenceID'>Document Number</label></div>
+                    <div class='col-md-6'><input type='text' name='evidenceID' id='evidenceID' class='form-control' value='{{ data.evidenceID }}'></div>
+                </div>
+            </div>
+            <div class='col-md-6'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'><label for='evidenceLink'>Document Link</label></div>
                     <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink }}'></div>
                 </div>
             </div>
@@ -294,7 +311,7 @@
     function onSelectStatusClosed(ev) {
         const form = document.forms['defForm']
         const selectedStatus = form['status'].selectedOptions[0].innerText.toLowerCase()
-        const requiredFields = [ 'repo', 'evidenceType', 'evidenceLink' ]
+        const requiredFields = [ 'repo', 'evidenceType', 'evidenceID' ]
 
         if (selectedStatus === 'closed') {
             requiredFields.forEach(field => {
@@ -312,7 +329,7 @@
         }
     }
 
-    function reopenDef(ev) { // TODO: do we want a window.alert here?
+    function reopenDef(ev) { // TODO: do we want a window.confirm here?
         const form = document.forms['defForm']
         form.status.value = 1
         form.submit()

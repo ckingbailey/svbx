@@ -4,8 +4,11 @@ require 'session.php';
 
 use SVBX\Deficiency;
 
-// TODO: return 403 if user does not have permission
-// $role = $_SESSION['role'];
+if ($_SESSION['role'] <= 10) {
+    header("This is not for you", true, 403);
+    exit;
+}
+
 $get = !empty($_GET) ? filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS) : null;
 
 // project def params
@@ -314,14 +317,16 @@ list(
           ]
         : array_fill(0, 11, null)));
 
-// if (!empty($_SESSION['errorMsg'])) {
-//     echo "
-//         <h1 style='font-size: 4rem; font-family: monospace; color: red;'>{$_SESSION['errorMsg']}</h1>";
-//     unset($_SESSION['errorMsg']);
-// }
+    $context = [
+        'session' => $_SESSION,
+        'pageHeading' => "Deficiency No. $id",
+    ];
+
+    if (!empty($_SESSION['errorMsg']))
+        unset($_SESSION['errorMsg']);
 
 try {
-    $options = Deficiency::getLookUpOptions();
+    $context['options'] = Deficiency::getLookUpOptions();
 
     $link = new MySqliDB(DB_CREDENTIALS);
 
@@ -329,26 +334,19 @@ try {
     // $defStatus = $elements['status']['value'];
     // // special options for Contractor level when Def is Open
     // if ($role === 15 && $defStatus === 1) {
-    //     $elements['status']['query'] = [ 1 => 'Open', 4 => 'Request closure' ];
+    //     $elements['status']['query'] = [ 1 => 'Open', 4 => 'Request closure' ];    
     // }
 
     $link = new MySqliDB(DB_CREDENTIALS);
 
     foreach ($joins as $joinTable => $onCondition) {
         $link->join($joinTable, $onCondition, 'LEFT');
-    }
+    }    
 
     $link->where('statusName', 'deleted', '<>');
     $link->where($idField, $id);
 
-    $data = $link->getOne("$tableName $tableAlias", $fields);
-
-    $context = [
-        'session' => $_SESSION,
-        'pageHeading' => "Deficiency No. $id",
-        'data' => $data,
-        'options' => $options
-    ];
+    $context['data'] = $link->getOne("$tableName $tableAlias", $fields);
 
     // query for comments associated with this Def
     $link->join('users_enc u', "$commentTable.userID = u.userID");

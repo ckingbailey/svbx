@@ -3,6 +3,15 @@ require 'vendor/autoload.php';
 require 'session.php';
 
 // TODO: test for permission and return 403 if it's no good
+if (!empty($_GET['bartDefID']) && !$_SESSION['bdPermit']) {
+    header("This is not for you", true, 403);
+    exit;
+}
+
+if (empty($_GET['bartDefID']) && empty($_GET['defID'])) {
+    header("We need a deficiency ID to show you anything", true, 400);
+    exit;
+}
 
 // TODO: move these fields and queries into the Deficiency class
 // project def params
