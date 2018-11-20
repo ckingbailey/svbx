@@ -25,7 +25,7 @@ if (!count($post) || empty($defID)) {
 if ($post['status'] === 2) {
     if (empty($post['evidenceType'])
     || empty($post['repo'])
-    || empty($post['evidenceLink'])) {
+    || empty($post['evidenceID'])) {
         WindowHack::goBack('Required data for closure was not received.');
         exit;
     }
