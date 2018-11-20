@@ -317,13 +317,14 @@ list(
           ]
         : array_fill(0, 11, null)));
 
-    $context = [
-        'session' => $_SESSION,
-        'pageHeading' => "Deficiency No. $id",
-    ];
+$context = [
+    'session' => $_SESSION,
+    'pageHeading' => "Deficiency No. $id",
+    'formAction' => 'updateDefCommit.php'
+];
 
-    if (!empty($_SESSION['errorMsg']))
-        unset($_SESSION['errorMsg']);
+if (!empty($_SESSION['errorMsg']))
+    unset($_SESSION['errorMsg']);
 
 try {
     $context['options'] = Deficiency::getLookUpOptions();
@@ -336,8 +337,6 @@ try {
     // if ($role === 15 && $defStatus === 1) {
     //     $elements['status']['query'] = [ 1 => 'Open', 4 => 'Request closure' ];    
     // }
-
-    $link = new MySqliDB(DB_CREDENTIALS);
 
     foreach ($joins as $joinTable => $onCondition) {
         $link->join($joinTable, $onCondition, 'LEFT');
@@ -371,8 +370,8 @@ try {
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
-    // $template = $twig->load();
 
+    // add extra Twig filters
     $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
         $decoded = html_entity_decode($str, ENT_QUOTES);
         return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
