@@ -1,0 +1,147 @@
+{% extends "page.html.twig" %}
+
+{% macro input_like(datum) %}
+    {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+{% endmacro %}
+
+{% import _self as page %}
+
+{% block pageHeader %}
+    {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
+    <header class='container page-header'>
+        <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
+        <h2>{{ data.closureRequested or '' }}</h2>
+    </header>
+{% endblock %}
+
+{% block content %}
+<div class='row item-margin-bottom'>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>ID</div><div class='col-md-6'>{{ page.input_like(data.ID) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Creator</div><div class='col-md-6'>{{ page.input_like(data.creator) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Next step</div><div class='col-md-6'>{{ page.input_like(data.next_step) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>BIC</div><div class='col-md-6'>{{ page.input_like(data.bic) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>Status</div><div class='col-md-6'>{{ page.input_like(data.status) }}</div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta) }}</p></div>
+        </div>
+    </div>
+</div>
+<h5 class='grey-bg pad'>VTA Information</h5>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'><p>Root problem</p><p>{{ page.input_like(data.root_problem_vta) }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta) }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Priority</div><div class='col-md-6'>{{ page.input_like(data.priority) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Agree</div><div class='col-md-6'>{{ page.input_like(data.agree) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>Safety Certifiable</div><div class='col-md-6'>{{ page.input_like(data.safety_cert_vta) }}</div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <label for='resolution_disputed' class='form-check-label check-label-left'>Resolution disputed</label>
+                    <input type='checkbox' value='{{ data.resolution_disputed }}' class='x-checkbox' disabled {{ data.resolution_disputed > 0 ? ' checked' : '' }}>
+                </div>
+                <div class='col-md-6'>
+                    <label for='structural' class='form-check-label check-label-left'>Structural</label>
+                    <input type='checkbox' value='{{ data.structural }}' class='x-checkbox' disabled {{ data.structural > 0 ? ' checked' : '' }}>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'>
+                    <label for='bartdlAttachments'>Attachments</label>
+                    <div class='border-radius thin-grey-border pad scroll-y' style='height: 6.8rem'>
+                        {# TODO: iterate over attachments #}
+                        <ul class='pl-0 mb-0'>
+                        {% if data.attachments %}
+                            {% for attachment in data.attachments %}
+                            <li>
+                                <a href="uploads/bartdlUploads/tumblr_ll9hmjBTlf1qb4qe5o1_500.png" target="_blank">{{ attachment.filepath }}</a>
+                            </li>
+                            {% endfor %}
+                        {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h5 class='grey-bg pad'>BART Information</h5>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart) }}</p></div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-12 offset-md-0'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.root_problem_vta) }}</p></div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><p>Cat1</p></div><div class='col-md-6'>{{ page.input_like(data.cat1_bart) }}</div>
+            </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Cat2</p></div><div class='col-md-6'>{{ page.input_like(data.cat2_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Cat3</p></div><div class='col-md-6'>{{ page.input_like(data.cat3_bart) }}</div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Level</p></div><div class='col-md-6'>{{ page.input_like(data.level_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Date open</p></div><div class='col-md-6'>{{ page.input_like(data.dateOpen_bart) }}</div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(data.dateClosed_bart) }}</div>
+        </div>
+    </div>
+</div>
+{% if not data.comments is empty %}
+<h5 class='grey-bg pad'>Comments</h5>
+{% for comment in data.comments %}
+<div class='row mb-3'>
+    <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
+        <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
+        <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% if session.role > 10 %}
+<div class='center-content'>
+    <a href='updateBartDef.php?bartDefID=2' class='btn btn-primary btn-lg'>Update</a>
+</div>
+{% endif %}
+{% endblock %}

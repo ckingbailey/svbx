@@ -1,8 +1,25 @@
-{% set defaultNavItems = navbarHeading
+{% set loggedIn = not navbarHeading is empty or not session is empty %}
+
+{% if loggedIn %}
+    {% if not session is empty and not session.firstname is empty and not session.lastname is empty %}
+        {% set username = session.firstname ~ ' ' ~ session.lastname %}
+    {% elseif not session is empty and not session.username is empty %}
+        {% set username = session.username %}
+    {% elseif not navbarheading is empty%}
+        {% set username = navbarHeading %}
+    {% else %}
+        {% set username = '???' %}
+    {% endif %}
+    {% set navHeadingText, navHeadingLink = username, '/userAccount.php' %}
+{% else %}
+    {% set navHeadingText, navHeadingLink = 'Login now', '/login.php' %}
+{% endif %}
+
+{% set defaultNavItems = loggedIn
     ? {
         'Home': '/dashboard.php',
         'Help': '/help.php',
-        'Deficiencies': '/defs.php',
+        'Deficiencies': session.bdPermit ? [ '/defs.php', '/defs.php?view=BART' ] : '/defs.php',
         'Safety Certs': '/ViewSC.php',
         'Logout': '/logout.php'
       }
@@ -13,14 +30,6 @@
 %}
 {% if not navItems is iterable and navItems is empty %}
     {% set navItems = defaultNavItems %}
-{% endif %}
-
-{% if navbarHeading is defined and not navbarHeading is empty %}
-    {% set navHeadingText, navHeadingLink = navbarHeading, '/userAccount.php' %}
-{% elseif navbarHeading is empty %}
-    {% set navHeadingText, navHeadingLink = '', '/' %}
-{% else %}
-    {% set navHeadingText, navHeadingLink = 'Login now', '/login.php' %}
 {% endif %}
 
 <nav class="navbar navbar-expand-md navbar-dark navbar-vta-blue">
