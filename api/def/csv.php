@@ -95,12 +95,12 @@ foreach ($postKeys as $key) {
 $host = substr($_SERVER['SERVER_PROTOCOL'], 0, strpos($_SERVER['SERVER_PROTOCOL'], '/')) . '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'];
 
 header('Content-Type: text/csv', true);
-header("Access-Control-Allow-Origin: $host");
+// header("Access-Control-Allow-Origin: $host");
 
-if (empty($_SERVER['HTTP_ORIGIN']) || strcasecmp($_SERVER['HTTP_ORIGIN'], $host)) {
-    header('No cors allowed, buddy', true, 403);
-    exit;
-}
+// if (empty($_SERVER['HTTP_ORIGIN']) || strcasecmp($_SERVER['HTTP_ORIGIN'], $host)) {
+//     header('No cors allowed, buddy', true, 403);
+//     exit;
+// }
 
 echo str_putcsv($post);
 
