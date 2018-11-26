@@ -50,7 +50,7 @@ unset(
 
 // if Closed, set dateClosed
 // if Closure Requested, record by whom
-if ($post['status'] === '2') {
+if ($post['status'] === '2') { // TODO: closure needs to be checked against db before new dateClosed is assigned
     $post['dateClosed'] = date('Y-m-d');
 } elseif ($post['status'] === '1') {
     $closureReq = $post['closureRequested'] = 0;
@@ -67,7 +67,7 @@ if ($post['status'] === '2') {
 $post['updated_by'] = $username;
 
 try {
-    $link = connect();
+    $link = new MysqliDb(DB_CREDENTIALS);
     // update CDL table
     $link->where('defID', $defID);
     $link->update('CDL', $post);
@@ -146,6 +146,6 @@ try {
     header("Location: updateDef.php?defID=$defID");
     $_SESSION['errorMsg'] = "There was an error in committing your submission: $e";
 } finally {
-    $link->disconnect();
+    if (is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
 }
