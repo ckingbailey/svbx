@@ -76,12 +76,16 @@
 </div>
 <h5 class='grey-bg pad'>Closure Information</h5>
 <div class='row item-margin-bottom'>
-    <div class='col-md-2'><p>Evidence Type</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.evidenceType) }}</div>
-    <div class='col-md-2'><p>Evidence Repository</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.repo) }}</div>
-    <div class='col-md-2'><p>Repository No.</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.evidenceLink) }}</div>
+    <div class='col-md-3'><p>Evidence Type</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceType) }}</div>
+    <div class='col-md-3'><p>Evidence Repository</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.repo) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Document No.</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceID) }}</div>
+    <div class='col-md-3'><p>Document link</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceLink) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
