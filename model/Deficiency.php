@@ -6,7 +6,7 @@ use MysqliDb;
 class Deficiency
 {
     private $data = [
-        'defID' => null,
+        'ID' => null,
         'safetyCert' => null,
         'systemAffected' => null,
         'location' => null,
@@ -27,20 +27,20 @@ class Deficiency
         'evidenceLink' => null,
         'oldID' => null,
         'closureComments' => null,
-        'createdBy' => null, // validate: userID
-        'updatedBy' => null, // validate: userID
+        'created_by' => null, // validate: userID
+        'updated_by' => null, // validate: userID
         'dateCreated' => null, // validate: date (before lastUpdated, dateClosed?)
         'lastUpdated' => null,
         'dateClosed' => null, // validate against status || set
         'closureRequested' => null, // validate against status??
         'closureRequestedBy' => null, // validate: userID
-        'assets' => [],
         'comments' => [],
         'newComment' => null,
         'attachments' => [],
         'newAttachment' => null
     ];
     
+    // do not insert or update these fields on the Deficiency table
     private $filterKeys = [
         'defID' => true,
         'assets' => true,
