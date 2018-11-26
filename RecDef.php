@@ -1,22 +1,21 @@
 <?PHP
-session_start();
-include('SQLFunctions.php');
+use SVBX\WindowHack;
+
+// include('SQLFunctions.php');
+require 'vendor/autoload.php';
+require 'session.php';
 include('uploadImg.php');
+
 
 $date = date('Y-m-d');
 $userID = intval($_SESSION['userID']);
 $username = $_SESSION['username'];
 $nullVal = null;
 
-$link = f_sqlConnect();
+$link = new mysqli(DB_HOST, DB_USER, DB_PWD, DB_NAME);
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
-        
 // prepare POST and sql string for commit
-$post = array(
+$post = array( // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
   'safetyCert' => intval($_POST['safetyCert']),
   'systemAffected' => intval($_POST['systemAffected']),
   'location' => intval($_POST['location']),
@@ -47,8 +46,19 @@ $post = array(
 // if it's empty then file upload exceeds post_max_size
 // bump user back to form
 if (!count($post)) {
-    include('js/emptyPostRedirect.php');
+    WindowHack::goBack('No data received. Did you try to upload a file that was larger than 4 MB?');
     exit;
+}
+
+// if Status of new Def is 'closed', require [ evidenceType, repo, evidenceID ]
+// if Closed, Validate fields required for closure [ evidenceType, repo, evidenceLink ]
+if ($post['status'] === 2) {
+    if (empty($post['evidenceType'])
+    || empty($post['repo'])
+    || empty($post['evidenceID'])) {
+        WindowHack::goBack('Required data for closure was not received.');
+        exit;
+    }
 }
 
 // if photo in POST it will be committed to a separate table

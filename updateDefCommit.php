@@ -2,13 +2,12 @@
 use Mailgun\Mailgun;
 use SVBX\WindowHack;
 
-session_start();
 include 'vendor/autoload.php';
-include 'SQLFunctions.php';
+require 'session.php';
 include 'uploadImg.php';
 
 // prepare POST and sql string for commit
-$post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+$post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS); // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
 $defID = $post['defID'];
 $userID = $_SESSION['userID'];
 $username = $_SESSION['username'];
@@ -21,6 +20,7 @@ if (!count($post) || empty($defID)) {
     WindowHack::goBack('No data received. Did you try to upload a file that was larger than 4 MB?');
     exit;
 }
+
 // if Closed, Validate fields required for closure [ evidenceType, repo, evidenceLink ]
 if ($post['status'] === 2) {
     if (empty($post['evidenceType'])
