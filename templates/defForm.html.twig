@@ -296,7 +296,7 @@
         {% endif %}
     </div>
 </form>
-{% if session.role >= 40 %}
+{% if session.role >= 40 and not data.ID is empty %}
 <form action='DeleteDef.php' method='POST' onsubmit=''>
     <div class='row'>
         <div class='col-12 center-content'>
