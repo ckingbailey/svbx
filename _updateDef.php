@@ -320,7 +320,7 @@ list(
 
 $context = [
     'session' => $_SESSION,
-    'pageHeading' => "Deficiency No. $id",
+    'pageHeading' => "Update Deficiency No. $id",
     'formAction' => 'updateDefCommit.php'
 ];
 

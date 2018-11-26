@@ -15,7 +15,7 @@
 {% block pageHeader %}
     {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
     <header class='container page-header'>
-        <h1 class='page-title text-white{{ color }}'>Update Deficiency No. {{ data.ID }}</h1>
+        <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
         {% if data.closureRequested %}
         <h2>{{ data.closureRequested or '' }}</h2>
         {% endif %}
