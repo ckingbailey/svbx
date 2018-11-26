@@ -35,6 +35,7 @@ $projectFields = [
     'eviTypeName as evidenceType',
     'repoName as repo',
     'evidenceLink',
+    'evidenceID',
     'closureComments',
     'c.dateCreated',
     "CONCAT(cre.firstname, ' ', cre.lastName) as created_by",

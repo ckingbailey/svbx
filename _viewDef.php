@@ -37,6 +37,7 @@ $projectFields = [
     'comments as moreInfo',
     'eviTypeName as evidenceType',
     'repoName as repo',
+    'evidenceID',
     'evidenceLink',
     'closureComments',
     'c.dateCreated',
