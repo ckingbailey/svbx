@@ -5,7 +5,7 @@
         {% set username = session.firstname ~ ' ' ~ session.lastname %}
     {% elseif not session is empty and not session.username is empty %}
         {% set username = session.username %}
-    {% elseif not navbarheading is empty%}
+    {% elseif not navbarHeading is empty%}
         {% set username = navbarHeading %}
     {% else %}
         {% set username = '???' %}
