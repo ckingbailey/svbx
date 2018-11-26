@@ -224,7 +224,11 @@ try {
     });    
     $filter_stripslashes = new Twig_Filter('unescape', function($str) {
         return stripcslashes($str);
-    });    
+    });
+    $filter_decode = new Twig_Filter('safe', function($str) {
+        return html_entity_decode($str);
+    });
+    $twig->addFilter($filter_decode);    
     $twig->addFilter($html_sanitize_decode);
     $twig->addFilter($filter_stripslashes);
 

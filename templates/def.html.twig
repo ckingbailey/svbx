@@ -56,7 +56,7 @@
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Deficiency description</p>
-        {{ page.input_like(data.description) }}
+        {{ page.input_like(data.description | safe) }}
     </div>
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
