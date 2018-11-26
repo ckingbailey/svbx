@@ -6,7 +6,7 @@ class WindowHack {
         echo "
         <script src='/js/window_hack.js'></script>
         <script>
-            (new WindowHack()).goBack('$alertMsg')
+            WindowHack.goBack('$alertMsg')
         </script>";
     }
 }
