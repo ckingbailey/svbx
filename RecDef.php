@@ -36,6 +36,7 @@ $post = array(
   'evidenceType' => intval($_POST['evidenceType']),
   'repo' => intval($_POST['repo']),
   'evidenceLink' => filter_var($link->escape_string($_POST['evidenceLink']), FILTER_SANITIZE_STRING),
+  'evidenceID' => filter_var($link->escape_string($_POST['evidenceID']), FILTER_SANITIZE_SPECIAL_CHARS),
   'closureComments' => filter_var($link->escape_string($_POST['closureComments']), FILTER_SANITIZE_STRING),
   'created_by' => $username,
   'dateCreated' => $date,
@@ -92,13 +93,9 @@ if ($_FILES['CDL_pics']['size']
 } else $CDL_pics = null;
 
 try {
-    $linkBtn = "<a href='updateDef.php?defID=%s' style='text-decoration: none; border: 2px solid plum; padding: .35rem;'>Back to Update Def</a>";
-    
     if (!$stmt = $link->prepare($sql)) throw new Exception($link->error);
     
-    $types = 'iiisiisiiisissssiisssss';
-    
-    if (!$stmt->bind_param('iiisiisiiisissssiisssss',
+    if (!$stmt->bind_param('iiisiisiiisissssiissssss',
         $post['safetyCert'],
         $post['systemAffected'],
         $post['location'],
@@ -118,6 +115,7 @@ try {
         $post['evidenceType'],
         $post['repo'],
         $post['evidenceLink'],
+        $post['evidenceID'],
         $post['closureComments'],
         $post['created_by'],
         $post['dateCreated'],
