@@ -1,7 +1,7 @@
 <?php
 include('SQLFunctions.php');
 require 'WeeklyDelta.php';
-session_start();
+require 'session.php';
 
 $title = "SVBX - Home";
 //$table = pages;
