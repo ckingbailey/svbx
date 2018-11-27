@@ -207,7 +207,7 @@ try {
     }
     if ($tableName === 'BARTDL') {
         $link->where('bartdlID', $id);
-        $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $context['data']['attachments'] = $link->get($attachmentsTable, null, [ "$pathField as filepath", 'filename' ]);
     }
     
     // instantiate Twig

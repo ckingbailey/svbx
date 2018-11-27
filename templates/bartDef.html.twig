@@ -80,7 +80,7 @@
                         {% if data.attachments %}
                             {% for attachment in data.attachments %}
                             <li>
-                                <a href="uploads/bartdlUploads/tumblr_ll9hmjBTlf1qb4qe5o1_500.png" target="_blank">{{ attachment.filepath }}</a>
+                                <a href="{{ attachment.filepath }}" target="_blank">{{ attachment.filename }}</a>
                             </li>
                             {% endfor %}
                         {% endif %}
