@@ -3,6 +3,6 @@ const WindowHack = function WindowHack() {
 }
 
 WindowHack.goBack = function goBack(message) {
-    window.history.go(-1)
     window.alert(message)
+    window.history.go(-1)
 }
