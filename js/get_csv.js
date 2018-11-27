@@ -1,5 +1,3 @@
-// TODO:
-// fetch probably needs more headers, e.g., Accept
 function getCsv(ev, data, callback) {
     const stringJson = JSON.stringify(data) // TODO: validate JSON before stringifying it
     ev.preventDefault();
