@@ -242,7 +242,7 @@ $projectFilters = [
 
 list($table, $tableAbbrev, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
-    : [ 'CDL c', 'c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
