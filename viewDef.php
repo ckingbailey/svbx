@@ -2,7 +2,6 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
-// TODO: test for permission and return 403 if it's no good
 if (!empty($_GET['bartDefID']) && !$_SESSION['bdPermit']) {
     header("This is not for you", true, 403);
     exit;
@@ -114,7 +113,7 @@ $bartJoins = [
     'users_enc cre' => 'b.created_by = cre.userID'
 ];
 
-$bartTableName = 'bartDL';
+$bartTableName = 'BARTDL';
 $bartTableAlias = 'b';
 $bartIdField = 'ID';
 $bartCommentTable = 'bartdlComments';
@@ -206,12 +205,11 @@ try {
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
         $context['data']['photos'] = array_chunk($photos, 3);
     }
-    if ($tableName === 'BARTLDL') {
+    if ($tableName === 'BARTDL') {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
     
-    // TODO: check for permission before rendering BART def
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
