@@ -99,13 +99,14 @@ try {
         try {
             $commentData = [
                 'defID' => $defID,
-                'cdlCommText' => filter_var($cdlCommText, FILTER_SANITIZE_SPECIAL_CHARS),
+                'cdlCommText' => $cdlCommText,
                 'userID' => $userID
             ];
 
             $link->insert('cdlComments', $commentData);
         } catch (Exception $e) {
             header("Location: updateDef.php?defID=$defID");
+            error_log($e);
             $_SESSION['errorMsg'] = "There was a problem recording your comment: $e";
         }
     }
