@@ -381,7 +381,7 @@ try {
         return stripcslashes($str);
     });    
     $filter_decode = new Twig_Filter('safe', function($str) {
-        return html_entity_decode($str);
+        return html_entity_decode($str, ENT_QUOTES);
     });
     $twig->addFilter($filter_decode);    
     $twig->addFilter($html_sanitize_decode);
