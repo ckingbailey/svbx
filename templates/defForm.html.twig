@@ -152,7 +152,7 @@
     <div class='row item-margin-bottom'>
         <div class='col-md-6 offset-md-3'>
             <label for='description' class='required'>Deficiency description</label>
-            <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description }}</textarea>
+            <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description | safe }}</textarea>
         </div>
     </div>
     <h5 class='grey-bg pad'>
