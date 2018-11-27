@@ -483,7 +483,7 @@ $bartElements = [
         'tagName' => 'select',
         'element' => "<select name='level_bart' id='level_bart' class='form-control'>%s</select>",
         'value' => '',
-        'query' => [ 'PROGRAM', 'PROJECT' ]
+        'query' => [ 'PROGRAM' => 'PROGRAM', 'PROJECT' => 'PROJECT' ]
     ],
     'dateOpen_bart' => [
         'label' => returnLabel('dateOpen_bart', 'Date open'),
