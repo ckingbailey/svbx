@@ -24,6 +24,13 @@ $twig = new Twig_Environment($loader,
     ]
 );
 $twig->addExtension(new Twig_Extension_Debug());
+
+// add Twig filters
+$filter_decode = new Twig_Filter('safe', function($str) {
+    return html_entity_decode($str);
+});
+$twig->addFilter($filter_decode);    
+
 $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables

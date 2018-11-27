@@ -91,7 +91,7 @@
                     {% if not href is empty %}
                         {{ tables.anchorTag(href, id | trim) }}
                     {% elseif not field is empty %}
-                        {{ field | slice(0,100) | trim | nl2br }}
+                        {{ field | trim | raw | nl2br }}
                     {% else %}
                         {{ '—' }}
                     {% endif %}
