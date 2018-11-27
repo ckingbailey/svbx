@@ -8,7 +8,7 @@
     {% elseif not navbarHeading is empty%}
         {% set username = navbarHeading %}
     {% else %}
-        {% set username = '???' %}
+        {% set username = '[    ]' %}
     {% endif %}
     {% set navHeadingText, navHeadingLink = username, '/userAccount.php' %}
 {% else %}
