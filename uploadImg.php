@@ -24,7 +24,7 @@ function saveImgToServer($file, $assocID = null) {
             $assocID = '_'.str_pad($assocID, 11, '0', STR_PAD_LEFT);
         }
         // validate image
-        if ($filename = basename($file['name'])) {
+        if ($filename = basename($file['name'])) { // TODO: validate image size
             $tmpName = $file['tmp_name'];
             // name new file for username, any associated ID, and timestamp
             $targetFilename = substr($_SESSION['username'], 0, 6).$assocID.'_'.time();
@@ -97,4 +97,3 @@ function saveImgToServer($file, $assocID = null) {
         exit;
     }
 }
-?>

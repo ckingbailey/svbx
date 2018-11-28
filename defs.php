@@ -24,6 +24,13 @@ $twig = new Twig_Environment($loader,
     ]
 );
 $twig->addExtension(new Twig_Extension_Debug());
+
+// add Twig filters
+$filter_decode = new Twig_Filter('safe', function($str) {
+    return html_entity_decode($str);
+});
+$twig->addFilter($filter_decode);    
+
 $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
@@ -242,7 +249,7 @@ $projectFilters = [
 
 list($table, $tableAbbrev, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
-    : [ 'CDL c', 'c', 'NewDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 

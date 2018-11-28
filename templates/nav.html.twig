@@ -5,10 +5,10 @@
         {% set username = session.firstname ~ ' ' ~ session.lastname %}
     {% elseif not session is empty and not session.username is empty %}
         {% set username = session.username %}
-    {% elseif not navbarheading is empty%}
+    {% elseif not navbarHeading is empty%}
         {% set username = navbarHeading %}
     {% else %}
-        {% set username = '???' %}
+        {% set username = '[    ]' %}
     {% endif %}
     {% set navHeadingText, navHeadingLink = username, '/userAccount.php' %}
 {% else %}
@@ -19,7 +19,8 @@
     ? {
         'Home': '/dashboard.php',
         'Help': '/help.php',
-        'Deficiencies': session.bdPermit ? [ '/defs.php', '/defs.php?view=BART' ] : '/defs.php',
+        'Deficiencies': session.bdPermit
+            ? { 'Project deficiencies': '/defs.php', 'BART deficiencies': '/defs.php?view=BART' } : '/defs.php',
         'Safety Certs': '/ViewSC.php',
         'Logout': '/logout.php'
       }

@@ -1,42 +1,42 @@
 <?PHP
-session_start();
-include('SQLFunctions.php');
+use SVBX\WindowHack;
+
+// include('SQLFunctions.php');
+require 'vendor/autoload.php';
+require 'session.php';
 include('uploadImg.php');
+
 
 $date = date('Y-m-d');
 $userID = intval($_SESSION['userID']);
 $username = $_SESSION['username'];
 $nullVal = null;
 
-$link = f_sqlConnect();
+$link = new mysqli(DB_HOST, DB_USER, DB_PWD, DB_NAME);
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
-        
 // prepare POST and sql string for commit
-$post = array(
+$post = array( // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
   'safetyCert' => intval($_POST['safetyCert']),
   'systemAffected' => intval($_POST['systemAffected']),
   'location' => intval($_POST['location']),
-  'specLoc' => filter_var($link->escape_string($_POST['specLoc']), FILTER_SANITIZE_STRING),
+  'specLoc' => filter_var($_POST['specLoc'], FILTER_SANITIZE_SPECIAL_CHARS),
   'status' => intval($_POST['status']),
   'severity' => intval($_POST['severity']),
-  'dueDate' => filter_var($link->escape_string($_POST['dueDate']), FILTER_SANITIZE_STRING),
+  'dueDate' => filter_var($_POST['dueDate'], FILTER_SANITIZE_SPECIAL_CHARS),
   'groupToResolve' => intval($_POST['groupToResolve']),
   'requiredBy' => intval($_POST['requiredBy']),
   'contractID' => intval($_POST['contractID']),
-  'identifiedBy' => filter_var($link->escape_string($_POST['identifiedBy']), FILTER_SANITIZE_STRING),
+  'identifiedBy' => filter_var($_POST['identifiedBy'], FILTER_SANITIZE_SPECIAL_CHARS),
   'defType' => intval($_POST['defType']),
-  'description' => filter_var($link->escape_string($_POST['description']), FILTER_SANITIZE_STRING),
-  'spec' => filter_var($link->escape_string($_POST['spec']), FILTER_SANITIZE_STRING),
-  'actionOwner' => filter_var($link->escape_string($_POST['actionOwner']), FILTER_SANITIZE_STRING),
-  'oldID' => filter_var($link->escape_string($_POST['oldID']), FILTER_SANITIZE_STRING),
+  'description' => filter_var($_POST['description'], FILTER_SANITIZE_SPECIAL_CHARS),
+  'spec' => filter_var($_POST['spec'], FILTER_SANITIZE_SPECIAL_CHARS),
+  'actionOwner' => filter_var($_POST['actionOwner'], FILTER_SANITIZE_SPECIAL_CHARS),
+  'oldID' => filter_var($_POST['oldID'], FILTER_SANITIZE_SPECIAL_CHARS),
   'evidenceType' => intval($_POST['evidenceType']),
   'repo' => intval($_POST['repo']),
-  'evidenceLink' => filter_var($link->escape_string($_POST['evidenceLink']), FILTER_SANITIZE_STRING),
-  'closureComments' => filter_var($link->escape_string($_POST['closureComments']), FILTER_SANITIZE_STRING),
+  'evidenceLink' => filter_var($_POST['evidenceLink'], FILTER_SANITIZE_SPECIAL_CHARS),
+  'evidenceID' => filter_var($_POST['evidenceID'], FILTER_SANITIZE_SPECIAL_CHARS),
+  'closureComments' => filter_var($_POST['closureComments'], FILTER_SANITIZE_SPECIAL_CHARS),
   'created_by' => $username,
   'dateCreated' => $date,
   'dateClosed' => $nullVal
@@ -46,8 +46,19 @@ $post = array(
 // if it's empty then file upload exceeds post_max_size
 // bump user back to form
 if (!count($post)) {
-    include('js/emptyPostRedirect.php');
+    WindowHack::goBack('No data received. Did you try to upload a file that was larger than 4 MB?');
     exit;
+}
+
+// if Status of new Def is 'closed', require [ evidenceType, repo, evidenceID ]
+// if Closed, Validate fields required for closure [ evidenceType, repo, evidenceLink ]
+if ($post['status'] === 2) {
+    if (empty($post['evidenceType'])
+    || empty($post['repo'])
+    || empty($post['evidenceID'])) {
+        WindowHack::goBack('Required data for closure was not received.');
+        exit;
+    }
 }
 
 // if photo in POST it will be committed to a separate table
@@ -92,13 +103,9 @@ if ($_FILES['CDL_pics']['size']
 } else $CDL_pics = null;
 
 try {
-    $linkBtn = "<a href='updateDef.php?defID=%s' style='text-decoration: none; border: 2px solid plum; padding: .35rem;'>Back to Update Def</a>";
-    
     if (!$stmt = $link->prepare($sql)) throw new Exception($link->error);
     
-    $types = 'iiisiisiiisissssiisssss';
-    
-    if (!$stmt->bind_param('iiisiisiiisissssiisssss',
+    if (!$stmt->bind_param('iiisiisiiisissssiissssss',
         $post['safetyCert'],
         $post['systemAffected'],
         $post['location'],
@@ -118,6 +125,7 @@ try {
         $post['evidenceType'],
         $post['repo'],
         $post['evidenceLink'],
+        $post['evidenceID'],
         $post['closureComments'],
         $post['created_by'],
         $post['dateCreated'],
@@ -149,12 +157,7 @@ try {
     // if comment submitted commit it to a separate table
     if (strlen($cdlCommText)) {
         $sql = "INSERT cdlComments (defID, cdlCommText, userID) VALUES (?, ?, ?)";
-        $commentText = filter_var(
-            filter_var(
-                $cdlCommText,
-                FILTER_SANITIZE_STRING,
-                FILTER_FLAG_NO_ENCODE_QUOTES
-            ), FILTER_SANITIZE_SPECIAL_CHARS);
+        $commentText = filter_var($cdlCommText, FILTER_SANITIZE_SPECIAL_CHARS);
         if (!$stmt = $link->prepare($sql)) throw new Exception($link->error);
         if (!$stmt->bind_param('isi',
             $defID,

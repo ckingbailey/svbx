@@ -56,7 +56,7 @@
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Deficiency description</p>
-        {{ page.input_like(data.description) }}
+        {{ page.input_like(data.description | safe) }}
     </div>
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
@@ -76,12 +76,16 @@
 </div>
 <h5 class='grey-bg pad'>Closure Information</h5>
 <div class='row item-margin-bottom'>
-    <div class='col-md-2'><p>Evidence Type</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.evidenceType) }}</div>
-    <div class='col-md-2'><p>Evidence Repository</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.repo) }}</div>
-    <div class='col-md-2'><p>Repository No.</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.evidenceLink) }}</div>
+    <div class='col-md-3'><p>Evidence Type</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceType) }}</div>
+    <div class='col-md-3'><p>Evidence Repository</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.repo) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Document No.</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceID) }}</div>
+    <div class='col-md-3'><p>Document link</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceLink) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
@@ -98,7 +102,7 @@
     <div class='row mb-3'>
         <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
             <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-            <p>{{ comment.commentText | html_sanitize_decode | unescape | raw }}</p>
+            <p>{{ comment.commentText | safe }}</p>
         </div>
     </div>
     {% endfor %}
@@ -134,8 +138,8 @@
 {% if session.role > 10 %}
 <div class='row item-margin-botom'>
     <div class='col-12 center-content'>
-        <a href='updateDef.php?defID=1' class='btn btn-primary btn-lg'>Update</a>
-        <a href='cloneDef.php?defID=1' class='btn btn-primary btn-lg'>Clone</a>
+        <a href='updateDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Update</a>
+        {# <a href='cloneDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Clone</a> #}
     </div>
 </div>
 {% endif %}

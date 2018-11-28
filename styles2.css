@@ -13,6 +13,7 @@
     --red: #bf211e;
     --yellow: #feb24c;
     --green: #58BF73;
+    --dark-green: #1D873B;
     --vta-bright-blue: #3eb4e6;
     --vta-bright-blue-tone-1: #64c3eb;
     --vta-bright-blue-tone-2: #8bd2f0;
@@ -238,7 +239,7 @@ ul li {
 }
 
 .bg-green {
-    background-color: var(--green);
+    background-color: var(--dark-green);
 }
 
 .bg-dark-blue {

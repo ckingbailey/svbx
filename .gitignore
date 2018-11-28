@@ -13,7 +13,6 @@ old_*
 bootstrap.*
 webColors.json
 database.json
-migrations/
 
 # dependencies and package mngrs
 node_modules

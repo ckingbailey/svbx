@@ -9,6 +9,9 @@
         "nesbot/carbon": "^2.4"
     },
     "autoload": {
+        "psr-4": {
+            "SVBX\\": [ "model/", "src/"]
+        },
         "files": [ "config.php" ]
     }
 }

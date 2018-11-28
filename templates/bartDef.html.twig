@@ -1,5 +1,7 @@
 {% extends "page.html.twig" %}
 
+
+{# TODO: make this template extend def.html.twig #}
 {% macro input_like(datum) %}
     {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
     <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
@@ -36,7 +38,7 @@
     </div>
     <div class='col-md-6'>
         <div class='row item-margin-bottom'>
-            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta) }}</p></div>
+            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta | safe) }}</p></div>
         </div>
     </div>
 </div>
@@ -45,7 +47,7 @@
         <div class='col-md-12 offset-md-0'><p>Root problem</p><p>{{ page.input_like(data.root_problem_vta) }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
-        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta) }}</p></div>
+        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta | safe) }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
@@ -74,12 +76,11 @@
                 <div class='col-md-12 offset-md-0'>
                     <label for='bartdlAttachments'>Attachments</label>
                     <div class='border-radius thin-grey-border pad scroll-y' style='height: 6.8rem'>
-                        {# TODO: iterate over attachments #}
                         <ul class='pl-0 mb-0'>
                         {% if data.attachments %}
                             {% for attachment in data.attachments %}
                             <li>
-                                <a href="uploads/bartdlUploads/tumblr_ll9hmjBTlf1qb4qe5o1_500.png" target="_blank">{{ attachment.filepath }}</a>
+                                <a href="{{ attachment.filepath }}" target="_blank">{{ attachment.filename }}</a>
                             </li>
                             {% endfor %}
                         {% endif %}
@@ -93,7 +94,7 @@
     <div class='row item-margin-bottom'>
         <div class='col-md-12 offset-md-0'>
             <div class='row item-margin-bottom'>
-                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart) }}</p></div>
+                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart | safe) }}</p></div>
             </div>
         </div>
     </div>
@@ -124,7 +125,7 @@
             <div class='col-md-6'><p>Date open</p></div><div class='col-md-6'>{{ page.input_like(data.dateOpen_bart) }}</div>
         </div>
         <div class='row item-margin-bottom'>
-            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(data.dateClosed_bart) }}</div>
+            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(data.dateClose_bart) }}</div>
         </div>
     </div>
 </div>
@@ -141,7 +142,7 @@
 {% endif %}
 {% if session.role > 10 %}
 <div class='center-content'>
-    <a href='updateBartDef.php?bartDefID=2' class='btn btn-primary btn-lg'>Update</a>
+    <a href='updateBartDef.php?bartDefID={{ data.ID }}' class='btn btn-primary btn-lg'>Update</a>
 </div>
 {% endif %}
 {% endblock %}

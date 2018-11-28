@@ -1,458 +1,243 @@
 <?php
-include('session.php');
-include('html_functions/bootstrapGrid.php');
-include('html_functions/htmlFuncs.php');
-include('html_components/defComponents.php');
-include('sql_functions/stmtBindResultArray.php');
-include('error_handling/sqlErrors.php');
+require 'vendor/autoload.php';
+require 'session.php';
 
-if (isset($_GET['defID'])) $defID = filter_input(INPUT_GET, 'defID');
-elseif (isset($_GET['bartDefID'])) $defID = filter_input(INPUT_GET, 'bartDefID');
-else $defID = null;
-
-$role = $_SESSION['role'];
-$title = "SVBX - Deficiency No. " . $defID;
-include('filestart.php');
-
-$labelStr = "<p>%s</p>";
-$checkbox = [
-    'element' => "<input type='checkbox' value='1' class='x-checkbox' disabled %s>",
-    'value' => ''
-];
-$fakeInputStr = "<p class='mb-0 full-width pad-less thin-grey-border border-radius fake-input'>%s</p>";
-$emptyFakeInputStr = "<p class='full-width pad-less thin-grey-border border-radius grey-bg fake-input'>%s</p>";
-
-function returnFakeInputStr($val) {
-    $str = "<span class='d-block full-width pad-less thin-grey-border border-radius'>%s</span>";
-    $altStr = "<span class='d-block full-width pad-less thin-grey-border border-radius grey-bg fake-input'>%s</span>";
-    return returnHtmlForVal($val, $str, $altStr);
+if (!empty($_GET['bartDefID']) && !$_SESSION['bdPermit']) {
+    header("This is not for you", true, 403);
+    exit;
 }
 
-if (!empty($_GET['defID'])) {
-    $link = f_sqlConnect();
-    $sql = file_get_contents("viewDef.sql").$defID;
-
-    try {
-        if (!$stmt = $link->prepare("SELECT closureRequested, closureRequestedBy from CDL where defID = ?"))
-            throw new mysqli_sql_exception($link->error);
-            
-        if (!$stmt->bind_param('i', $defID))
-            throw new mysqli_sql_exception($stmt->error);
-    
-        if (!$stmt->execute())
-            throw new mysqli_sql_exception($stmt->error);
-    
-        $closureRequested = stmtBindResultArray($stmt)[0]['closureRequested'];
-            
-        $stmt->close();
-            
-        if (!$stmt = $link->prepare($sql)) throw new mysqli_sql_exception($link->error);
-
-        if (!$stmt->execute()) throw new mysqli_sql_exception($stmt->error);
-
-        if (!$stmt->bind_result(
-                $OldID,
-                $Location,
-                $SpecLoc,
-                $Severity,
-                $Description,
-                $Spec,
-                $DateCreated,
-                $Status,
-                $IdentifiedBy,
-                $SystemAffected,
-                $GroupToResolve,
-                $ActionOwner,
-                $EvidenceType,
-                $EvidenceLink,
-                $DateClosed,
-                $LastUpdated,
-                $updatedBy,
-                $Created_by,
-                $Comments,
-                $RequiredBy,
-                $contract,
-                $Repo,
-                $ClosureComments,
-                $DueDate,
-                $SafetyCert,
-                $defType)) throw new mysqli_sql_exception($stmt->error);
-
-        while ($stmt->fetch()) {
-            $requiredRows = [
-                'Required Information',
-                [
-                    sprintf($labelStr, 'Safety Certifiable'),
-                    sprintf($fakeInputStr, $SafetyCert),
-                    sprintf($labelStr, 'System Affected'),
-                    sprintf($fakeInputStr, $SystemAffected)
-                ],
-                [
-                    sprintf($labelStr, 'General Location'),
-                    sprintf($fakeInputStr, $Location),
-                    sprintf($labelStr, 'Specific Location'),
-                    sprintf($fakeInputStr, stripcslashes($SpecLoc))
-                ],
-                [
-                    sprintf($labelStr, 'Status'),
-                    sprintf($fakeInputStr, $Status),
-                    sprintf($labelStr, 'Severity'),
-                    sprintf($fakeInputStr, $Severity)
-                ],
-                [
-                    sprintf($labelStr, 'Due Date'),
-                    sprintf($fakeInputStr, $DueDate),
-                    sprintf($labelStr, 'Group to resolve'),
-                    sprintf($fakeInputStr, $GroupToResolve)
-                ],
-                [
-                    sprintf($labelStr, 'Resolution required by'),
-                    sprintf($fakeInputStr, $RequiredBy),
-                    sprintf($labelStr, 'Contract'),
-                    sprintf($fakeInputStr, $contract)
-                ],
-                [
-                    sprintf($labelStr, 'Identified By'),
-                    sprintf($fakeInputStr, stripcslashes($IdentifiedBy)),
-                    sprintf($labelStr, 'Deficiency type'),
-                    sprintf($fakeInputStr, $defType)
-                ],
-                [
-                    sprintf($labelStr, 'Deficiency description').sprintf($fakeInputStr, stripcslashes($Description))
-                ]
-            ];
-
-            $optionalRows = [
-                'Optional Information',
-                [
-                    sprintf($labelStr, 'Spec or Code'),
-                    returnFakeInputStr(stripcslashes($Spec)),
-                    sprintf($labelStr, 'Action Owner'),
-                    returnFakeInputStr(stripcslashes($ActionOwner)),
-                    sprintf($labelStr, 'Old Id'),
-                    returnFakeInputStr(stripcslashes($OldID))
-                ],
-                [
-                    sprintf($labelStr, 'More information').returnFakeInputStr(stripcslashes($Comments))
-                ]
-            ];
-
-            $closureRows = [
-                'Closure Information',
-                [
-                    sprintf($labelStr, 'Evidence Type'),
-                    returnFakeInputStr($EvidenceType),
-                    sprintf($labelStr, 'Evidence Repository'),
-                    returnFakeInputStr($Repo),
-                    sprintf($labelStr, 'Repository No.'),
-                    returnFakeInputStr(stripcslashes($EvidenceLink))
-                ],
-                [
-                    sprintf($labelStr, 'Closure comments').returnFakeInputStr(stripcslashes($ClosureComments))
-                ]
-            ];
-
-            $modHistory = [
-                [
-                    sprintf($labelStr, 'Date Created'),
-                    sprintf($labelStr, $DateCreated),
-                    sprintf($labelStr, 'Created by'),
-                    sprintf($labelStr, $Created_by)
-                ],
-                [
-                    sprintf($labelStr, 'Last Updated'),
-                    sprintf($labelStr, $LastUpdated),
-                    sprintf($labelStr, 'Updated by'),
-                    sprintf($labelStr, $updatedBy)
-                ]
-            ];
-
-            if ($Status == "Open") {
-                $color = "bg-red text-white";
-            } else {
-                $color = "bg-success text-white";
-            }
-            echo "
-                <header class='container page-header'>
-                    <h1 class='page-title $color pad'>Deficiency No. $defID</h1>";
-                    if ($closureRequested) {
-                        echo "<h4 class='bg-yellow text-light pad-less'>Closure requested</h4>";
-                    }
-            echo "
-                </header>
-                <main class='container main-content'>";
-            foreach ([$requiredRows, $optionalRows, $closureRows] as $rowGroup) {
-                $rowName = array_shift($rowGroup);
-                $content = iterateRows($rowGroup);
-                printSection($rowName, $content);
-            }
-        }
-
-        $stmt->close();
-
-        // query for comments associated with this Def
-        $sql = "SELECT firstname, lastname, date_created, cdlCommText
-            FROM cdlComments c
-            JOIN users_enc u
-            ON c.userID=u.userID
-            WHERE c.defID=?
-            ORDER BY c.date_created DESC";
-
-        if (!$stmt = $link->prepare($sql))
-            throw new mysqli_sql_exception($link->error);
-
-        if (!$stmt->bind_param('i', $defID))
-            throw new mysqli_sql_exception($stmt->error);
-
-        if (!$stmt->execute())
-            throw new mysqli_sql_exception($stmt->error);
-
-        $comments = stmtBindResultArray($stmt) ?: [];
-
-        // query for photos linked to this Def
-        if (!$stmt = $link->prepare("SELECT pathToFile FROM CDL_pics WHERE defID=?"))
-            throw new mysqli_sql_exception($link->error);
-
-        if (!$stmt->bind_param('i', $defID))
-            throw new mysqli_sql_exception($stmt->error);
-
-        if (!$stmt->execute())
-            throw new mysqli_sql_exception($stmt->error);
-
-        if (!$stmt->store_result())
-            throw new mysqli_sql_exception($stmt->error);
-
-        $photos = stmtBindResultArray($stmt);
-
-        $stmt->close();
-
-        if (count($comments)) {
-            print returnCollapseSection(
-                'Comments',
-                'comments',
-                returnCommentsHTML($comments)
-            );
-        }
-
-        print returnCollapseSection(
-            'Modification History',
-            'modHistory',
-            iterateRows($modHistory)
-        );
-
-        if (count($photos)) {
-            print returnCollapseSection(
-                'Photos',
-                'defPics',
-                returnPhotoSection(
-                    $photos,
-                    "<img src='%s' alt='photo related to deficiency number {$defID}'>"
-                ),
-                'item-margin-bottom'
-            );
-        }
-
-        // if Role has permission level show Update and Clone buttons
-        if($role > 10) {
-            echo "
-                <div class='row item-margin-botom'>
-                    <div class='col-12 center-content'>
-                        <a href='updateDef.php?defID=$defID' class='btn btn-primary btn-lg'>Update</a>
-                        <a href='cloneDef.php?defID=$defID' class='btn btn-primary btn-lg'>Clone</a>
-                    </div>
-                </div>";
-        }
-        echo "</main>";
-    } catch (Exception $e) {
-        print "Unable to retrieve record: $e";
-        exit;
-    } finally {
-        $link->close();
-        include('fileend.php');
-        exit;
-    }
-} elseif (!empty($_GET['bartDefID'])) {
-    $link = f_sqlConnect();
-    // check for bartdl permission
-    if ($result = $link->query('SELECT bdPermit from users_enc where userID='.$_SESSION['userID'])) {
-        if ($row = $result->fetch_row()) {
-            $bdPermit = $row[0];
-        }
-        $result->close();
-    }
-    if ($bdPermit) {
-        // render View for bartDef
-        $result = [];
-        // query for attachments and render them as a list of links
-        $attachments = getAttachments($link, $defID);
-        $attachmentList = renderAttachmentsAsAnchors($attachments);
-        $attachmentDisplay =
-            $vtaElements['bartdlAttachments']['label']
-            .sprintf($vtaElements['bartdlAttachments']['element'], $attachmentList);
-
-        // build SELECT query string from sql file
-        $fieldList = preg_replace('/\s+/', '', file_get_contents('bartdl.sql'))
-            .',form_modified';
-        // replace ambiguous or JOINED keys
-        $fieldList = str_replace('updated_by', 'BARTDL.updated_by AS updated_by', $fieldList);
-        $fieldList = str_replace('status', 's.statusName AS status', $fieldList);
-        $fieldList = str_replace('agree_vta', 'ag.agreeDisagreeName AS agree_vta', $fieldList);
-        $fieldList = str_replace('creator', 'c.partyName AS creator', $fieldList);
-        $fieldList = str_replace('next_step', 'n.nextStepName AS next_step', $fieldList);
-        $fieldList = str_replace('safety_cert_vta', 'y.yesNoName AS safety_cert_vta', $fieldList);
-        $sql = 'SELECT '
-            .$fieldList
-            ." FROM BARTDL"
-            ." JOIN status s ON BARTDL.status=s.statusID"
-            ." JOIN agreeDisagree ag ON BARTDL.agree_vta=ag.agreeDisagreeID"
-            ." JOIN bdParties c ON BARTDL.creator=c.partyID"
-            ." JOIN bdNextStep n ON BARTDL.next_step=n.bdNextStepID"
-            ." JOIN yesNo y ON BARTDL.safety_cert_vta = y.yesNoID"
-            ." WHERE BARTDL.id=?";
-
-        if ($stmt = $link->prepare($sql)) {
-            if (!$stmt->bind_param('i', $defID)) printSqlErrorAndExit($stmt, $sql);
-
-            if (!$stmt->execute()) printSqlErrorAndExit($stmt, $sql);
-
-            $result = stmtBindResultArray($stmt)[0];
-
-            function validateFormatDate($dateStr, $inputFormat, $outputFormat, $nullChar = '—') {
-                return (
-                    strtotime($dateStr) <= 0
-                        ? $nullChar
-                        : DateTime::createFromFormat($inputFormat, $dateStr)->format($outputFormat)
-                );
-            }
-
-            function formatOpenCloseDate($dateStr) {
-                $inputFormat = 'Y-m-d';
-                $outputFormat = 'd/m/Y';
-                return validateFormatDate($dateStr, $inputFormat, $outputFormat);
-            }
-
-            $dateOpen = formatOpenCloseDate($result['dateOpen_bart']);
-            $dateClosed = formatOpenCloseDate($result['dateClose_bart']);
-
-            $generalFields = [
-                [
-                    [
-                        [ sprintf($labelStr, 'ID'), sprintf($fakeInputStr, $result['id']) ],
-                        [ sprintf($labelStr, 'Creator'), sprintf($fakeInputStr, $result['creator']) ],
-                        [ sprintf($labelStr, 'Next step'), sprintf($fakeInputStr, $result['next_step']) ],
-                        [ sprintf($labelStr, 'BIC'), sprintf($fakeInputStr, $result['bic']) ],
-                        [ sprintf($labelStr, 'Status'), sprintf($fakeInputStr, $result['status']) ]
-                    ],
-                    [
-                        [ sprintf($labelStr, 'Descriptive').sprintf($fakeInputStr, stripcslashes($result['descriptive_title_vta'])) ]
-                    ]
-                ]
-            ];
-
-            $vtaFields = [
-                'Root_Prob_VTA' => [ sprintf($labelStr, 'Root problem').sprintf($labelStr, sprintf($fakeInputStr, stripcslashes($result['root_prob_vta']))) ],
-                'Resolution_VTA' => [ sprintf($labelStr, 'Resolution').sprintf($labelStr, sprintf($fakeInputStr, stripcslashes($result['resolution_vta']))) ],
-                [
-                    [
-                        [ sprintf($labelStr, 'Priority'), sprintf($fakeInputStr, $result['priority_vta']) ],
-                        [ sprintf($labelStr, 'Agree'), sprintf($fakeInputStr, $result['agree_vta']) ],
-                        [ sprintf($labelStr, 'Safety Certifiable'), sprintf($fakeInputStr, $result['safety_cert_vta']) ],
-                        [
-                            checkboxLabel('resolution_disputed', 'Resolution disputed').returnCheckboxInput(['value' => $result['resolution_disputed']] + $checkbox),
-                            checkboxLabel('structural', 'Structural').returnCheckboxInput(['value' => $result['structural']] + $checkbox)
-                        ]
-                    ],
-                    [
-                        [ $attachmentDisplay ]
-                    ]
-                ]
-            ];
-
-            $bartFields = [
-                'BART ID' => [
-                    returnRow([ sprintf($labelStr, 'BART ID').sprintf($fakeInputStr, stripcslashes($result['id_bart'])) ]),
-                ],
-                'Description' => [
-                    returnRow([ sprintf($labelStr, 'Description').sprintf($fakeInputStr, stripcslashes($result['description_bart'])) ])
-                ],
-                [
-                    returnRow([ sprintf($labelStr, 'Cat1'), sprintf($fakeInputStr, $result['cat1_bart']) ]).
-                    returnRow([ sprintf($labelStr, 'Cat2'), sprintf($fakeInputStr, $result['cat2_bart']) ]).
-                    returnRow([ sprintf($labelStr, 'Cat3'), sprintf($fakeInputStr, $result['cat3_bart']) ]),
-                    returnRow([ sprintf($labelStr, 'Level'), sprintf($fakeInputStr, $result['level_bart']) ]).
-                    returnRow([ sprintf($labelStr, 'Date open'), sprintf($fakeInputStr, $dateOpen) ]).
-                    returnRow([ sprintf($labelStr, 'Date closed'), sprintf($fakeInputStr, $dateClosed) ])
-                ]
-            ];
-
-            $stmt->close();
-
-            // query for comments associated with this Def
-            $sql = "SELECT firstname, lastname, date_created, bdCommText
-                FROM bartdlComments bdc
-                JOIN users_enc u
-                ON bdc.userID=u.userID
-                WHERE bartdlID=?
-                ORDER BY date_created DESC";
-
-            if (!$stmt = $link->prepare($sql)) printSqlErrorAndExit($link, $sql);
-
-            if (!$stmt->bind_param('i', $defID)) printSqlErrorAndExit($stmt, $sql);
-
-            if (!$stmt->execute()) printSqlErrorAndExit($stmt, $sql);
-
-            $comments = stmtBindResultArray($stmt) ?: [];
-
-            $stmt->close();
-
-            if($result['status'] === "Closed") {
-                $color = "bg-success text-white";
-            } else {
-                $color = "bg-red text-white";
-            }
-
-            echo "
-                <header class='container page-header'>
-                    <h1 class='page-title $color pad'>Deficiency No. $defID</h1>
-                </header>
-                <main class='container main-content'>";
-            foreach ($generalFields as $gridRow) {
-                print returnRow($gridRow);
-            }
-            print "<h5 class='grey-bg pad'>VTA Information</h5>";
-            foreach ($vtaFields as $gridRow) {
-                print returnRow($gridRow);
-            }
-            print "<h5 class='grey-bg pad'>BART Information</h5>";
-            foreach ($bartFields as $gridRow) {
-                print returnRow($gridRow);
-            }
-
-            if (count($comments)) {
-                print "<h5 class='grey-bg pad'>Comments</h5>";
-                foreach ($comments as $comment) {
-                    $timestamp = strtotime($comment['date_created']) - (60 * 60 * 7);
-
-                    printf(
-                        $commentFormat,
-                        $comment['firstname'].' '.$comment['lastname'],
-                        date('j/n/Y • g:i a', $timestamp),
-                        stripcslashes($comment['bdCommText'])
-                    );
-                }
-            }
-
-            print "
-                <div class='center-content'>
-                    <a href='updateBartDef.php?bartDefID=$defID' class='btn btn-primary btn-lg'>Update</a>
-                </div>
-            </main>";
-            // print "<header class='page-header'><h4 class='text-success'>&darr; BART def view will go here &darr;</h4></header>";
-        } else printSqlErrorAndExit($link, $sql);
-    }
-    $link->close();
-    include('fileend.php');
+if (empty($_GET['bartDefID']) && empty($_GET['defID'])) {
+    header("We need a deficiency ID to show you anything", true, 400);
     exit;
-} else {
-    echo "<h1 class='text-secondary'>No deficiency number found</h1>";
+}
+
+// TODO: move these fields and queries into the Deficiency class
+// project def params
+$projectFields = [
+    'defID as ID',
+    'yesNoName as safetyCert',
+    'sys.systemName as systemAffected',
+    'locationName as location',
+    'specLoc',
+    'statusName as status',
+    'closureRequested',
+    'severityName as severity',
+    'dueDate',
+    'grp.systemName as groupToResolve',
+    'req.requiredBy',
+    'contractName as contract',
+    'identifiedBy',
+    'defTypeName as defType',
+    'description',
+    'spec',
+    'actionOwner',
+    'oldID',
+    'comments as moreInfo',
+    'eviTypeName as evidenceType',
+    'repoName as repo',
+    'evidenceID',
+    'evidenceLink',
+    'closureComments',
+    'c.dateCreated',
+    "CONCAT(cre.firstname, ' ', cre.lastName) as created_by",
+    'c.lastUpdated',
+    "CONCAT(upd.firstname, ' ', upd.lastName) as updated_by",
+    'dateClosed',
+    "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy"
+];
+
+$projectJoins = [
+    'yesNo' => 'c.safetyCert = yesNo.yesNoID',
+    'system sys' => 'c.systemAffected = sys.systemID',
+    'location' => 'c.location = location.locationID',
+    'status' => 'c.status = status.statusID',
+    'severity' => 'c.severity = severity.severityID',
+    'system grp' => 'c.groupToResolve = grp.systemID',
+    'requiredBy req' => 'c.requiredBy = req.reqByID',
+    'contract' => 'c.contractID = contract.contractID',
+    'defType' => 'c.defType = defType.defTypeID',
+    'evidenceType' => 'c.evidenceType = evidenceType.eviTypeID',
+    'repo' => 'c.repo = repo.repoID',
+    'users_enc cre' => 'c.created_by = cre.username',
+    'users_enc upd' => 'c.updated_by = upd.username',
+    'users_enc close' => 'c.closureRequestedBy = close.username'
+];
+
+$projectTableName = 'CDL';
+$projectTableAlias = 'c';
+$projectIdField = 'defID';
+$projectCommentsTable = 'cdlComments';
+$projectComments = 'cdlCommText';
+$projectAttachmentsTable = 'CDL_pics';
+$projectPathField = 'pathToFile';
+$projectTemplate = 'def.html.twig';
+
+// bart def params
+$bartFields = [
+    'ID',
+    'creator.partyName as creator',
+    'nextStepName as next_step',
+    'bic.partyName as bic',
+    'statusName as status',
+    'descriptive_title_vta',
+    'root_prob_vta',
+    'resolution_vta',
+    'priority_vta',
+    'agreeDisagreeName as agree_vta',
+    'yesNoName as safety_cert_vta',
+    'resolution_disputed',
+    'structural',
+    'id_bart',
+    'description_bart',
+    'cat1_bart',
+    'cat2_bart',
+    'cat3_bart',
+    'level_bart',
+    'dateOpen_bart',
+    'dateClose_bart',
+    'date_created',
+    "CONCAT(cre.firstname, ' ', cre.lastname)",
+    'Form_Modified',
+    "CONCAT(upd.firstname, ' ', upd.lastname)"
+];
+
+$bartJoins = [
+    'yesNo' => 'b.safety_cert_vta = yesNo.yesNoID',
+    'users_enc upd' => 'b.updated_by = upd.userID',
+    'bdNextStep' => 'b.next_step = bdNextStep.bdNextStepID',
+    'bdParties creator' => 'b.creator = creator.partyID',
+    'bdParties bic' => 'b.bic = bic.partyID',
+    'status' => 'b.status = status.statusID',
+    'agreeDisagree' => 'b.agree_vta = agreeDisagree.agreeDisagreeID',
+    'users_enc cre' => 'b.created_by = cre.userID'
+];
+
+$bartTableName = 'BARTDL';
+$bartTableAlias = 'b';
+$bartIdField = 'ID';
+$bartCommentTable = 'bartdlComments';
+$bartComments = 'bdCommText';
+$bartAttachmentsTable = 'bartdlAttachments';
+$bartPathField = 'bdaFilepath';
+$bartTemplate = 'bartDef.html.twig';
+
+if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+
+list(
+    $id,
+    $idField,
+    $tableName,
+    $tableAlias,
+    $fields,
+    $joins,
+    $commentTable,
+    $commentTextField,
+    $attachmentsTable,
+    $pathField,
+    $templatePath
+) = (!empty($get['defID'])
+    ? [
+        $get['defID'],
+        $projectIdField,
+        $projectTableName,
+        $projectTableAlias,
+        $projectFields,
+        $projectJoins,
+        $projectCommentsTable,
+        $projectComments,
+        $projectAttachmentsTable,
+        $projectPathField,
+        $projectTemplate
+        ]
+        : (!empty($get['bartDefID'])
+        ? [
+            $get['bartDefID'],
+            $bartIdField,
+            $bartTableName,
+            $bartTableAlias,
+            $bartFields,
+            $bartJoins,
+            $bartCommentTable,
+            $bartComments,
+            $bartAttachmentsTable,
+            $bartPathField,
+            $bartTemplate
+          ]
+        : array_fill(0, 9, null)));
+// TODO: handle case of no def ID
+
+try {
+    $link = new MySqliDB(DB_CREDENTIALS);
+
+    foreach ($joins as $joinTable => $onCondition) {
+        $link->join($joinTable, $onCondition, 'LEFT');
+    }
+
+    $link->where('statusName', 'deleted', '<>');
+    $link->where($idField, $id);
+
+    $data = $link->getOne("$tableName $tableAlias", $fields);
+
+    if (strcasecmp($data['status'], "open") === 0) {
+        $color = "bg-red text-white";
+    } else {
+        $color = "bg-green text-white";
+    }
+
+    $context = [
+        'session' => $_SESSION,
+        'pageHeading' => "Deficiency No. $id",
+        'data' => $data
+    ];
+
+    // query for comments associated with this Def
+    $link->join('users_enc u', "$commentTable.userID = u.userID");
+    $link->orderBy("$commentTable.date_created", 'DESC');
+    $link->where(($idField === 'defID' ? 'defID' : 'bartdlID'), $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
+    $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
+
+    // query for photos linked to this Def
+    // keep BART and Project photos | attachments separate for now
+    // to leave room for giving photos or attachments to either of those data types in the future
+    if ($tableName === 'CDL') {
+        $link->where($idField, $id);
+        $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $context['data']['photos'] = array_chunk($photos, 3);
+    }
+    if ($tableName === 'BARTDL') {
+        $link->where('bartdlID', $id);
+        $context['data']['attachments'] = $link->get($attachmentsTable, null, [ "$pathField as filepath", 'filename' ]);
+    }
+    
+    // instantiate Twig
+    $loader = new Twig_Loader_Filesystem('./templates');
+    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
+    $twig->addExtension(new Twig_Extension_Debug());
+    // $template = $twig->load();
+
+    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
+        $decoded = html_entity_decode($str, ENT_QUOTES);
+        return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
+    });    
+    $filter_stripslashes = new Twig_Filter('unescape', function($str) {
+        return stripcslashes($str);
+    });
+    $filter_decode = new Twig_Filter('safe', function($str) {
+        return html_entity_decode($str, ENT_QUOTES);
+    });
+    $twig->addFilter($filter_decode);    
+    $twig->addFilter($html_sanitize_decode);
+    $twig->addFilter($filter_stripslashes);
+
+    $twig->display($templatePath, $context);
+} catch (Twig_Error $e) {
+    echo "Unable to render template";
+    error_log($e);
+} catch (Exception $e) {
+    echo "Unable to retrieve record";
+    error_log($e);
+} finally {
+    $link->disconnect();
+    exit;
 }

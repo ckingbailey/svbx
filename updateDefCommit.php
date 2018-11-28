@@ -1,13 +1,13 @@
 <?php
 use Mailgun\Mailgun;
+use SVBX\WindowHack;
 
-session_start();
 include 'vendor/autoload.php';
-include 'SQLFunctions.php';
+require 'session.php';
 include 'uploadImg.php';
 
-// // prepare POST and sql string for commit
-$post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+// prepare POST and sql string for commit
+$post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS); // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
 $defID = $post['defID'];
 $userID = $_SESSION['userID'];
 $username = $_SESSION['username'];
@@ -16,9 +16,19 @@ $role = $_SESSION['role'];
 // validate POST data
 // if it's empty then file upload exceeds post_max_size
 // bump user back to form
-if (!count($post) || !$defID) {
-    include('js/emptyPostRedirect.php');
+if (!count($post) || empty($defID)) {
+    WindowHack::goBack('No data received. Did you try to upload a file that was larger than 4 MB?');
     exit;
+}
+
+// if Closed, Validate fields required for closure [ evidenceType, repo, evidenceLink ]
+if ($post['status'] === 2) {
+    if (empty($post['evidenceType'])
+    || empty($post['repo'])
+    || empty($post['evidenceID'])) {
+        WindowHack::goBack('Required data for closure was not received.');
+        exit;
+    }
 }
 
 // if photo in POST it will be committed to a separate table
@@ -40,7 +50,7 @@ unset(
 
 // if Closed, set dateClosed
 // if Closure Requested, record by whom
-if ($post['status'] === '2') {
+if ($post['status'] === '2') { // TODO: closure needs to be checked against db before new dateClosed is assigned
     $post['dateClosed'] = date('Y-m-d');
 } elseif ($post['status'] === '1') {
     $closureReq = $post['closureRequested'] = 0;
@@ -57,15 +67,13 @@ if ($post['status'] === '2') {
 $post['updated_by'] = $username;
 
 try {
-    $link = connect();
+    $link = new MysqliDb(DB_CREDENTIALS);
     // update CDL table
     $link->where('defID', $defID);
     $link->update('CDL', $post);
 
     // if INSERT succesful, prepare, upload, and INSERT photo
     if ($CDL_pics) {
-        // $sql = "INSERT CDL_pics (defID, pathToFile) values (?, ?)";
-
         // execute save image and hold onto its new file path
         try {
             $pathToFile = saveImgToServer($_FILES['CDL_pics'], $defID);
@@ -91,13 +99,14 @@ try {
         try {
             $commentData = [
                 'defID' => $defID,
-                'cdlCommText' => filter_var($cdlCommText, FILTER_SANITIZE_SPECIAL_CHARS),
+                'cdlCommText' => $cdlCommText,
                 'userID' => $userID
             ];
 
             $link->insert('cdlComments', $commentData);
         } catch (Exception $e) {
             header("Location: updateDef.php?defID=$defID");
+            error_log($e);
             $_SESSION['errorMsg'] = "There was a problem recording your comment: $e";
         }
     }
@@ -138,6 +147,6 @@ try {
     header("Location: updateDef.php?defID=$defID");
     $_SESSION['errorMsg'] = "There was an error in committing your submission: $e";
 } finally {
-    $link->disconnect();
+    if (is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
 }
