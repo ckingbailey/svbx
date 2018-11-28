@@ -5,44 +5,83 @@ use MysqliDb;
 
 class Deficiency
 {
-    private $data = [
-        'ID' => null,
-        'safetyCert' => null,
-        'systemAffected' => null,
-        'location' => null,
-        'specLoc' => null,
-        'status' => null,
-        'severity' => null,
-        'dueDate' => null,
-        'groupToResolve' => null,
-        'requiredBy' => null,
-        'contract' => null,
-        'identifiedBy' => null,
-        'defType' => null,
-        'description' => null,
-        'spec' => null,
-        'actionOwner' => null,
-        'evidenceType' => null,
-        'repo' => null,
-        'evidenceLink' => null,
-        'oldID' => null,
-        'closureComments' => null,
-        'created_by' => null, // validate: userID
-        'updated_by' => null, // validate: userID
-        'dateCreated' => null, // validate: date (before lastUpdated, dateClosed?)
-        'lastUpdated' => null,
-        'dateClosed' => null, // validate against status || set
-        'closureRequested' => null, // validate against status??
-        'closureRequestedBy' => null, // validate: userID
-        'comments' => [],
-        'newComment' => null,
-        'attachments' => [],
-        'newAttachment' => null
+    // NOTE: prop names do not nec. have to match db col names
+    //  (but it could help)
+    private $ID = null;
+    private $safetyCert = null;
+    private $systemAffected = null;
+    private $location = null;
+    private $specLoc = null;
+    private $status = null;
+    private $severity = null;
+    private $dueDate = null;
+    private $groupToResolve = null;
+    private $requiredBy = null;
+    private $contract = null;
+    private $identifiedBy = null;
+    private $defType = null;
+    private $description = null;
+    private $spec = null;
+    private $actionOwner = null;
+    private $evidenceType = null;
+    private $repo = null;
+    private $evidenceID = null;
+    private $evidenceLink = null;
+    private $oldID = null;
+    private $closureComments = null;
+    private $created_by = null; // validate: userID
+    private $updated_by = null; // validate: userID
+    private $dateCreated = null; // validate: date (before lastUpdated; dateClosed?)
+    private $lastUpdated = null;
+    private $dateClosed = null; // validate against status || set
+    private $closureRequested = null; // validate against status??
+    private $closureRequestedBy = null; // validate: userID
+    private $comments = [];
+    private $newComment = null;
+    private $attachments = [];
+    private $newAttachment = null;
+
+    private $fields = [
+        'safetyCert',
+        'systemAffected',
+        'location',
+        'specLoc',
+        'status',
+        'severity',
+        'dueDate',
+        'groupToResolve',
+        'requiredBy',
+        'contractID as contract',
+        'identifiedBy',
+        'defType',
+        'description',
+        'spec',
+        'actionOwner',
+        'evidenceType',
+        'repo',
+        'evidenceID',
+        'evidenceLink',
+        'oldID',
+        'closureComments',
+        'created_by',
+        'updated_by',
+        'dateCreated',
+        'lastUpdated',
+        'dateClosed',
+        'closureRequested',
+        'closureRequestedBy'
+    ];
+
+    private $associatedObjects = [
+        'comments', // these are not strictly 'props' but are actually associated Objects
+        'newComment', // these are not strictly 'props' but are actually associated Objects
+        'attachments', // these are not strictly 'props' but are actually associated Objects
+        'newAttachment' // these are not strictly 'props' but are actually associated Objects
     ];
     
     // do not insert or update these fields on the Deficiency table
     private $filterKeys = [
-        'defID' => true,
+        'ID' => true,
         'assets' => true,
         'comments' => true,
         'newComment' => true,
@@ -108,27 +147,100 @@ class Deficiency
     ];
     
     // TODO: check for incoming defID in DB and validate persisted data against incoming data
-    public function __construct($id = null, array $data = [], $dbClass = 'MySqliDB') {
-        foreach ($this->data as $fieldName => $val) {
-            if (empty($data[$fieldName])) continue;
-            else $this->data[$fieldName] = $data[$fieldName];
-        }
-        // if createdBy, updatedBy, dateCreated not provided, set values for them
-        if (empty($this->data['updatedBy'])) $this->data['updatedBy'] = $_SESSION['userID'];
+    public function __construct($id = null, array $data = []) {
+        if (!empty($id) && !empty($data)) { // This is a known Def
+            $this->ID = $id;
 
-        // TODO: check for defID before checking creation deets
-        // check creation details in db before setting them in obj
-        // if (empty($this->data['createdBy']) || empty($this->data['dateCreated'])) {
-            // $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
-            // $link->where('defID', $this->data['defID']);
-            // $creationStamp = $link->get('deficiency', ['createdBy', 'dateCreated']);
-        if (empty($this->data['createdBy'])) $this->data['createdBy'] = $_SESSION['userID'];
-        if (empty($this->data['dateCreated'])) $this->data['dateCreated'] = date('Y-m-d H:i:s');
+            $this->assignDataToProps($data);
+            // TODO: check for associated Objects => 'attachments' and 'comments'
+            // TODO: check for new Attachment or Comment and link it to this Def
+        } elseif (!empty($id)) {
+            $this->ID = $id;
+            try {
+                $link = new MysqliDb(DB_CREDENTIALS);
+                $link->where('defID', $this->ID);
+                $data = $link->getOne('CDL', $this->fields);
+
+                $this->assignDataToProps($data);
+            } catch (Exception $e) {
+                throw new Exception($e->getMessage);
+            } finally {
+                if (is_a($link, 'MysqliDb')) $link->disconnect();
+            }
+            // TODO: query for associated Objects => 'attachments' and 'comments'
+        } elseif (!empty($data)) {
+            $this->assignDataToProps($data);
+            // TODO: the above should be a dedicated function
+        } else {
+            // no id or props = no good
+            throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
+        }
+
+        //---------------------------------------------------------------------------------//
+        // foreach ($this->data as $fieldName => $val) {
+        //     if (empty($data[$fieldName])) continue;
+        //     else $this->data[$fieldName] = $data[$fieldName];
         // }
+        // // if createdBy, updatedBy, dateCreated not provided, set values for them
+        // if (empty($this->data['updatedBy'])) $this->data['updatedBy'] = $_SESSION['userID'];
+
+        // // TODO: check for defID before checking creation deets
+        // // check creation details in db before setting them in obj
+        // // if (empty($this->data['createdBy']) || empty($this->data['dateCreated'])) {
+        //     // $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
+        //     // $link->where('defID', $this->data['defID']);
+        //     // $creationStamp = $link->get('deficiency', ['createdBy', 'dateCreated']);
+        // if (empty($this->data['createdBy'])) $this->data['createdBy'] = $_SESSION['userID'];
+        // if (empty($this->data['dateCreated'])) $this->data['dateCreated'] = date('Y-m-d H:i:s');
+        // // }
+    }
+
+    private function assignDataToProps($data) {
+        foreach ($data as $key => $val) {
+            if (property_exists(__CLASS__, $key)) {
+                $this->$key = $val;
+            }
+        }
     }
     
     public function __toString() {
-        return print_r($this->data, true);
+        $props = [
+            'ID' => $this->ID,
+            'safetyCert' => $this->safetyCert,
+            'systemAffected' => $this->systemAffected,
+            'location' => $this->location,
+            'specLoc' => $this->specLoc,
+            'status' => $this->status,
+            'severity' => $this->severity,
+            'dueDate' => $this->dueDate,
+            'groupToResolve' => $this->groupToResolve,
+            'requiredBy' => $this->requiredBy,
+            'contract' => $this->contract,
+            'identifiedBy' => $this->identifiedBy,
+            'defType' => $this->defType,
+            'description' => $this->description,
+            'spec' => $this->spec,
+            'actionOwner' => $this->actionOwner,
+            'evidenceType' => $this->evidenceType,
+            'repo' => $this->repo,
+            'evidenceID' => $this->evidenceID,
+            'evidenceLink' => $this->evidenceLink,
+            'oldID' => $this->oldID,
+            'closureComments' => $this->closureComments,
+            'created_by' => $this->created_by,
+            'updated_by' => $this->updated_by,
+            'dateCreated' => $this->dateCreated,
+            'lastUpdated' => $this->lastUpdated,
+            'dateClosed' => $this->dateClosed,
+            'closureRequested' => $this->closureRequested,
+            'closureRequestedBy' => $this->closureRequestedBy,
+            'comments' => $this->comments,
+            'newComment' => $this->newComment,
+            'attachments' => $this->attachments,
+            'newAttachment' => $this->newAttachment
+        ];
+
+        return print_r($props, true);
     }
     
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
@@ -158,7 +270,7 @@ class Deficiency
         return $updateID;
     }
     
-    private function filter_data() {
+    private function filter_data() { // TODO: this should filter NULL vals and keep '' vals
         $filterKeys = $this->filterKeys;
         $data = $this->data;
         
