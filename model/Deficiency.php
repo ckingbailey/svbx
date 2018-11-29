@@ -252,7 +252,7 @@ class Deficiency
         }
         
         // validate / set closure info if appropriate
-        if ($this->status === 2) {
+        if (intval($this->status) === 2) {
             if (empty($this->repo)) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->evidenceID)) throw new \Exception('Missing closure info @ `evidenceID`');
             if (empty($this->evidenceType)) throw new \Exception('Missing closure info @ `evidenceType`');
@@ -323,7 +323,7 @@ class Deficiency
             'dueDate' => $this->dueDate,
             'groupToResolve' => $this->groupToResolve,
             'requiredBy' => $this->requiredBy,
-            'contract' => $this->contract,
+            'contractID' => $this->contractID,
             'identifiedBy' => $this->identifiedBy,
             'defType' => $this->defType,
             'description' => $this->description,
