@@ -201,9 +201,8 @@ class Deficiency
 
     private function assignDataToProps($data) {
         foreach ($data as $key => $val) {
-            if (property_exists(__CLASS__, $key)) {
+            if (property_exists(__CLASS__, $key))
                 $this->$key = $val;
-            }
         }
     }
 
@@ -218,41 +217,51 @@ class Deficiency
         // TODO: validate dates, required info, closure info where appropriate
     }
 
-    private function setDateCreated() {
-        $this->dateCreated = date($this->dateFormat);
+    public function setDateCreated() {
+        return $this->dateCreated = date($this->dateFormat);
     }
     
     private function setDateClosed() {
         $this->dateClosed = date($this->dateFormat);
     }
+
+    public function set(string $prop, $val) {
+        if (property_exists(__CLASS__, $prop)) {
+            if (strpos(strtolower($prop), 'date') !== false) {
+                $val = $val ?: time();
+                $this->$prop = date($this->dateFormat, $val);
+            } else $this->$prop = $val;
+        }
+    }
     
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
-        $insertableData = $this->getNonNullProps();
-        $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
-        unset($cleanData['ID']);
-        unset($cleanData['lastUpdated']); // lastUpdated gets timestamp by mysql
-        
-        // validate / set creation info
-        if (empty($cleanData['created_by'])) throw new \Exception('Missing value @ `created_by`');
-        if (empty($cleanData['dateCreated'])) $this->setDateCreated();
+        $this->ID = null; // defID gets created by autoincrement in db
+        $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
 
+        // validate / set creation info
+        if (empty($this->created_by)) throw new \Exception('Missing value @ `created_by`');
+        if (empty($this->dateCreated)) $this->setDateCreated();
+        
         // validate / set mod info
-        if (empty($cleanData['updated_by'])) throw new \Exception('Missing value @ `updated_by`');
+        if (empty($this->updated_by)) throw new \Exception('Missing value @ `updated_by`');
         
         // TODO: validate / set required info
         foreach ($this->requiredFields as $field) {
             if (empty($this->$field)) throw new \Exception("Missing required info @ `$field`");
         }
-
+        
         // validate / set closure info if appropriate
-        if ($cleanData['status'] === 2) {
-            if (empty($cleanData['repo'])) throw new \Exception('Missing closure info @ `repo`');
-            if (empty($cleanData['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
-            if (empty($cleanData['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($cleanData['dateClosed'])) $this->setDateClosed();
+        if ($this->status === 2) {
+            if (empty($this->repo)) throw new \Exception('Missing closure info @ `repo`');
+            if (empty($this->evidenceID)) throw new \Exception('Missing closure info @ `evidenceID`');
+            if (empty($this->evidenceType)) throw new \Exception('Missing closure info @ `evidenceType`');
+            if (empty($this->dateClosed)) $this->setDateClosed();
         }
-
+        
+        $insertableData = $this->getNonNullProps();
+        $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $this->ID = $link->insert($this->table, $cleanData);
