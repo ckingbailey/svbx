@@ -5,6 +5,7 @@ use MysqliDb;
 
 class Deficiency
 {
+    private $dateFormat = 'Y-m-d';
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
     private $ID = null;
@@ -17,7 +18,7 @@ class Deficiency
     private $dueDate = null;
     private $groupToResolve = null;
     private $requiredBy = null;
-    private $contract = null;
+    private $contractID = null;
     private $identifiedBy = null;
     private $defType = null;
     private $description = null;
@@ -38,8 +39,12 @@ class Deficiency
     private $closureRequestedBy = null; // validate: userID
     private $comments = [];
     private $newComment = null;
-    private $attachments = [];
-    private $newAttachment = null;
+    private $pics = [];
+    private $newPic = null;
+
+    private $table = 'CDL';
+    private $commentsTable = 'cdlComments';
+    private $picssTable = 'cdlPics';
 
     private $fields = [
         'safetyCert',
@@ -51,7 +56,7 @@ class Deficiency
         'dueDate',
         'groupToResolve',
         'requiredBy',
-        'contractID as contract',
+        'contractID',
         'identifiedBy',
         'defType',
         'description',
@@ -72,21 +77,27 @@ class Deficiency
         'closureRequestedBy'
     ];
 
+    private $requiredFields = [
+        'safetyCert',
+        'systemAffected',
+        'location',
+        'specLoc',
+        'status',
+        'severity',
+        'dueDate',
+        'groupToResolve',
+        'requiredBy',
+        'contractID',
+        'identifiedBy',
+        'defType',
+        'description'
+    ];
+
     private $associatedObjects = [
         'comments', // these are not strictly 'props' but are actually associated Objects
         'newComment', // these are not strictly 'props' but are actually associated Objects
-        'attachments', // these are not strictly 'props' but are actually associated Objects
-        'newAttachment' // these are not strictly 'props' but are actually associated Objects
-    ];
-    
-    // do not insert or update these fields on the Deficiency table
-    private $filterKeys = [
-        'ID' => true,
-        'assets' => true,
-        'comments' => true,
-        'newComment' => true,
-        'attachments' => true,
-        'newAttachment' => true
+        'pics', // these are not strictly 'props' but are actually associated Objects
+        'newPic' // these are not strictly 'props' but are actually associated Objects
     ];
     
     static private $foreignKeys = [
@@ -177,14 +188,7 @@ class Deficiency
         }
 
         //---------------------------------------------------------------------------------//
-        // foreach ($this->data as $fieldName => $val) {
-        //     if (empty($data[$fieldName])) continue;
-        //     else $this->data[$fieldName] = $data[$fieldName];
-        // }
-        // // if createdBy, updatedBy, dateCreated not provided, set values for them
-        // if (empty($this->data['updatedBy'])) $this->data['updatedBy'] = $_SESSION['userID'];
-
-        // // TODO: check for defID before checking creation deets
+        // // TODO: check for defID before checking creation deets <-- this only pertains to update
         // // check creation details in db before setting them in obj
         // // if (empty($this->data['createdBy']) || empty($this->data['dateCreated'])) {
         //     // $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
@@ -202,9 +206,104 @@ class Deficiency
             }
         }
     }
+
+    public function getNonNullProps() {
+        return array_reduce($this->fields, function ($acc, $prop) {
+            if ($this->$prop !== null) $acc[$prop] = $this->$prop;
+            return $acc;
+        }, []);
+    }
+
+    public function validate($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        // TODO: validate dates, required info, closure info where appropriate
+    }
+
+    private function setDateCreated() {
+        $this->dateCreated = date($this->dateFormat);
+    }
+    
+    private function setDateClosed() {
+        $this->dateClosed = date($this->dateFormat);
+    }
+    
+    // TODO: add fn to handle relatedAsset, newComment, newAttachment
+    public function insert() {
+        $insertableData = $this->getNonNullProps();
+        $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        unset($cleanData['ID']);
+        unset($cleanData['lastUpdated']); // lastUpdated gets timestamp by mysql
+        
+        // validate / set creation info
+        if (empty($cleanData['created_by'])) throw new \Exception('Missing value @ `created_by`');
+        if (empty($cleanData['dateCreated'])) $this->setDateCreated();
+
+        // validate / set mod info
+        if (empty($cleanData['updated_by'])) throw new \Exception('Missing value @ `updated_by`');
+        
+        // TODO: validate / set required info
+        foreach ($this->requiredFields as $field) {
+            if (empty($this->$field)) throw new \Exception("Missing required info @ `$field`");
+        }
+
+        // validate / set closure info if appropriate
+        if ($cleanData['status'] === 2) {
+            if (empty($cleanData['repo'])) throw new \Exception('Missing closure info @ `repo`');
+            if (empty($cleanData['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
+            if (empty($cleanData['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
+            if (empty($cleanData['dateClosed'])) $this->setDateClosed();
+        }
+
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $this->ID = $link->insert($this->table, $cleanData);
+            $link->disconnect();
+        } catch (\Exception $e) { throw new \Exception($e); }
+        finally { if (is_a($link, 'MysqliDb')) $link->disconnect(); }
+        
+        return $this->ID;
+    }
+    
+    public function update() {
+        // TODO: strip fields that never get updated, e.g., dateCreated
+        return false;
+    }
+    
+    // TODO: this could check for which value should be selected (the value that is on data for the corresponding field)
+    // in that case it would have to take a Defificency object as argument
+    static function getLookUpOptions() {
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $options = [];
+            
+            foreach (self::$foreignKeys as $childField => $lookup) {
+                $table = $lookup['table'];
+                $fields = $lookup['fields'];
+                $fields[0] .= ' AS id';
+                $fields[1] .= ' AS name';
+                
+                if (!empty($lookup['where'])) {
+                    $i = 0;
+                    foreach ($lookup['where'] as $where) {
+                        if ($i === 0) $link->where($where['field'], $where['value']);
+                        else $link->orWhere($where['field'], $where['value']);
+                        $i++;
+                    }
+                }
+                
+                $options[$childField] = $link->get($table, null, $fields);
+                // $options[$childField] = [$table => [ $fields ]];
+            }
+            
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $options;
+        } catch (Exception $e) {
+            error_log($e);
+            throw $e;
+        }
+    }
     
     public function __toString() {
-        $props = [
+        return print_r([
             'ID' => $this->ID,
             'safetyCert' => $this->safetyCert,
             'systemAffected' => $this->systemAffected,
@@ -238,114 +337,6 @@ class Deficiency
             'newComment' => $this->newComment,
             'attachments' => $this->attachments,
             'newAttachment' => $this->newAttachment
-        ];
-
-        return print_r($props, true);
+        ], true);
     }
-    
-    // TODO: add fn to handle relatedAsset, newComment, newAttachment
-    public function insert() {
-        $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
-        $cleanData = $this->filter_data();
-        $cleanData = filter_var_array($cleanData, FILTER_SANITIZE_SPECIAL_CHARS);
-        
-        $newID = $link->insert('deficiency', $cleanData);
-        $link->disconnect();
-        
-        return $newID;
-    }
-    
-    public function update() {
-        // validate against user $role
-        $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
-        $cleanData = $this->filter_data();
-        $cleanData = filter_var_array($cleanData, FILTER_SANITIZE_SPECIAL_CHARS);
-        
-        $link->where('defID', $this->data['defID']);
-        $updateID = $link->update('deficiency', $cleanData) ? $this->data['defID'] : null;
-        $link->disconnect();
-
-        if (empty($updateID)) throw new Exception("There was a problem updating the record {$this->data['defID']}");
-
-        return $updateID;
-    }
-    
-    private function filter_data() { // TODO: this should filter NULL vals and keep '' vals
-        $filterKeys = $this->filterKeys;
-        $data = $this->data;
-        
-        foreach ($data as $fieldName => $val) { // TODO: can't I use array_filter sans callback here?
-            if (empty($val) || !empty($filterKeys[$fieldName])) unset($data[$fieldName]);
-        }
-        
-        return $data;
-    }
-    
-     // TODO: this could check for which value should be selected (the value that is on data for the corresponding field)
-     // in that case it would have to take a Defificency object as argument
-    static function getLookUpOptions() {
-        try {
-            $link = new MysqliDb(DB_CREDENTIALS);
-            $options = [];
-            
-            foreach (self::$foreignKeys as $childField => $lookup) {
-                $table = $lookup['table'];
-                $fields = $lookup['fields'];
-                $fields[0] .= ' AS id';
-                $fields[1] .= ' AS name';
-                
-                if (!empty($lookup['where'])) {
-                    $i = 0;
-                    foreach ($lookup['where'] as $where) {
-                        if ($i === 0) $link->where($where['field'], $where['value']);
-                        else $link->orWhere($where['field'], $where['value']);
-                        $i++;
-                    }
-                }
-                
-                $options[$childField] = $link->get($table, null, $fields);
-                // $options[$childField] = [$table => [ $fields ]];
-            }
-            
-            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $options;
-        } catch (Exception $e) {
-            error_log($e);
-            throw $e;
-        }
-    }
-}
-
-function getFilterOptions($link, $queryParams) {
-    $options = [];
-    foreach ($queryParams as $fieldName => $params) {
-        $table = $params['table'];
-        $fields = $params['fields'];
-        if (!empty($params['join']))
-            $link->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
-        if (!empty($params['where'])) {
-            $whereParams = $params['where'];
-            if (gettype($whereParams) === 'string')
-            // if where is string, use it as raw where query
-                $link->where($whereParams);
-            elseif (!empty($whereParams['comparison']))
-                $link->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
-            else $link->where($whereParams['field'], $whereParams['value']);
-        }
-        if (!empty($params['groupBy'])) $link->groupBy($params['groupBy']);
-        if (!empty($params['orderBy'])) $link->orderBy($params['orderBy']);
-        if ($result = $link->get($table, null, $fields)) {
-            $options[$fieldName] = [];
-            foreach ($result as $row) {
-                $fieldNames = array_keys($row);
-                $value = $row[$fieldNames[0]];
-                if (count($fieldNames) > 1) $text = $row[$fieldNames[1]];
-                else $text = $value;
-                $options[$fieldName][$value] = $text;
-            }
-        } else {
-            $options[$fieldName] = "Unable to retrieve $fieldName list";
-        }
-    }
-    return $options;
 }
