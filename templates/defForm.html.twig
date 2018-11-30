@@ -288,12 +288,8 @@
     </section>
     {% endif %}
     <div class='item-margin-bottom center-content'>
-        {% if (data.status | lower) is same as('closed') %}
-            <button type='button' class='btn btn-lg btn-primary' onclick='return reopenDef(event)'>Re-open Deficiency</button>
-        {% else %}
-            <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
-            <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
-        {% endif %}
+        <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
+        <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
     </div>
 </form>
 {% if session.role >= 40 and not data.ID is empty %}
@@ -329,12 +325,6 @@
                 form[field].removeAttribute('required')
             })
         }
-    }
-
-    function reopenDef(ev) { // TODO: do we want a window.confirm here?
-        const form = document.forms['defForm']
-        form.status.value = 1
-        form.submit()
     }
 
     onSelectStatusClosed();
