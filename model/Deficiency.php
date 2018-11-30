@@ -6,6 +6,13 @@ use MysqliDb;
 class Deficiency
 {
     const DATE_FORMAT = 'Y-m-d';
+    const MOD_HISTORY = [
+        'created_by',
+        'updated_by',
+        'dateCreated',
+        'lastUpdated',
+        'dateClosed'
+    ];
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
     private $ID = null;
@@ -226,12 +233,17 @@ class Deficiency
     //     $this->dateClosed = date(self::DATE_FORMAT);
     // }
 
-    public function set(string $prop, $val = null) {
-        if (property_exists(__CLASS__, $prop)) {
+    public function set($prop, $val = null) {
+        if (is_string($prop) && property_exists(__CLASS__, $prop)) {
             if (strpos(strtolower($prop), 'date') !== false) {
                 $val = $val ?: time();
                 $this->$prop = date(self::DATE_FORMAT, $val);
             } else $this->$prop = $val;
+        } elseif (is_array($prop) && $prop === self::MOD_HISTORY && $val === null) {
+            // blankify MOD_HISTORY if 2nd arg is null
+            foreach (self::MOD_HISTORY as $key) {
+                $this->$key = null;
+            }
         }
     }
     
