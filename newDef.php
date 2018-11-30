@@ -10,6 +10,19 @@ if ($_SESSION['role'] <= 10) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $def = new Deficiency(null, $_POST);
+        $def->set('created_by', $_SESSION['username']);
+        $defID = $def->insert();
+        header("Location: /viewDef.php?defID=$defID", true, 201);
+        exit;
+    } catch (\Exception $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency ' . $e->getMessage();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET'
     && !empty($_GET)
     && !empty($_GET['defID'])
@@ -18,8 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET'
     try {
         $defID = intval($_GET['defID']);
         $def = new Deficiency($defID);
-        $def->set(Deficiency::MOD_HISTORY);
-        $data = $def->getReadable();
     } catch (\Exception $e) {
         error_log(
             "{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency"
@@ -33,34 +44,32 @@ $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
 if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-if (!empty($_SESSION['errorMsg']))
-    unset($_SESSION['errorMsg']);
-
 // add extra Twig filters
-$html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
-    $decoded = html_entity_decode($str, ENT_QUOTES);
-    return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
-});    
-$filter_stripslashes = new Twig_Filter('unescape', function($str) {
-    return stripcslashes($str);
-});    
 $filter_decode = new Twig_Filter('safe', function($str) {
     return html_entity_decode($str);
 });
 $twig->addFilter($filter_decode);    
-$twig->addFilter($html_sanitize_decode);
-$twig->addFilter($filter_stripslashes);
     
 $context = [
     'session' => $_SESSION,
     'title' => 'Create deficiency record',
     'pageHeading' => "Add New Deficiency",
-    'formAction' => 'RecDef.php'
+    'formAction' => $_SERVER['PHP_SELF']
 ];
+
+if (!empty($_SESSION['errorMsg']))
+    unset($_SESSION['errorMsg']);
 
 try {
     $context['options'] = Deficiency::getLookupOptions();
-    $context['data'] = !empty($data) ? $data : null;
+
+    if (!empty($def) && is_a($def, 'SVBX\Deficiency')) {
+        $def->set(Deficiency::MOD_HISTORY);
+        $data = $def->getReadable();
+        unset($data['ID']);
+        $context['data'] = $data;
+        $context['pageHeading'] = "Clone Deficiency No. $defID";
+    }
 
     $twig->display('defForm.html.twig', $context);
 } catch (Exception $e) {

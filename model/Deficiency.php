@@ -13,6 +13,12 @@ class Deficiency
         'lastUpdated',
         'dateClosed'
     ];
+    const CLOSURE_INFO = [
+        'evidenceType',
+        'repo',
+        'evidenceID',
+        'dateClosed'
+    ];
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
     private $ID = null;
@@ -189,7 +195,6 @@ class Deficiency
             // TODO: query for associated Objects => 'attachments' and 'comments'
         } elseif (!empty($data)) {
             $this->assignDataToProps($data);
-            // TODO: the above should be a dedicated function
         } else {
             // no id or props = no good
             throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
@@ -219,6 +224,10 @@ class Deficiency
             if ($this->$prop !== null) $acc[$prop] = $this->$prop;
             return $acc;
         }, []);
+    }
+
+    public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
+        // TODO: intval props that ought to int
     }
 
     public function validate($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
@@ -252,20 +261,23 @@ class Deficiency
         $this->ID = null; // defID gets created by autoincrement in db
         $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
 
-        // validate / set creation info
+        // validate creation info
         if (empty($this->created_by)) throw new \Exception('Missing value @ `created_by`');
         if (empty($this->dateCreated)) $this->set('dateCreated');
         
-        // validate / set mod info
-        if (empty($this->updated_by)) throw new \Exception('Missing value @ `updated_by`');
+        // validate mod info
+        if (empty($this->updated_by) || !$this->updated_by === $this->created_by) {
+            if (!$this->updated_by = $this->created_by)
+                throw new \Exception('Missing value @ `updated_by`');
+        }
         
-        // TODO: validate / set required info
+        // validate required info
         foreach ($this->requiredFields as $field) {
             if (empty($this->$field)) throw new \Exception("Missing required info @ `$field`");
         }
         
         // validate / set closure info if appropriate
-        if (intval($this->status) === 2) {
+        if (intval($this->status) === 2) { // TODO: numerical props should already be (int) by this point
             if (empty($this->repo)) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->evidenceID)) throw new \Exception('Missing closure info @ `evidenceID`');
             if (empty($this->evidenceType)) throw new \Exception('Missing closure info @ `evidenceType`');
@@ -374,7 +386,7 @@ class Deficiency
                 
                 $props = $this->get();
                 $lookupFields = [];
-
+                
                 foreach (self::$foreignKeys as $childField => $lookup) {
                     $lookupTable = $lookup['table'];
                     $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
@@ -392,12 +404,15 @@ class Deficiency
                         $lookupKey
                     );
 
-                    $link->join($join, $joinOn);
+                    $link->join($join, $joinOn, 'LEFT');
 
                     $lookupFields[] = $displayName . ' as ' . $childField;
                 }
 
-                return $link->getOne($this->table, $lookupFields) + $props;
+                if (!$readable = $link->getOne($this->table, $lookupFields))
+                    throw new \Exception('There was a problem fetching from the lookup fields: ' . $link->getLastQuery());
+                
+                return $readable + $props;
             } catch (\Exception $e) {
                 throw $e;
             } finally {
