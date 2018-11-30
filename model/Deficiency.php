@@ -111,6 +111,7 @@ class Deficiency
         ],
         'groupToResolve' => [
             'table' => 'system',
+            'alias' => 'groupToResolve',
             'fields' => ['systemID', 'systemName']
         ],
         'location' => [
@@ -139,7 +140,7 @@ class Deficiency
             'table' => 'requiredBy',
             'fields' => ['reqByID', 'requiredBy']
         ],
-        'contract' => [
+        'contractID' => [
             'table' => 'contract',
             'fields' => ['contractID', 'contractName']
         ],
@@ -310,6 +311,90 @@ class Deficiency
             throw $e;
         }
     }
+
+    public function get($props = null) {
+        if ($props === null) { // return all props
+            return [
+                'ID' => $this->ID,
+                'safetyCert' => $this->safetyCert,
+                'systemAffected' => $this->systemAffected,
+                'location' => $this->location,
+                'specLoc' => $this->specLoc,
+                'status' => $this->status,
+                'severity' => $this->severity,
+                'dueDate' => $this->dueDate,
+                'groupToResolve' => $this->groupToResolve,
+                'requiredBy' => $this->requiredBy,
+                'contractID' => $this->contractID,
+                'identifiedBy' => $this->identifiedBy,
+                'defType' => $this->defType,
+                'description' => $this->description,
+                'spec' => $this->spec,
+                'actionOwner' => $this->actionOwner,
+                'evidenceType' => $this->evidenceType,
+                'repo' => $this->repo,
+                'evidenceID' => $this->evidenceID,
+                'evidenceLink' => $this->evidenceLink,
+                'oldID' => $this->oldID,
+                'closureComments' => $this->closureComments,
+                'created_by' => $this->created_by,
+                'updated_by' => $this->updated_by,
+                'dateCreated' => $this->dateCreated,
+                'lastUpdated' => $this->lastUpdated,
+                'dateClosed' => $this->dateClosed,
+                'closureRequested' => $this->closureRequested,
+                'closureRequestedBy' => $this->closureRequestedBy,
+                'comments' => $this->comments,
+                'newComment' => $this->newComment,
+                'pics' => $this->pics,
+                'newPic' => $this->newPic
+            ];
+        }
+    }
+
+    public function getReadable($props = null) {
+        if ($props === null) { // join and return all props
+            try {
+                $link = new MysqliDb(DB_CREDENTIALS);
+                
+                if (empty($this->ID)) throw new \Exception('No ID found for Deficiency');
+                $link->where('defID', $this->ID);
+                
+                $props = $this->get();
+                $lookupFields = [];
+
+                foreach (self::$foreignKeys as $childField => $lookup) {
+                    $lookupTable = $lookup['table'];
+                    $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
+                    $lookupKey = $lookup['fields'][0];
+                    $displayName = sprintf("%s.%s",
+                        ($alias ?: $lookupTable),
+                        $lookup['fields'][1]
+                    );
+
+                    $join = $lookupTable . ($alias ? " as {$alias}" : '');
+                    $joinOn = sprintf("%s.%s = %s.%s",
+                        $this->table,
+                        $childField,
+                        ($alias ?: $lookupTable),
+                        $lookupKey
+                    );
+
+                    echo $join . '|' . $joinOn . PHP_EOL;
+
+                    $link->join($join, $joinOn);
+
+                    $lookupFields[] = $displayName;
+                }
+
+                return $link->getOne($this->table, $lookupFields) + $props;
+            } catch (\Exception $e) {
+                throw $e;
+            } finally {
+                if (is_a($link, 'MysqliDb')) $link->disconnect();
+            }
+        }
+    }
     
     public function __toString() {
         return print_r([
@@ -344,8 +429,8 @@ class Deficiency
             'closureRequestedBy' => $this->closureRequestedBy,
             'comments' => $this->comments,
             'newComment' => $this->newComment,
-            'attachments' => $this->attachments,
-            'newAttachment' => $this->newAttachment
+            'pics' => $this->pics,
+            'newPic' => $this->newPic
         ], true);
     }
 }
