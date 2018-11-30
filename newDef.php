@@ -52,6 +52,7 @@ $twig->addFilter($filter_stripslashes);
     
 $context = [
     'session' => $_SESSION,
+    'title' => 'Create deficiency record',
     'pageHeading' => "Add New Deficiency",
     'formAction' => 'RecDef.php'
 ];
