@@ -166,16 +166,16 @@ class Deficiency
             $this->assignDataToProps($data);
             // TODO: check for associated Objects => 'attachments' and 'comments'
             // TODO: check for new Attachment or Comment and link it to this Def
-        } elseif (!empty($id)) {
-            $this->ID = $id;
+        } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $link->where('defID', $this->ID);
-                $data = $link->getOne('CDL', $this->fields);
-
-                $this->assignDataToProps($data);
-            } catch (Exception $e) {
-                throw new Exception($e->getMessage);
+                $link->where('defID', $id);
+                if ($data = $link->getOne('CDL', $this->fields)) {
+                    $this->ID = $id;
+                    $this->assignDataToProps($data);
+                } else throw new \Exception("No Deficiency record found @ ID = $id");
+            } catch (\Exception $e) {
+                throw $e;
             } finally {
                 if (is_a($link, 'MysqliDb')) $link->disconnect();
             }
