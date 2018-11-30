@@ -5,7 +5,7 @@ use MysqliDb;
 
 class Deficiency
 {
-    private $dateFormat = 'Y-m-d';
+    const DATE_FORMAT = 'Y-m-d';
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
     private $ID = null;
@@ -218,19 +218,19 @@ class Deficiency
         // TODO: validate dates, required info, closure info where appropriate
     }
 
-    public function setDateCreated() {
-        return $this->dateCreated = date($this->dateFormat);
-    }
+    // public function setDateCreated() {
+    //     return $this->dateCreated = date(self::DATE_FORMAT);
+    // }
     
-    private function setDateClosed() {
-        $this->dateClosed = date($this->dateFormat);
-    }
+    // private function setDateClosed() {
+    //     $this->dateClosed = date(self::DATE_FORMAT);
+    // }
 
-    public function set(string $prop, $val) {
+    public function set(string $prop, $val = null) {
         if (property_exists(__CLASS__, $prop)) {
             if (strpos(strtolower($prop), 'date') !== false) {
                 $val = $val ?: time();
-                $this->$prop = date($this->dateFormat, $val);
+                $this->$prop = date(self::DATE_FORMAT, $val);
             } else $this->$prop = $val;
         }
     }
@@ -242,7 +242,7 @@ class Deficiency
 
         // validate / set creation info
         if (empty($this->created_by)) throw new \Exception('Missing value @ `created_by`');
-        if (empty($this->dateCreated)) $this->setDateCreated();
+        if (empty($this->dateCreated)) $this->set('dateCreated');
         
         // validate / set mod info
         if (empty($this->updated_by)) throw new \Exception('Missing value @ `updated_by`');
@@ -257,7 +257,7 @@ class Deficiency
             if (empty($this->repo)) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->evidenceID)) throw new \Exception('Missing closure info @ `evidenceID`');
             if (empty($this->evidenceType)) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($this->dateClosed)) $this->setDateClosed();
+            if (empty($this->dateClosed)) $this->set('dateClosed');
         }
         
         $insertableData = $this->getNonNullProps();
