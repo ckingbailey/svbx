@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET'
     try {
         $defID = intval($_GET['defID']);
         $def = new Deficiency($defID);
+        $def->set(Deficiency::MOD_HISTORY);
         $data = $def->getReadable();
     } catch (\Exception $e) {
         error_log(
