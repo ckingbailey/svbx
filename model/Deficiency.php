@@ -380,11 +380,9 @@ class Deficiency
                         $lookupKey
                     );
 
-                    echo $join . '|' . $joinOn . PHP_EOL;
-
                     $link->join($join, $joinOn);
 
-                    $lookupFields[] = $displayName;
+                    $lookupFields[] = $displayName . ' as ' . $childField;
                 }
 
                 return $link->getOne($this->table, $lookupFields) + $props;

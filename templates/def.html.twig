@@ -16,6 +16,7 @@
 {% endblock %}
 
 {% block content %}
+<pre>{{ dump(data) }}</pre>
 <h5 class='grey-bg pad'>Required Information</h5>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Safety Certifiable</p></div>
@@ -113,7 +114,7 @@
 </h5>
 <section id='modHistory' class='collapse'>
     <div class='row item-margin-bottom'>
-        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ data.dateCreated | date("n-j-Y") }}</p></div>
+        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ (data.dateCreated | round) ? (data.dateCreated | date("n-j-Y")) : "—" }}</p></div>
         <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
@@ -139,7 +140,7 @@
 <div class='row item-margin-botom'>
     <div class='col-12 center-content'>
         <a href='updateDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Update</a>
-        {# <a href='cloneDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Clone</a> #}
+        <a href='cloneDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Clone</a>
     </div>
 </div>
 {% endif %}
