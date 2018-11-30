@@ -3,16 +3,28 @@ require 'vendor/autoload.php';
 require 'session.php';
 
 use SVBX\Deficiency;
-// include('SQLFunctions.php');
-// include('html_components/defComponents.php');
-// include('html_functions/bootstrapGrid.php');
-// $link = f_sqlConnect();
-// $Role = $_SESSION['role'];
-// $title = "SVBX - New Deficiency";
+
 if ($_SESSION['role'] <= 10) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET'
+    && !empty($_GET)
+    && !empty($_GET['defID'])
+    && is_numeric($_GET['defID']))
+{
+    try {
+        $defID = intval($_GET['defID']);
+        $def = new Deficiency($defID);
+        $data = $def->getReadable();
+    } catch (\Exception $e) {
+        error_log(
+            "{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency"
+            . PHP_EOL
+            . $e);
+    }
 }
 
 // instantiate Twig
@@ -46,6 +58,7 @@ $context = [
 
 try {
     $context['options'] = Deficiency::getLookupOptions();
+    $context['data'] = !empty($data) ? $data : null;
 
     $twig->display('defForm.html.twig', $context);
 } catch (Exception $e) {
@@ -54,99 +67,3 @@ try {
     if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
 }
-// include('filestart.php');
-
-// $elements = $requiredElements + $optionalElements + $closureElements;
-
-// $requiredRows = [
-//     'Required Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['safetyCert'],
-//         $elements['systemAffected']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['location'],
-//         $elements['specLoc']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['status'],
-//         $elements['severity']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['dueDate'],
-//         $elements['groupToResolve']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['requiredBy'],
-//         $elements['contractID']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['identifiedBy'],
-//         $elements['defType']
-//     ],
-//     [
-//         $elements['description']
-//     ]
-// ];
-
-// $optionalRows = [
-//     'Optional Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['spec'],
-//         $elements['actionOwner']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['oldID'],
-//         $elements['CDL_pics']
-//     ],
-//     [
-//         $elements['cdlCommText']
-//     ]
-// ];
-
-// $closureRows = [
-//     'Closure Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['evidenceType'],
-//         $elements['repo'],
-//         $elements['evidenceLink']
-//     ],
-//     [
-//         $elements['closureComments']
-//     ]
-// ];
-
-// echo "
-//     <header class='container page-header'>
-//         <h1 class='page-title'>Add New Deficiency</h1>
-//     </header>
-//     <main role='main' class='container main-content'>
-//         <form action='RecDef.php' method='POST' enctype='multipart/form-data'>
-//             <input type='hidden' name='username' value='{$_SESSION['username']}' />";
-
-//         foreach ([$requiredRows, $optionalRows, $closureRows] as $rowGroup) {
-//             $rowName = array_shift($rowGroup);
-//             $content = iterateRows($rowGroup);
-//             printSection($rowName, $content);
-//         }
-
-// echo "
-//         <div class='center-content'>
-//             <button type='submit' value='submit' class='btn btn-primary btn-lg'>Submit</button>
-//             <button type='reset' value='reset' class='btn btn-primary btn-lg'>Reset</button>
-//         </div>
-//     </form>
-// </main>";
-
-// $link->close();
-// include('fileend.php');
-// ?>
