@@ -215,7 +215,9 @@ class Deficiency
     private function assignDataToProps($data) {
         foreach ($data as $key => $val) {
             if (property_exists(__CLASS__, $key))
-                $this->$key = $val;
+                $this->$key = empty(self::$foreignKeys[$key])
+                    ? $val
+                    : intval($val);
         }
     }
 
@@ -289,9 +291,14 @@ class Deficiency
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            $this->ID = $link->insert($this->table, $cleanData);
+            if ($this->ID = $link->insert($this->table, $cleanData))
+                error_log(sprintf('[%s](%s): %s',
+                    'Deficiency.php',
+                    '293',
+                    'Def created: ' . $this->ID
+                ));
             $link->disconnect();
-        } catch (\Exception $e) { throw new \Exception($e); }
+        } catch (\Exception $e) { throw $e; }
         finally { if (is_a($link, 'MysqliDb')) $link->disconnect(); }
         
         return $this->ID;
