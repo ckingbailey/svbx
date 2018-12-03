@@ -176,7 +176,7 @@ class Deficiency
         if (!empty($id) && !empty($data)) { // This is a known Def
             $this->ID = $id;
 
-            $this->assignDataToProps($data);
+            $this->set($data);
             // TODO: check for associated Objects => 'attachments' and 'comments'
             // TODO: check for new Attachment or Comment and link it to this Def
         } elseif (!empty($id)) { // This is a known Def. Query for its data
@@ -185,7 +185,7 @@ class Deficiency
                 $link->where('defID', $id);
                 if ($data = $link->getOne('CDL', $this->fields)) {
                     $this->ID = $id;
-                    $this->assignDataToProps($data);
+                    $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
             } catch (\Exception $e) {
                 throw $e;
@@ -194,7 +194,7 @@ class Deficiency
             }
             // TODO: query for associated Objects => 'attachments' and 'comments'
         } elseif (!empty($data)) {
-            $this->assignDataToProps($data);
+            $this->set($data);
         } else {
             // no id or props = no good
             throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
@@ -212,12 +212,25 @@ class Deficiency
         // // }
     }
 
-    private function assignDataToProps($data) {
-        foreach ($data as $key => $val) {
-            if (property_exists(__CLASS__, $key))
-                $this->$key = empty(self::$foreignKeys[$key])
-                    ? $val
-                    : intval($val);
+    public function set($props, $val = null) {
+        if (is_string($props) && property_exists(__CLASS__, $props)) {
+            // if a date key is passed by itself, set to current date
+            if (strpos(strtolower($props), 'date') !== false) {
+                $val = $val ?: time();
+                $this->$props = date(self::DATE_FORMAT, $val);
+            } else $this->$props = $val;
+        } elseif (is_array($props)) {
+            foreach ($props as $key => $val) {
+                // nullify any indexed props
+                // set new vals for any string keys
+                if (is_string($key) && property_exists(__CLASS__, $key)) {
+                    $this->$key = empty(self::$foreignKeys[$key])
+                        ? $val
+                        : intval($val);
+                } elseif (is_numeric($key) && property_exists(__CLASS__, $val)) {
+                    $this->$val = null;
+                }
+            }
         }
     }
 
@@ -236,28 +249,6 @@ class Deficiency
         // TODO: validate dates, required info, closure info where appropriate
     }
 
-    // public function setDateCreated() {
-    //     return $this->dateCreated = date(self::DATE_FORMAT);
-    // }
-    
-    // private function setDateClosed() {
-    //     $this->dateClosed = date(self::DATE_FORMAT);
-    // }
-
-    public function set($prop, $val = null) {
-        if (is_string($prop) && property_exists(__CLASS__, $prop)) {
-            if (strpos(strtolower($prop), 'date') !== false) {
-                $val = $val ?: time();
-                $this->$prop = date(self::DATE_FORMAT, $val);
-            } else $this->$prop = $val;
-        } elseif (is_array($prop) && $prop === self::MOD_HISTORY && $val === null) {
-            // blankify MOD_HISTORY if 2nd arg is null
-            foreach (self::MOD_HISTORY as $key) {
-                $this->$key = null;
-            }
-        }
-    }
-    
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
@@ -292,11 +283,6 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $cleanData)) {
                 $this->ID = $newID;
-                error_log(sprintf('[%s](%s): %s',
-                    $_SERVER['PHP_SELF'],
-                    __LINE__,
-                    'Def created: ' . $this->ID
-                ));
             }
             $link->disconnect();
         } catch (\Exception $e) { throw $e; }
