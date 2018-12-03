@@ -12,14 +12,24 @@ if ($_SESSION['role'] <= 10) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $def = new Deficiency(null, $_POST);
+        $def = new Deficiency($_POST['defID'], $_POST);
         $def->set('created_by', $_SESSION['username']);
-        $defID = $def->insert();
-        header("Location: /viewDef.php?defID=$defID", true, 201);
+        $def->insert();
+        header("location: /viewDef.php?defID={$def->get('ID')}");
         exit;
     } catch (\Exception $e) {
         error_log($e);
-        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency ' . $e->getMessage();
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+        $props = $def->get();
+        $qs = array_reduce(array_keys($props), function ($acc, $key) use ($props) {
+            if ($key === 'newPic' || $key === 'comments' || $key === 'pics') return $acc;
+            $val = $props[$key];
+            if ($key === 'ID') $key = 'defID';
+            $joiner = empty($acc) ? '?' : '&';
+            return $acc .= ("$joiner" . "$key=$val");
+        }, '');
+        header("location: /newDef.php$qs");
+        exit;
     }
 }
 
@@ -31,10 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET'
     try {
         $defID = intval($_GET['defID']);
         $def = new Deficiency($defID);
+        $def->set($_GET);
     } catch (\Exception $e) {
         error_log(
-            "{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency"
-            . PHP_EOL
+            "{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n"
             . $e);
     }
 }
@@ -55,7 +65,7 @@ $context = [
     'title' => 'Create deficiency record',
     'pageHeading' => "Add New Deficiency",
     'formAction' => $_SERVER['PHP_SELF']
-];
+];    
 
 if (!empty($_SESSION['errorMsg']))
     unset($_SESSION['errorMsg']);
@@ -64,11 +74,10 @@ try {
     $context['options'] = Deficiency::getLookupOptions();
 
     if (!empty($def) && is_a($def, 'SVBX\Deficiency')) {
-        $def->set(Deficiency::MOD_HISTORY);
-        $data = $def->getReadable();
-        unset($data['ID']);
+        $def->set(Deficiency::MOD_HISTORY); // clear modification history
+        $data = $def->get();
         $context['data'] = $data;
-        $context['pageHeading'] = "Clone Deficiency No. $defID";
+        $context['pageHeading'] = "Clone Deficiency No. {$data['ID']}";
     }
 
     $twig->display('defForm.html.twig', $context);

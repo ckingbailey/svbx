@@ -3,7 +3,7 @@
 {% macro renderOptions(options, curVal) %}
     <option></option>
     {% for option in options %}
-        {% set selected = option.name is same as(curVal) ? " selected" : "" %}
+        {% set selected = option.id is same as(curVal) ? " selected" : "" %}
         <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
         {% set selected = "" %}
     {% endfor %}
@@ -20,7 +20,7 @@
         <h2>{{ data.closureRequested or '' }}</h2>
         {% endif %}
         {% if session.errorMsg %}
-        <h1 class='bg-yellow thin-grey-border'>{{ session.errorMsg }}</h1>
+        <h3 class='thin-grey-border pad' style="background-color: var(--half-trans-yellow)">{{ session.errorMsg }}</h3>
         {% endif %}
     </header>
 {% endblock %}
