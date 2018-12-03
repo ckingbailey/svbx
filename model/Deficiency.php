@@ -260,7 +260,6 @@ class Deficiency
     
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
-        $this->ID = null; // defID gets created by autoincrement in db
         $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
 
         // validate creation info
@@ -291,12 +290,14 @@ class Deficiency
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            if ($this->ID = $link->insert($this->table, $cleanData))
+            if ($newID = $link->insert($this->table, $cleanData)) {
+                $this->ID = $newID;
                 error_log(sprintf('[%s](%s): %s',
-                    'Deficiency.php',
-                    '293',
+                    $_SERVER['PHP_SELF'],
+                    __LINE__,
                     'Def created: ' . $this->ID
                 ));
+            }
             $link->disconnect();
         } catch (\Exception $e) { throw $e; }
         finally { if (is_a($link, 'MysqliDb')) $link->disconnect(); }
@@ -381,6 +382,7 @@ class Deficiency
                 'newPic' => $this->newPic
             ];
         }
+        return $this->$props;
     }
 
     public function getReadable($props = null) {
