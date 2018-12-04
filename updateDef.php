@@ -332,7 +332,6 @@ try {
         $link->join($joinTable, $onCondition, 'LEFT');
     }    
 
-    // $link->where('status', '3', '<>');
     $link->where($idField, $id);
 
     $context['data'] = $link->getOne("$tableName $tableAlias", $fields);
