@@ -118,12 +118,6 @@ $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
 if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-// add extra Twig filters
-$filter_decode = new Twig_Filter('safe', function($str) {
-    return html_entity_decode($str);
-});
-$twig->addFilter($filter_decode);    
-    
 $context = [
     'session' => $_SESSION,
     'title' => 'Create deficiency record',
