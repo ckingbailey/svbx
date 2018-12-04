@@ -2,7 +2,7 @@
 
 {% macro input_like(datum) %}
     {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
-    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum | raw }}</p>
 {% endmacro %}
 
 {% import _self as page %}
@@ -56,7 +56,7 @@
 <div class='row item-margin-bottom'>
     <div class='col-md-6 offset-md-3'>
         <p>Deficiency description</p>
-        {{ page.input_like(data.description | safe) }}
+        {{ page.input_like(data.description) }}
     </div>
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
@@ -102,7 +102,7 @@
     <div class='row mb-3'>
         <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
             <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-            <p>{{ comment.commentText | safe }}</p>
+            <p>{{ comment.commentText | raw }}</p>
         </div>
     </div>
     {% endfor %}
@@ -129,7 +129,7 @@
     {% for row in data.photos %}
     <div class='row item-margin-bottom'>
         {% for photo in row %}
-        <div class='col-md-4'><img src='{{ photo.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+        <div class='col-md-4'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
         {% endfor %}
     </div>
     {% endfor %}

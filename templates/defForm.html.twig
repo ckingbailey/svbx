@@ -65,7 +65,7 @@
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='specLoc' class='required'>Specific Location</label></div>
-                <div class='col-md-6'><input type='text' name='specLoc' id='specLoc' value='{{ data.specLoc }}' class='form-control' required></div>
+                <div class='col-md-6'><input type='text' name='specLoc' id='specLoc' value='{{ data.specLoc | raw }}' class='form-control' required></div>
             </div>
         </div>
     </div>
@@ -135,7 +135,7 @@
         <div class='col-md-6'>
             <div class='row item-margin-bottom'>
                 <div class='col-md-6'><label for='identifiedBy' class='required'>Identified By</label></div>
-                <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='{{ data.identifiedBy }}' required></div>
+                <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='{{ data.identifiedBy | raw }}' required></div>
             </div>
         </div>
         <div class='col-md-6'>
@@ -152,7 +152,7 @@
     <div class='row item-margin-bottom'>
         <div class='col-md-6 offset-md-3'>
             <label for='description' class='required'>Deficiency description</label>
-            <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description | safe }}</textarea>
+            <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description | raw }}</textarea>
         </div>
     </div>
     <h5 class='grey-bg pad'>
@@ -163,13 +163,13 @@
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='spec'>Spec or Code</label></div>
-                    <div class='col-md-6'><input type='text' name='spec' id='spec' value='{{ data.spec }}' class='form-control'></div>
+                    <div class='col-md-6'><input type='text' name='spec' id='spec' value='{{ data.spec | raw }}' class='form-control'></div>
                 </div>
             </div>
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='actionOwner'>Action Owner</label></div>
-                    <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='{{ data.actionOwner }}' class='form-control'></div>
+                    <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='{{ data.actionOwner | raw }}' class='form-control'></div>
                 </div>
             </div>
         </div>
@@ -177,7 +177,7 @@
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='oldID'>Old Id</label></div>
-                    <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='{{ data.oldID }}' class='form-control'></div>
+                    <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='{{ data.oldID | raw }}' class='form-control'></div>
                 </div>
             </div>
             <div class='col-md-6'>
@@ -222,13 +222,13 @@
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='evidenceID'>Document Number</label></div>
-                    <div class='col-md-6'><input type='text' name='evidenceID' id='evidenceID' class='form-control' value='{{ data.evidenceID }}'></div>
+                    <div class='col-md-6'><input type='text' name='evidenceID' id='evidenceID' class='form-control' value='{{ data.evidenceID | raw }}'></div>
                 </div>
             </div>
             <div class='col-md-6'>
                 <div class='row item-margin-bottom'>
                     <div class='col-md-6'><label for='evidenceLink'>Document Link</label></div>
-                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink }}'></div>
+                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink | raw }}'></div>
                 </div>
             </div>
         </div>
@@ -253,7 +253,7 @@
         <div class='row mb-3'>
             <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
                 <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-                <p>{{ comment.commentText | safe }}</p>
+                <p>{{ comment.commentText | raw }}</p>
             </div>
         </div>
         {% endfor %}
