@@ -235,7 +235,7 @@
         <div class='row item-margin-bottom'>
             <div class='col-md-6 offset-md-3'>
                 <label for='closureComments'>Closure Comments</label>
-                <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'>{{ data.closureComments }}</textarea>
+                <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'>{{ data.closureComments | raw }}</textarea>
             </div>
         </div>
     </div>
@@ -281,7 +281,7 @@
         {% for row in data.photos %}
         <div class='row item-margin-bottom'>
             {% for photo in row %}
-            <div class='col-md-4'><img src='{{ photo.filepath }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+            <div class='col-md-4'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
             {% endfor %}
         </div>
         {% endfor %}
