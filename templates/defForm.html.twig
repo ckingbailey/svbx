@@ -281,7 +281,7 @@
         {% for row in data.photos %}
         <div class='row item-margin-bottom'>
             {% for photo in row %}
-            <div class='col-md-4'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
             {% endfor %}
         </div>
         {% endfor %}
