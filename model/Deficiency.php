@@ -216,16 +216,16 @@ class Deficiency
         if (is_string($props) && property_exists(__CLASS__, $props)) {
             // if a date key is passed by itself, set to current date
             if (strpos(strtolower($props), 'date') !== false) {
-                $val = $val ?: time();
+                $val = trim($val) ?: time();
                 $this->$props = date(self::DATE_FORMAT, $val);
-            } else $this->$props = $val;
+            } else $this->$props = trim($val);
         } elseif (is_array($props)) {
             foreach ($props as $key => $val) {
                 // nullify any indexed props
                 // set new vals for any string keys
                 if (is_string($key) && property_exists(__CLASS__, $key)) {
                     $this->$key = empty(self::$foreignKeys[$key])
-                        ? $val
+                        ? trim($val)
                         : intval($val);
                 } elseif (is_numeric($key) && property_exists(__CLASS__, $val)) {
                     $this->$val = null;
