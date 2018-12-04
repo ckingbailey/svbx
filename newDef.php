@@ -17,6 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         __LINE__,
         "POST data rec'd\n" . print_r($_POST, true)
     ));
+
+    
     try {
         $def = new Deficiency($_POST['defID'], $_POST);
 
@@ -98,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return $acc .= ("$joiner" . "$key=$val");
         }, '');
         header("location: /newDef.php$qs");
+    } catch (\Error $e) {
+        error_log($e);
     } finally {
         if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
         exit;
