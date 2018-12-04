@@ -251,6 +251,7 @@ class Deficiency
 
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
+        $newID = false;
         $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
 
         // validate creation info
@@ -285,10 +286,13 @@ class Deficiency
                 $this->ID = $newID;
             }
             $link->disconnect();
-        } catch (\Exception $e) { throw $e; }
-        finally { if (is_a($link, 'MysqliDb')) $link->disconnect(); }
-        
-        return $this->ID;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        finally {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $newID;
+        }
     }
     
     public function update() {

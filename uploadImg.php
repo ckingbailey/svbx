@@ -3,6 +3,8 @@ include 'utils/utils.php';
 include 'nimrod.php';
 include 'error_handling/uploadException.php';
 
+error_log('Hello from ' . __FILE__ . ':' . __LINE__);
+
 function filetypeCheck($type) {
     $types = [ 'jpg', 'jpeg', 'png', 'gif'];
     return (array_search($type, $types) !== false);
@@ -17,21 +19,35 @@ function mimetypeCheck($mimetype) {
 }
 
 function saveImgToServer($file, $assocID = null) {
+    error_log("Invoke saveImgToServer [{$_SERVER['PHP_SELF']}](" . __LINE__ . ")");
     // check for errors
     if (!$file['error']) {
+        error_log("No FILE error [{$_SERVER['PHP_SELF']}](" . __LINE__ . ")");
         // if assocID given, make it eleven figures long to match length of MySQL int(11)
         if ($assocID) {
             $assocID = '_'.str_pad($assocID, 11, '0', STR_PAD_LEFT);
+            error_log("assocID formed $assocID, [{$_SERVER['PHP_SELF']}](" . __LINE__ . ")");
         }
         // validate image
         if ($filename = basename($file['name'])) { // TODO: validate image size
             $tmpName = $file['tmp_name'];
-            // name new file for username, any associated ID, and timestamp
-            $targetFilename = substr($_SESSION['username'], 0, 6).$assocID.'_'.time();
+            // name new file for username + any associated ID + timestamp
+            $targetFilename = substr($_SESSION['username'], 0, 6) . $assocID . '_' . time();
             $targetDir = '/img_uploads';
             $targetTmpDir = '/img_tmp';
-            $targetTmpPath = $targetDir.$targetTmpDir.'/'.$targetFilename.'_tmp';
-            $targetLocalPath = $targetDir.'/'.$targetFilename;
+            $targetTmpPath = $targetDir . $targetTmpDir . '/' . $targetFilename . '_tmp';
+            $targetLocalPath = $targetDir . '/' . $targetFilename;
+
+            error_log("File name junk\n"
+                . print_r([
+                    'tmpName' => $tmpName,
+                    'targetFilename' => $targetFilename,
+                    'targetDir' => $targetDir,
+                    'targetTmpDir' => $targetTmpDir,
+                    'targetTmpPath' => $targetTmpPath,
+                    'targetLocalPath' => $targetLocalPath
+                ], true)
+            );
 
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
@@ -40,7 +56,7 @@ function saveImgToServer($file, $assocID = null) {
                 $targetTmpPath .= '.'.$ext;
             } else throw new uploadException(8);
             if ($tmpName && $uploadImgData = getimagesize($tmpName)) {
-                echo "<h4 style='color: forestGreen'><i>file info:</i> {$uploadImgData[3]}, {$uploadImgData['mime']}</h4>";
+                error_log("file info: {$uploadImgData[3]}, {$uploadImgData['mime']}");
             } else throw new Exception("File $tmpName did not pass getimagesize test");
             // if image is valid, move it to temporary destination before resizing
             if ($fileIsImg = move_uploaded_file($tmpName, $_SERVER['DOCUMENT_ROOT'].$targetTmpPath)) {
@@ -71,7 +87,7 @@ function saveImgToServer($file, $assocID = null) {
             } else {
                 $new_h = $max_dim;
                 $scale = $cur_h / 320;
-                $new_w = $cur_w * scale;
+                $new_w = $cur_w * $scale;
             }
 
             if ($imgResized = smart_resize_image(
@@ -82,16 +98,14 @@ function saveImgToServer($file, $assocID = null) {
                 true,
                 $_SERVER['DOCUMENT_ROOT'].$targetLocalPath
             )) {
-                echo "
-                    <h4 style='color: paleVioletRed'>img resized: ".boolToStr($imgResized).", {$_SERVER['DOCUMENT_ROOT']}$targetLocalPath}</h4>
-                    <img src='$targetLocalPath'>";
+                error_log("img resized: " . boolToStr($imgResized) . ", {$_SERVER['DOCUMENT_ROOT']}$targetLocalPath");
                 // store prev system filename only after successful upload
                 $_SESSION['lastUploadedImg'] = $filename;
                 return $targetLocalPath;
             } else {
-                echo "<h4 style='color: saddleBrown'>There was a problem resizing the image ".boolToStr($imgResized)."</h4>";
+                throw new Exception("There was a problem resizing the image " . boolToStr($imgResized));
             }
-        } else echo "Could not retrieve file name $filename";
+        } else throw new Exception("Could not retrieve file name $filename");
     } else {
         throw new uploadException($file['error']);
         exit;

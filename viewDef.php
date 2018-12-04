@@ -187,6 +187,7 @@ try {
 
     $context = [
         'session' => $_SESSION,
+        'title' => "Deficiency no. $id",
         'pageHeading' => "Deficiency No. $id",
         'data' => $data
     ];
