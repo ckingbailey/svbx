@@ -4,7 +4,7 @@
 {# TODO: make this template extend def.html.twig #}
 {% macro input_like(datum) %}
     {% set extraClasses = datum ? '' : 'full-width grey-bg ' %}
-    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum }}</p>
+    <p class="{{ extraClasses }}mb-0 full-width pad-less thin-grey-border border-radius fake-input">{{ datum | raw }}</p>
 {% endmacro %}
 
 {% import _self as page %}
@@ -38,7 +38,7 @@
     </div>
     <div class='col-md-6'>
         <div class='row item-margin-bottom'>
-            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta | safe) }}</p></div>
+            <div class='col-md-12 offset-md-0'><p>Description</p><p>{{ page.input_like(data.descriptive_title_vta) }}</p></div>
         </div>
     </div>
 </div>
@@ -47,7 +47,7 @@
         <div class='col-md-12 offset-md-0'><p>Root problem</p><p>{{ page.input_like(data.root_prob_vta) }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
-        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta | safe) }}</p></div>
+        <div class='col-md-12 offset-md-0'><p>Resolution</p><p>{{ page.input_like(data.resolution_vta) }}</p></div>
     </div>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
@@ -94,7 +94,7 @@
     <div class='row item-margin-bottom'>
         <div class='col-md-12 offset-md-0'>
             <div class='row item-margin-bottom'>
-                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart | safe) }}</p></div>
+                <div class='col-md-12 offset-md-0'><p>BART ID</p><p>{{ page.input_like(data.id_bart) }}</p></div>
             </div>
         </div>
     </div>

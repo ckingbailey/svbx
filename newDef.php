@@ -1,18 +1,101 @@
 <?php
 require 'vendor/autoload.php';
+require 'uploadImg.php';
 require 'session.php';
 
 use SVBX\Deficiency;
-// include('SQLFunctions.php');
-// include('html_components/defComponents.php');
-// include('html_functions/bootstrapGrid.php');
-// $link = f_sqlConnect();
-// $Role = $_SESSION['role'];
-// $title = "SVBX - New Deficiency";
+
 if ($_SESSION['role'] <= 10) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $def = new Deficiency($_POST['defID'], $_POST);
+
+        $def->set('created_by', $_SESSION['username']);
+        $def->insert();
+
+        // if INSERT succesful, prepare, upload, and INSERT photo
+        // TODO: make all this one transcaction handled by the Deficiency object
+        // TODO: create classes for Comment and Attachment
+        if ($_FILES['CDL_pics']['size']
+            && $_FILES['CDL_pics']['name']
+            && $_FILES['CDL_pics']['tmp_name']
+            && $_FILES['CDL_pics']['type'])
+        {
+            $CDL_pics = $_FILES['CDL_pics'];
+        } else $CDL_pics = null;
+
+        if ($CDL_pics) {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $table = 'CDL_pics';
+            $fields = [
+                'defID' => $def->get('ID'),
+                'pathToFile' => null
+            ];
+            
+            // TODO: this can fail silently. Why? Get better error handling here
+            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+            $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
+            if ($fields['pathToFile']) {
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
+            }
+        }
+        
+        // if comment submitted commit it to a separate table
+        if (strlen($_POST['cdlCommText'])) {
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            $table = 'cdlComments';
+            $fields = [
+                'defID' => $def->get('ID'),
+                'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                'userID' => $_SESSION['userID']
+            ];
+            
+            if ($fields['cdlCommText'])
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
+        }
+
+        header("location: /viewDef.php?defID={$def->get('ID')}");
+    } catch (\Exception $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+        $props = $def->get();
+        $qs = array_reduce(array_keys($props), function ($acc, $key) use ($props) {
+            if ($key === 'newPic' || $key === 'comments' || $key === 'pics') return $acc;
+            $val = $props[$key];
+            if ($key === 'ID') $key = 'defID';
+            $joiner = empty($acc) ? '?' : '&';
+            return $acc .= ("$joiner" . "$key=$val");
+        }, '');
+        header("location: /newDef.php$qs");
+    } catch (\Error $e) {
+        error_log($e);
+    } finally {
+        if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+        exit;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET'
+    && !empty($_GET)
+    && !empty($_GET['defID'])
+    && is_numeric($_GET['defID']))
+{
+    try {
+        $defID = intval($_GET['defID']);
+        $def = new Deficiency($defID);
+        $def->set($_GET);
+    } catch (\Exception $e) {
+        error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
+    }
 }
 
 // instantiate Twig
@@ -20,32 +103,25 @@ $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
 if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
+$context = [
+    'session' => $_SESSION,
+    'title' => 'Create deficiency record',
+    'pageHeading' => "Add New Deficiency",
+    'formAction' => $_SERVER['PHP_SELF']
+];    
+
 if (!empty($_SESSION['errorMsg']))
     unset($_SESSION['errorMsg']);
 
-// add extra Twig filters
-$html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
-    $decoded = html_entity_decode($str, ENT_QUOTES);
-    return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
-});    
-$filter_stripslashes = new Twig_Filter('unescape', function($str) {
-    return stripcslashes($str);
-});    
-$filter_decode = new Twig_Filter('safe', function($str) {
-    return html_entity_decode($str);
-});
-$twig->addFilter($filter_decode);    
-$twig->addFilter($html_sanitize_decode);
-$twig->addFilter($filter_stripslashes);
-    
-$context = [
-    'session' => $_SESSION,
-    'pageHeading' => "Add New Deficiency",
-    'formAction' => 'RecDef.php'
-];
-
 try {
     $context['options'] = Deficiency::getLookupOptions();
+
+    if (!empty($def) && is_a($def, 'SVBX\Deficiency')) {
+        $def->set(Deficiency::MOD_HISTORY); // clear modification history
+        $data = $def->get();
+        $context['data'] = $data;
+        $context['pageHeading'] = "Clone Deficiency No. {$data['ID']}";
+    }
 
     $twig->display('defForm.html.twig', $context);
 } catch (Exception $e) {
@@ -54,99 +130,3 @@ try {
     if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
 }
-// include('filestart.php');
-
-// $elements = $requiredElements + $optionalElements + $closureElements;
-
-// $requiredRows = [
-//     'Required Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['safetyCert'],
-//         $elements['systemAffected']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['location'],
-//         $elements['specLoc']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['status'],
-//         $elements['severity']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['dueDate'],
-//         $elements['groupToResolve']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['requiredBy'],
-//         $elements['contractID']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['identifiedBy'],
-//         $elements['defType']
-//     ],
-//     [
-//         $elements['description']
-//     ]
-// ];
-
-// $optionalRows = [
-//     'Optional Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['spec'],
-//         $elements['actionOwner']
-//     ],
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['oldID'],
-//         $elements['CDL_pics']
-//     ],
-//     [
-//         $elements['cdlCommText']
-//     ]
-// ];
-
-// $closureRows = [
-//     'Closure Information',
-//     [
-//         'options' => [ 'inline' => true ],
-//         $elements['evidenceType'],
-//         $elements['repo'],
-//         $elements['evidenceLink']
-//     ],
-//     [
-//         $elements['closureComments']
-//     ]
-// ];
-
-// echo "
-//     <header class='container page-header'>
-//         <h1 class='page-title'>Add New Deficiency</h1>
-//     </header>
-//     <main role='main' class='container main-content'>
-//         <form action='RecDef.php' method='POST' enctype='multipart/form-data'>
-//             <input type='hidden' name='username' value='{$_SESSION['username']}' />";
-
-//         foreach ([$requiredRows, $optionalRows, $closureRows] as $rowGroup) {
-//             $rowName = array_shift($rowGroup);
-//             $content = iterateRows($rowGroup);
-//             printSection($rowName, $content);
-//         }
-
-// echo "
-//         <div class='center-content'>
-//             <button type='submit' value='submit' class='btn btn-primary btn-lg'>Submit</button>
-//             <button type='reset' value='reset' class='btn btn-primary btn-lg'>Reset</button>
-//         </div>
-//     </form>
-// </main>";
-
-// $link->close();
-// include('fileend.php');
-// ?>
