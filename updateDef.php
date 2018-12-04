@@ -14,26 +14,25 @@ $get = !empty($_GET) ? filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHA
 // project def params
 $projectFields = [
     'defID as ID',
-    'yesNoName as safetyCert',
-    'sys.systemName as systemAffected',
-    'locationName as location',
+    'safetyCert',
+    'systemAffected',
+    'location',
     'specLoc',
-    'statusName as status',
+    'status',
     'closureRequested',
-    'severityName as severity',
+    'severity',
     'dueDate',
-    'grp.systemName as groupToResolve',
-    'req.requiredBy',
-    'contractName as contract',
+    'groupToResolve',
+    'requiredBy',
+    'contractID',
     'identifiedBy',
-    'defTypeName as defType',
+    'defType',
     'description',
     'spec',
     'actionOwner',
     'oldID',
-    'comments as moreInfo',
-    'eviTypeName as evidenceType',
-    'repoName as repo',
+    'evidenceType',
+    'repo',
     'evidenceLink',
     'evidenceID',
     'closureComments',
@@ -46,17 +45,6 @@ $projectFields = [
 ];
 
 $projectJoins = [
-    'yesNo' => 'c.safetyCert = yesNo.yesNoID',
-    'system sys' => 'c.systemAffected = sys.systemID',
-    'location' => 'c.location = location.locationID',
-    'status' => 'c.status = status.statusID',
-    'severity' => 'c.severity = severity.severityID',
-    'system grp' => 'c.groupToResolve = grp.systemID',
-    'requiredBy req' => 'c.requiredBy = req.reqByID',
-    'contract' => 'c.contractID = contract.contractID',
-    'defType' => 'c.defType = defType.defTypeID',
-    'evidenceType' => 'c.evidenceType = evidenceType.eviTypeID',
-    'repo' => 'c.repo = repo.repoID',
     'users_enc cre' => 'c.created_by = cre.username',
     'users_enc upd' => 'c.updated_by = upd.username',
     'users_enc close' => 'c.closureRequestedBy = close.username'
@@ -320,6 +308,7 @@ list(
 
 $context = [
     'session' => $_SESSION,
+    'title' => "Update deficiency no. $id",
     'pageHeading' => "Update Deficiency No. $id",
     'formAction' => 'updateDefCommit.php'
 ];
@@ -343,7 +332,7 @@ try {
         $link->join($joinTable, $onCondition, 'LEFT');
     }    
 
-    $link->where('statusName', 'deleted', '<>');
+    // $link->where('status', '3', '<>');
     $link->where($idField, $id);
 
     $context['data'] = $link->getOne("$tableName $tableAlias", $fields);
