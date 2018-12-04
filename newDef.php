@@ -12,21 +12,8 @@ if ($_SESSION['role'] <= 10) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    error_log(sprintf('[%s](%s): %s',
-        $_SERVER['PHP_SELF'],
-        __LINE__,
-        "POST data rec'd\n" . print_r($_POST, true)
-    ));
-
-    
     try {
         $def = new Deficiency($_POST['defID'], $_POST);
-
-        error_log(sprintf('[%s](%s): %s',
-            $_SERVER['PHP_SELF'],
-            __LINE__,
-            "Def instantiated\n" . $def
-        ));
 
         $def->set('created_by', $_SESSION['username']);
         $def->insert();
@@ -54,9 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
             $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
             if ($fields['pathToFile']) {
-                if ($newPicID = $link->insert($table, $fields)) {
-                    error_log('New pic successfully inserted: ' . $newPicID);
-                }
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
             }
         }
         
@@ -73,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             
             if ($fields['cdlCommText'])
-                $link->insert($table, $fields);
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
 
         header("location: /viewDef.php?defID={$def->get('ID')}");
@@ -107,9 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET'
         $def = new Deficiency($defID);
         $def->set($_GET);
     } catch (\Exception $e) {
-        error_log(
-            "{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n"
-            . $e);
+        error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
     }
 }
 
