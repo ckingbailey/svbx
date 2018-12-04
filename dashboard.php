@@ -1,14 +1,20 @@
 <?php
+require 'vendor/autoload.php';
 include('SQLFunctions.php');
 require 'WeeklyDelta.php';
 require 'session.php';
 
-$title = "SVBX - Home";
+$context = [
+  'title' => 'Home',
+  'pageHeading' => 'Database Information'
+];
+
+// $title = "SVBX - Home";
 //$table = pages;
 
+$Status = "SELECT S.Status, COUNT(C.Status) FROM CDL C LEFT JOIN Status S ON C.Status=S.StatusID GROUP BY Status ORDER BY StatusID";
 $System = "SELECT S.System, COUNT(C.GroupToResolve) FROM CDL C LEFT JOIN System S ON C.GroupToResolve=S.SystemID GROUP BY System ORDER BY S.System"; //Count Actions by System
 $Sev = "SELECT S.SeverityName, COUNT(C.Severity) FROM CDL C LEFT JOIN Severity S ON C.Severity=S.SeverityID WHERE C.Status=1 GROUP BY Severity ORDER BY S.SeverityName";
-$Status = "SELECT S.Status, COUNT(C.Status) FROM CDL C LEFT JOIN Status S ON C.Status=S.StatusID GROUP BY Status ORDER BY StatusID";
 $location = "SELECT L.LocationName, COUNT(C.Location) FROM CDL C LEFT JOIN Location L ON L.LocationID=C.Location GROUP BY Location  ORDER BY L.LocationName";
 $Comp = "SELECT CompName FROM Comp ORDER BY CompName";
 $sqlSys = "SELECT COUNT(*) FROM System"; //Systems Count
