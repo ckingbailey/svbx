@@ -10,10 +10,14 @@ test.php
 error_log
 php_error.log
 old_*
-bootstrap.*
 webColors.json
 database.json
 .vscode
+
+# these should only be present in development
+popper*
+jquery*
+bootstrap.*
 
 # dependencies and package mngrs
 node_modules
