@@ -1,5 +1,6 @@
 {% extends 'page.html.twig' %}
 
+
 {% block content %}
 <div class="dashboard">
     <div class='card dash-card'>
@@ -25,7 +26,7 @@
             </div>
         </div>
         <footer class='card-footer'>
-            <a href='DisplayStatuses.php' class='btn btn-lg btn-outline btn-a'>{{ data.statusTotal }}</a>
+            <a href='DisplayStatuses.php' class='btn btn-lg btn-outline btn-a'>{{ data.status | length }}</a>
         </footer>
     </div>
     <div class='card dash-card'>
@@ -51,7 +52,7 @@
             </div>
         </div>
         <footer class='card-footer'>
-            <a href='DisplaySeverities.php' class='btn btn-lg btn-outline btn-a'>{{ data.severityTotal }}</a>
+            <a href='DisplaySeverities.php' class='btn btn-lg btn-outline btn-a'>{{ data.severity | length }}</a>
         </footer>
     </div>
     <div class='card dash-card'>
@@ -60,21 +61,22 @@
         </header>
         <div class='card-body grey-bg'>
             <ul class='dash-list'>
-                <li class='bg-secondary text-white dash-list-heading'>
-                    <span class='dash-list-left dash-list-name'>System</span>
-                    <span class='dash-list-right dash-list-count'>Actions</span>
+                <li class='bg-secondary text-white row ml-0 mr-0'>
+                    <span class='col-sm-5'>System</span>
+                    <span class='col-sm-3 text-right'>Actions</span>
+                    <span class='col-sm-4'>Lead</span>
                 </li>
                 {% for system in data.system %}
-                <li class='dash-list-item'>
-                    <span class='dash-list-left'>{{ system.systemName }}</span>
-                    <span class='dash-list-right'>{{ system.count }}</span>
-                    <span>{{ system.lead }}</span>
+                <li class='row ml-0 mr-0 thin-grey-separator'>
+                    <span class='col-sm-5'>{{ system.systemName }}</span>
+                    <span class='col-sm-3 text-right'>{{ system.count }}</span>
+                    <span class='col-sm-4'>{{ system.lead }}</span>
                 </li>
                 {% endfor %}
             </ul>
         </div>
         <footer class='card-footer'>
-          <a href='DisplaySystems.php' class='btn btn-lg btn-outline btn-a'>{{ data.systemTotal }}</a>
+          <a href='DisplaySystems.php' class='btn btn-lg btn-outline btn-a'>{{ data.system | length }}</a>
         </footer>
     </div>
     <div class='card dash-card'>
@@ -96,7 +98,7 @@
             </ul>
         </div>
         <footer class='card-footer'>
-            <a href='DisplayLocations.php' class='btn btn-lg btn-outline btn-a'>{{ data.locationTotal }}</a>
+            <a href='DisplayLocations.php' class='btn btn-lg btn-outline btn-a'>{{ data.location | length }}</a>
         </footer>
     </div>
     {% include 'weekly-report.html.twig' %}
@@ -110,7 +112,7 @@
 <script src='https://d3js.org/d3.v5.js'></script>
 <script src='js/pie_chart.js'></script>
 <script>
-    window.drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    window.drawOpenCloseChart(window.d3, 175, 604)
     window.drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 </script>
 {% endblock %}

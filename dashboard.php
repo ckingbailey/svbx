@@ -25,12 +25,14 @@ $context['data']['status'] = $link->
 $context['data']['severity'] = $link->
   orderBy('severityName', 'ASC')->
   groupBy('severityName')->
+  where('CDL.status', '3', '<>')->
   join('severity s', 'CDL.severity = s.severityID', 'LEFT')->
   get('CDL', null, ['severityName', 'COUNT(CDL.severity) as count']);
 
 $context['data']['system'] = $link->
   orderBy('systemName', 'ASC')->
   groupBy('systemName')->
+  where('CDL.status', '3', '<>')->
   join('system s', 'CDL.groupToResolve = s.systemID', 'LEFT')->
   join('users_enc', 's.lead = users_enc.userid', 'LEFT')->
   get('CDL', null, ['systemName', 'COUNT(CDL.groupToResolve) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
@@ -38,9 +40,19 @@ $context['data']['system'] = $link->
 $context['data']['location'] = $link->
   orderBy('locationName', 'ASC')->
   groupBy('locationName')->
+  where('CDL.status', '3', '<>')->
   join('location l', 'CDL.location = l.locationID', 'LEFT')->
   get('CDL', null, ['locationName', 'COUNT(CDL.location) as count']);
 
+$context['data']['totalOpen'] = $context['data']['status'][array_search('Open', array_column($context['data']['status'], 'statusName'))]['count']; // where statusName === 'open'
+$context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', array_column($context['data']['status'], 'statusName'))]['count']; // where statusName === 'closed'
+error_log('total open ' . $context['data']['totalOpen']);
+error_log('total closed ' . $context['data']['totalClosed']);
+
+$context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', array_column($context['data']['severity'], 'severityName'))]['count'];
+$context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', array_column($context['data']['severity'], 'severityName'))]['count'];
+$context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', array_column($context['data']['severity'], 'severityName'))]['count'];
+$context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', array_column($context['data']['severity'], 'severityName'))]['count'];
 // echo '<pre>' . print_r($context['data'], true) . '</pre>';
 
 // $sqlSys = "SELECT COUNT(*) FROM System"; //Systems Count
