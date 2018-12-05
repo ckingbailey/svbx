@@ -1,0 +1,128 @@
+{% extends 'page.html.twig' %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Statuses</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <h5 class='col-6 dash__list-heading'>Status</h5>
+                        <h5 class='col-6 dash__list-heading'>Items</h5>
+                    </li>
+                    {% for status in data.status %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ status.statusName }}</span>
+                        <span class='col-6'>{{ status.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class='data-display'>
+                    <div id='open-closed-graph' class='chart-container'></div>
+                    <p id='open-closed-legend' class='flex-column'></p>
+                </div>
+            </div>
+            <footer class='card-footer'>
+                <a href='DisplayStatuses.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of statuses {{ data.status | length }}</a>
+            </footer>
+        </div>
+    </div>
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Severities</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <h5 class='col-6 dash__list-heading'>Severity</h5>
+                        <h5 class='col-6 dash__list-heading'>Open Items</h5>
+                    </li>
+                    {% for severity in data.severity %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ severity.severityName }}</span>
+                        <span class='col-6'>{{ severity.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="data-display">
+                    <div id="severity-graph" class="chart-container"></div>
+                    <p id="open-closed-legend" class="legend"></p>
+                </div>
+            </div>
+            <footer class='card-footer'>
+                <a href='DisplaySeverities.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of severities {{ data.severity | length }}</a>
+            </footer>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Systems</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <h5 class='col-sm-5 col-8 dash__list-heading'>System</h5>
+                        <h5 class='col-sm-3 col-4 dash__list-heading text-right'>Actions</h5>
+                        <h5 class='col-sm-4 dash__list-heading dash__list-col-lead'>Lead</h5>
+                    </li>
+                    {% for system in data.system %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-sm-5 col-8'>{{ system.systemName }}</span>
+                        <span class='col-sm-3 col-4 text-right'>{{ system.count }}</span>
+                        <span class='col-sm-4 dash__list-col-lead'>{{ system.lead }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <footer class='card-footer'>
+            <a href='DisplaySystems.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of systems {{ data.system | length }}</a>
+            </footer>
+        </div>
+    </div>
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Locations</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <h5 class='col-6 dash__list-heading'>Location</h5>
+                        <h5 class='col-6 dash__list-heading'>Open Items</h5>
+                    </li>
+                    {% for location in data.location %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ location.locationName }}</span>
+                        <span class='col-6'>{{ location.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <footer class='card-footer'>
+                <a href='DisplayLocations.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of locations {{ data.location | length }}</a>
+            </footer>
+        </div>
+    </div>
+</div>
+{% include 'weekly-report.html.twig' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>  </body>
+<script src='https://d3js.org/d3.v5.js'></script>
+<script src='js/pie_chart.js'></script>
+<script>
+    window.drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    window.drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
+</script>
+{% endblock %}

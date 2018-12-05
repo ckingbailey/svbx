@@ -60,10 +60,6 @@ ul li {
     max-width: 50%;
 }
 
-.block {
-    display: block!important;
-}
-
 /* flex classes */
 .fit-content {
     width: fit-content;
@@ -91,10 +87,6 @@ ul li {
     align-items: flex-start;
 }
 
-.no-wrap {
-    flex-wrap: nowrap;
-}
-
 .space-between {
     justify-content: space-between;
 }
@@ -111,28 +103,12 @@ ul li {
     align-items: center;
 }
 
-.align-stretch {
-    align-items: stretch;
-}
-
 .align-end {
     align-items: flex-end;
 }
 
-.flex {
-    flex-grow: 1; flex-shrink: 1;
-}
-
 .flex-grow {
     flex-grow: 1;
-}
-
-.flex-shrink {
-    flex-shrink: 1;
-}
-
-.margin-none {
-    margin: 0;
 }
 
 .pad {
@@ -217,10 +193,6 @@ ul li {
 
 .item-border-bottom:not(:last-child) {
     border-bottom: 1px solid var(--quarter-trans-grey);
-}
-
-.border-trans {
-    border-color: transparent;
 }
 
 .no-border {
@@ -352,14 +324,6 @@ ul li {
 
 }
 
-.open-def {
-    background-color: red;
-}
-
-.closed-def {
-    background-color: green;
-}
-
 .masthead-logo {
     margin-right: 1rem;
     height: 3rem;
@@ -371,54 +335,6 @@ ul li {
     padding-bottom: .75rem;
 }
 
-.logo-md {
-    width: 127px;
-}
-
-.heading-card {
-    margin-bottom: 1rem;
-}
-
-.page-heading-panel {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.page-heading-panel>:nth-child(n) {
-    flex: 0 1 auto;
-    margin: 0;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
-}
-
-.page-heading-panel>p {
-    hyphens: auto;
-}
-
-.def-nav {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-flow: row nowrap;
-    margin-bottom: .65rem;
-    padding: 0;
-}
-
-.def-nav-btn {
-    display: block;
-}
-
-.nav-cur-page {
-    background: var(--secondary);
-    box-shadow: 0 0 .3rem .15rem #007bff40;
-    color: var(--dark);
-}
-
-a.nav-cur-page:hover, button.nav-cur-page:hover {
-    background: var(--secondary);
-}
 /* Login Page */
 .login-container {
     text-align:center;
@@ -437,66 +353,66 @@ a.nav-cur-page:hover, button.nav-cur-page:hover {
     text-decoration: underline;
 }
 /* Data Dashboard*/
-.dashboard {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-    align-items: stretch;
+.dash__card {
+    height: 100%;
 }
 
-.dash-card {
-    margin-bottom: 1.25rem;
-    width: 100%;
-}
-
-@media screen and (min-width: 576px) {
-    .dash-card {
-        max-width: 46%;
-    }
-
-    .dash-card:nth-child(2n + 1) {
-        margin-right: 2%;
-    }
-}
-
-.dash-card .card-header, .dash-card .card-footer {
+.dash__card .card-header, .dash__card .card-footer {
     text-align: center;
 }
 
-.dash-card .card-header {
+.dash__card .card-header {
     background-color: var(--vta-dark-blue);
     color: white;
 }
 
-.dash-list {
+.dash__list {
     margin: 0;
     margin-bottom: 1.25rem;
     padding: 0;
 }
 
-/*.dash-list-heading {
-    background: var(--secondary);
-    color: white;
-}*/
-
-.dash-list-heading, .dash-list-item {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: flex-start;
+.dash__list-row {
+    margin-left: 0; margin-right: 0;
     margin-bottom: .125rem;
-    padding: 0 1rem;
-    list-style-type: none;
 }
 
-.dash-list-item:not(:last-child) {
-    border-bottom: 1px solid #0002;
+.dash__list-heading {
+    margin-top: .3rem; margin-bottom: .4rem;
 }
 
-.dash-list-left, .dash-list-right {
-    display: block;
-    width: 48%;
-    text-align: center;
+.dash__list-col-lead {
+    display: none;
+}
+
+.weekly-report__list-heading {
+    display: none;
+}
+
+.weekly-report__system-name {
+    font-weight: bold;
+}
+
+.weekly-report__label {
+    display: inline;
+}
+
+@media screen and (min-width: 576px) {
+    .dash__list-col-lead {
+        display: block;
+    }
+
+    .weekly-report__list-heading {
+        display: flex;
+    }
+
+    .weekly-report__system-name {
+        font-weight: normal;
+    }
+    
+        .weekly-report__label {
+        display: none;
+    }
 }
 
 .data-display {
@@ -528,16 +444,10 @@ a.nav-cur-page:hover, button.nav-cur-page:hover {
     padding: 0 24px 3px 0;
 }
 
-.dash-card .card-footer {
+.dash__card .card-footer {
     background-color: var(--bs-jumbo-grey);
     border-top: none;
     padding-bottom: 1.75rem;
-}
-
-.dash-card-tot {
-    margin-bottom: .5rem;
-    border: 1px solid var(--quarter-trans-grey);
-    padding: .75rem;
 }
 /* User Page */
 .user-role-title {
@@ -561,16 +471,6 @@ a.nav-cur-page:hover, button.nav-cur-page:hover {
 .user-menu-item:not(:last-child) {
     margin-bottom: .85rem;
 }
-
-.user-menu-item a {
-}
-
-.user-menu-item a:hover {
-}
-
-.admin-menu-item {}
-
-.superadmin-menu-item {}
 
 /* Forms CSS */
 .form-control:focus {
@@ -670,9 +570,12 @@ select:invalid {
     line-height: 1.2;
 }
 
-.btn.btn-outline {
+.btn-outline {
     background-color: var(--quarter-trans-grey);
     border: 1px solid var(--secondary);
+}
+
+.btn-outline:not([class*="text-"]) {
     color: var(--dark);
 }
 
@@ -682,10 +585,6 @@ select:invalid {
 
 .btn>i.typcn {
     padding: 1px;
-}
-
-.btn.btn-a {
-    color: var(--vta-blue);
 }
 
 .btn.btn-a:hover {
@@ -748,112 +647,40 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     table-layout: fixed;
 }
 
-/* sum table is not a proper table, and should be changed */
-.svbx-table, .svbx-table>thead, .svbx-table>tbody,
-.svbx-table tr, .svbx-table th, .svbx-table td {
-    table-layout: fixed;
-}
-
-.svbx-table {
-    margin-left: auto; margin-right: auto;
-    border: none;
-}
-
-.svbx-table .svbx-th {
-    background-color: #03528B;
-    color: white;
-    text-align: center;
-    vertical-align: middle;
-}
-
-.svbx-table.svbx-th, .svbx-table.svbx-td {
-    overflow-x: hidden;
-    text-overflow: clip;
-}
-
-.svbx-td {
-    text-align: left;
-}
-
-.svbx-th.status-th {
-    width: 40px;
-}
-
-.svbx-th.loc-th {
-    width: 91px;
-}
-
-.svbx-th.sev-th, .svbx-th.created-th {
-    width: 85px;
-}
-
-.svbx-th.status-th {
-    width: 70px;
-}
-
-.svbx-th.system-th {
-    width: 143px;
-}
-
-.svbx-th.updated-th {
-    width: 91px;
-}
-
-.svbx-th.edit-th {
-    width: 56px;
-}
-
-.svbx-th.del-th {
-    width: 73px;
-}
-
-.descrip-th {
-    /*width: 250px;*/
-}
-/* End of Table Menu CSS */
-
 /* Footer CSS */
 
 /* resize footer for different screen sizes */
-@media screen and (max-width: 576px) {
-    .footer {
-        font-size: .7rem;
-    }
+.footer {
+    font-size: .7rem;
 }
 
-@media screen and (min-width: 577px) {
+@media screen and (min-width: 576px) {
     .footer {
-        font-size: normal;
+        font-size: 1rem;
     }
 }
 
 .footer {
-    /* position: fixed;
-    bottom: 0; */
     background: var(--vta-dark-blue);
     color: var(--bs-jumbo-grey);
     text-align: center;
-    /*position: absolute;*/
-    /*bottom: 0px;*/
     height:auto;
     max-width:100%;
 }
 
-footer a:link{
+.footer a:link{
     color:#FFFFFF;
     text-decoration: none;
 }
 
-footer a:hover {
+.footer a:hover {
     text-decoration: underline;
 }
 
-footer a:visited{
+.footer a:visited{
     color:#FFFFFF;
     text-decoration: none;
 }
-
-/* End of Footer CSS */
 
 /* below are DEPRECATED STYLES that are still in use */
 .index {
