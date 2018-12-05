@@ -37,19 +37,12 @@ $context['data']['system'] = $link->
   join('users_enc', 'system.lead = users_enc.userid', 'LEFT')->
   get('system', null, ['systemName', 'COUNT(IF(status <> 3, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
 
-error_log(print_r($context['data']['system'], true));
-$systemDefQuery = $link->getLastQuery();
-$systemCount = $link->getValue('system', 'COUNT(systemID)');
-
 $context['data']['location'] = $link->  
   orderBy('locationName', 'ASC')->
   groupBy('locationName')->
   // where('CDL.status', '3', '<>')->
   join('CDL', 'location.locationID = CDL.location', 'LEFT')->
   get('location', null, ['locationName', 'COUNT(IF(status <> 3, 1, NULL)) as count']);
-  
-echo "<pre>$systemDefQuery</pre>";
-echo "<pre>$systemCount</pre>";
 
 $statusName = array_column($context['data']['status'], 'statusName');
 $context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
