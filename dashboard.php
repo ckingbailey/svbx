@@ -25,9 +25,9 @@ $context['data']['status'] = $link->
 $context['data']['severity'] = $link->
   orderBy('severityName', 'ASC')->
   groupBy('severityName')->
-  // where('CDL.status', '3', '<>')->
+  // where('CDL.status', '1')->
   join('CDL', 'severity.severityID = CDL.severity', 'LEFT')->
-  get('severity', null, ['severityName', 'COUNT(IF(status <> 3, 1, NULL)) as count']);
+  get('severity', null, ['severityName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
 $context['data']['system'] = $link->
   orderBy('systemName', 'ASC')->
@@ -35,14 +35,14 @@ $context['data']['system'] = $link->
   // where('CDL.status', '3', '<>')->
   join('CDL', 'system.systemID = CDL.groupToResolve', 'LEFT')->
   join('users_enc', 'system.lead = users_enc.userid', 'LEFT')->
-  get('system', null, ['systemName', 'COUNT(IF(status <> 3, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
+  get('system', null, ['systemName', 'COUNT(IF(status = 1, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
 
 $context['data']['location'] = $link->  
   orderBy('locationName', 'ASC')->
   groupBy('locationName')->
   // where('CDL.status', '3', '<>')->
   join('CDL', 'location.locationID = CDL.location', 'LEFT')->
-  get('location', null, ['locationName', 'COUNT(IF(status <> 3, 1, NULL)) as count']);
+  get('location', null, ['locationName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
 $statusName = array_column($context['data']['status'], 'statusName');
 $context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
