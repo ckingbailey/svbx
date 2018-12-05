@@ -1,6 +1,6 @@
 @import './assets/typicons-font/src/font/typicons.css';
 
-html {
+:root {
     /* Bootsrap breakpoints */
     --breakpoint-xs: 0;
     --breakpoint-sm: 576px;
@@ -449,12 +449,6 @@ ul li {
     border-top: none;
     padding-bottom: 1.75rem;
 }
-
-.dash__card-tot {
-    margin-bottom: .5rem;
-    border: 1px solid var(--quarter-trans-grey);
-    padding: .75rem;
-}
 /* User Page */
 .user-role-title {
     font-style: italic;
@@ -477,16 +471,6 @@ ul li {
 .user-menu-item:not(:last-child) {
     margin-bottom: .85rem;
 }
-
-.user-menu-item a {
-}
-
-.user-menu-item a:hover {
-}
-
-.admin-menu-item {}
-
-.superadmin-menu-item {}
 
 /* Forms CSS */
 .form-control:focus {
@@ -663,93 +647,23 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     table-layout: fixed;
 }
 
-/* sum table is not a proper table, and should be changed */
-.svbx-table, .svbx-table>thead, .svbx-table>tbody,
-.svbx-table tr, .svbx-table th, .svbx-table td {
-    table-layout: fixed;
-}
-
-.svbx-table {
-    margin-left: auto; margin-right: auto;
-    border: none;
-}
-
-.svbx-table .svbx-th {
-    background-color: #03528B;
-    color: white;
-    text-align: center;
-    vertical-align: middle;
-}
-
-.svbx-table.svbx-th, .svbx-table.svbx-td {
-    overflow-x: hidden;
-    text-overflow: clip;
-}
-
-.svbx-td {
-    text-align: left;
-}
-
-.svbx-th.status-th {
-    width: 40px;
-}
-
-.svbx-th.loc-th {
-    width: 91px;
-}
-
-.svbx-th.sev-th, .svbx-th.created-th {
-    width: 85px;
-}
-
-.svbx-th.status-th {
-    width: 70px;
-}
-
-.svbx-th.system-th {
-    width: 143px;
-}
-
-.svbx-th.updated-th {
-    width: 91px;
-}
-
-.svbx-th.edit-th {
-    width: 56px;
-}
-
-.svbx-th.del-th {
-    width: 73px;
-}
-
-.descrip-th {
-    /*width: 250px;*/
-}
-/* End of Table Menu CSS */
-
 /* Footer CSS */
 
 /* resize footer for different screen sizes */
-@media screen and (max-width: 576px) {
-    .footer {
-        font-size: .7rem;
-    }
+.footer {
+    font-size: .7rem;
 }
 
-@media screen and (min-width: 577px) {
+@media screen and (min-width: 576px) {
     .footer {
-        font-size: normal;
+        font-size: 1rem;
     }
 }
 
 .footer {
-    /* position: fixed;
-    bottom: 0; */
     background: var(--vta-dark-blue);
     color: var(--bs-jumbo-grey);
     text-align: center;
-    /*position: absolute;*/
-    /*bottom: 0px;*/
     height:auto;
     max-width:100%;
 }
@@ -767,8 +681,6 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     color:#FFFFFF;
     text-decoration: none;
 }
-
-/* End of Footer CSS */
 
 /* below are DEPRECATED STYLES that are still in use */
 .index {
