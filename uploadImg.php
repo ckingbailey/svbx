@@ -26,22 +26,21 @@ function saveImgToServer($file, $assocID = null) {
         // validate image
         if ($filename = basename($file['name'])) { // TODO: validate image size
             $tmpName = $file['tmp_name'];
-            // name new file for username, any associated ID, and timestamp
-            $targetFilename = substr($_SESSION['username'], 0, 6).$assocID.'_'.time();
+            // name new file for username + any associated ID + timestamp
+            $targetFilename = substr($_SESSION['username'], 0, 6) . $assocID . '_' . time();
             $targetDir = '/img_uploads';
             $targetTmpDir = '/img_tmp';
-            $targetTmpPath = $targetDir.$targetTmpDir.'/'.$targetFilename.'_tmp';
-            $targetLocalPath = $targetDir.'/'.$targetFilename;
-
+            $targetTmpPath = $targetDir . $targetTmpDir . '/' . $targetFilename . '_tmp';
+            $targetLocalPath = $targetDir . '/' . $targetFilename;
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
             if ($fileIsImg = filetypeCheck($ext)) {
                 // append file extension to target temp path
                 $targetTmpPath .= '.'.$ext;
             } else throw new uploadException(8);
-            if ($tmpName && $uploadImgData = getimagesize($tmpName)) {
-                echo "<h4 style='color: forestGreen'><i>file info:</i> {$uploadImgData[3]}, {$uploadImgData['mime']}</h4>";
-            } else throw new Exception("File $tmpName did not pass getimagesize test");
+            if (!$tmpName || !$uploadImgData = getimagesize($tmpName)) {
+                throw new Exception("File $tmpName did not pass getimagesize test");
+            }
             // if image is valid, move it to temporary destination before resizing
             if ($fileIsImg = move_uploaded_file($tmpName, $_SERVER['DOCUMENT_ROOT'].$targetTmpPath)) {
                 // if move is successful, prepare filepath target string
@@ -71,7 +70,7 @@ function saveImgToServer($file, $assocID = null) {
             } else {
                 $new_h = $max_dim;
                 $scale = $cur_h / 320;
-                $new_w = $cur_w * scale;
+                $new_w = $cur_w * $scale;
             }
 
             if ($imgResized = smart_resize_image(
@@ -82,16 +81,13 @@ function saveImgToServer($file, $assocID = null) {
                 true,
                 $_SERVER['DOCUMENT_ROOT'].$targetLocalPath
             )) {
-                echo "
-                    <h4 style='color: paleVioletRed'>img resized: ".boolToStr($imgResized).", {$_SERVER['DOCUMENT_ROOT']}$targetLocalPath}</h4>
-                    <img src='$targetLocalPath'>";
                 // store prev system filename only after successful upload
                 $_SESSION['lastUploadedImg'] = $filename;
                 return $targetLocalPath;
             } else {
-                echo "<h4 style='color: saddleBrown'>There was a problem resizing the image ".boolToStr($imgResized)."</h4>";
+                throw new Exception("There was a problem resizing the image " . boolToStr($imgResized));
             }
-        } else echo "Could not retrieve file name $filename";
+        } else throw new Exception("Could not retrieve file name $filename");
     } else {
         throw new uploadException($file['error']);
         exit;

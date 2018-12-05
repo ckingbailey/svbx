@@ -367,6 +367,7 @@ try {
         }
     }
 
+    $link->where('status', '3', '<>');
     $link->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template

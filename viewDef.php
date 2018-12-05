@@ -187,6 +187,7 @@ try {
 
     $context = [
         'session' => $_SESSION,
+        'title' => "Deficiency no. $id",
         'pageHeading' => "Deficiency No. $id",
         'data' => $data
     ];
@@ -215,20 +216,6 @@ try {
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
     // $template = $twig->load();
-
-    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
-        $decoded = html_entity_decode($str, ENT_QUOTES);
-        return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
-    });    
-    $filter_stripslashes = new Twig_Filter('unescape', function($str) {
-        return stripcslashes($str);
-    });
-    $filter_decode = new Twig_Filter('safe', function($str) {
-        return html_entity_decode($str, ENT_QUOTES);
-    });
-    $twig->addFilter($filter_decode);    
-    $twig->addFilter($html_sanitize_decode);
-    $twig->addFilter($filter_stripslashes);
 
     $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {
