@@ -385,9 +385,33 @@ ul li {
     display: none;
 }
 
+.weekly-report__list-heading {
+    display: none;
+}
+
+.weekly-report__system-name {
+    font-weight: bold;
+}
+
+.weekly-report__label {
+    display: inline;
+}
+
 @media screen and (min-width: 576px) {
     .dash__list-col-lead {
         display: block;
+    }
+
+    .weekly-report__list-heading {
+        display: flex;
+    }
+
+    .weekly-report__system-name {
+        font-weight: normal;
+    }
+    
+        .weekly-report__label {
+        display: none;
     }
 }
 
