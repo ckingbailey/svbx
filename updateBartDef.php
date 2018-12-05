@@ -137,7 +137,6 @@ if ($stmt = $link->prepare($sql)) {
                  echo "
                     <div class='thin-grey-border bg-yellow pad'>
                         <p class='mt-0 mb-0'>{$_SESSION['errorMsg']}</p>
-                        <p class='mt-0 mb-0 blue-striped'>{$_SESSION['userID']}</p>
                     </div>";
                 unset($_SESSION['errorMsg']);
             }
