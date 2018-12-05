@@ -19,65 +19,47 @@ $context['data']['status'] = $link->
   orderBy('statusID', 'ASC')->
   groupBy('statusName')->
   where('CDL.status', '3', '<>')->
-  join('status s', 'CDL.status = s.statusID', 'LEFT')->
-  get('CDL', null, ['statusName', 'COUNT(CDL.status) as count']);
+  join('CDL', 'status.statusID = CDL.status', 'LEFT')->
+  get('status', null, ['statusName', 'COUNT(CDL.status) as count']);
 
 $context['data']['severity'] = $link->
   orderBy('severityName', 'ASC')->
   groupBy('severityName')->
-  where('CDL.status', '3', '<>')->
-  join('severity s', 'CDL.severity = s.severityID', 'LEFT')->
-  get('CDL', null, ['severityName', 'COUNT(CDL.severity) as count']);
+  // where('CDL.status', '3', '<>')->
+  join('CDL', 'severity.severityID = CDL.severity', 'LEFT')->
+  get('severity', null, ['severityName', 'COUNT(IF(status <> 3, 1, NULL)) as count']);
 
 $context['data']['system'] = $link->
   orderBy('systemName', 'ASC')->
   groupBy('systemName')->
-  where('CDL.status', '3', '<>')->
-  join('system s', 'CDL.groupToResolve = s.systemID', 'LEFT')->
-  join('users_enc', 's.lead = users_enc.userid', 'LEFT')->
-  get('CDL', null, ['systemName', 'COUNT(CDL.groupToResolve) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
+  // where('CDL.status', '3', '<>')->
+  join('CDL', 'system.systemID = CDL.groupToResolve', 'LEFT')->
+  join('users_enc', 'system.lead = users_enc.userid', 'LEFT')->
+  get('system', null, ['systemName', 'COUNT(IF(status <> 3, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
 
-$context['data']['location'] = $link->
+error_log(print_r($context['data']['system'], true));
+$systemDefQuery = $link->getLastQuery();
+$systemCount = $link->getValue('system', 'COUNT(systemID)');
+
+$context['data']['location'] = $link->  
   orderBy('locationName', 'ASC')->
   groupBy('locationName')->
-  where('CDL.status', '3', '<>')->
-  join('location l', 'CDL.location = l.locationID', 'LEFT')->
-  get('CDL', null, ['locationName', 'COUNT(CDL.location) as count']);
+  // where('CDL.status', '3', '<>')->
+  join('CDL', 'location.locationID = CDL.location', 'LEFT')->
+  get('location', null, ['locationName', 'COUNT(IF(status <> 3, 1, NULL)) as count']);
+  
+echo "<pre>$systemDefQuery</pre>";
+echo "<pre>$systemCount</pre>";
 
-$context['data']['totalOpen'] = $context['data']['status'][array_search('Open', array_column($context['data']['status'], 'statusName'))]['count']; // where statusName === 'open'
-$context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', array_column($context['data']['status'], 'statusName'))]['count']; // where statusName === 'closed'
-error_log('total open ' . $context['data']['totalOpen']);
-error_log('total closed ' . $context['data']['totalClosed']);
+$statusName = array_column($context['data']['status'], 'statusName');
+$context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
+$context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', $statusName)]['count']; // where statusName === 'closed'
 
-$context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', array_column($context['data']['severity'], 'severityName'))]['count'];
-$context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', array_column($context['data']['severity'], 'severityName'))]['count'];
-$context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', array_column($context['data']['severity'], 'severityName'))]['count'];
-$context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', array_column($context['data']['severity'], 'severityName'))]['count'];
-// echo '<pre>' . print_r($context['data'], true) . '</pre>';
-
-// $sqlSys = "SELECT COUNT(*) FROM System"; //Systems Count
-// $sqlStat = "SELECT COUNT(*) FROM Status"; //Status Counts
-// $sqlSev = "SELECT COUNT(*) FROM Severity"; //Severity Counts
-// $sqlLoc = "SELECT COUNT(*) FROM Location"; //Location Counts
-// $sqlET = "SELECT COUNT(*) FROM CDL WHERE Status=2"; //Status Closed Counts
-
-// vars to pass to JS scripts
-// $statusOpen = 0;
-// $statusClosed = 0;
-// $blockSev = 0;
-// $critSev = 0;
-// $majSev = 0;
-// $minSev = 0;
-
-// foreach($cards as $card) {
-//   $tableStr = 'SELECT COUNT(*) FROM ' . $card[0];
-//   $res = $link->query($tableStr);
-//   $count = $res->fetch_row()[0];
-//   $res->close();
-//   $res = $link->query($queries[$card[0]]);
-//   writeDashCard($count, $res, $card);
-//   $res->close();
-// }
+$severityName = array_column($context['data']['severity'], 'severityName');
+$context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', $severityName)]['count'];
+$context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', $severityName)]['count'];
+$context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', $severityName)]['count'];
+$context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', $severityName)]['count'];
 
 // instantiate Twig
 $loader = new Twig_Loader_Filesystem('templates');

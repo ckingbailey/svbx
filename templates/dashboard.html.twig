@@ -112,7 +112,7 @@
 <script src='https://d3js.org/d3.v5.js'></script>
 <script src='js/pie_chart.js'></script>
 <script>
-    window.drawOpenCloseChart(window.d3, 175, 604)
+    window.drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
     window.drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 </script>
 {% endblock %}
