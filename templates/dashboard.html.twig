@@ -2,107 +2,117 @@
 
 
 {% block content %}
-<div class="dashboard">
-    <div class='card dash-card'>
-        <header class='card-header'>
-            <h4>Statuses</h4>
-        </header>
-        <div class='card-body grey-bg'>
-            <ul class='dash-list'>
-            <li class='bg-secondary text-white dash-list-heading'>
-                <span class='dash-list-left dash-list-name'>Status</span>
-                <span class='dash-list-right dash-list-count'>Items</span>
-            </li>
-            {% for status in data.status %}
-            <li class='dash-list-item'>
-                <span class='dash-list-left'>{{ status.statusName }}</span>
-                <span class='dash-list-right'>{{ status.count }}</span>
-            </li>
-            {% endfor %}
-            </ul>
-            <div class='data-display'>
-                <div id='open-closed-graph' class='chart-container'></div>
-                <p id='open-closed-legend' class='flex-column'></p>
+<div class="row">
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Statuses</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <h5 class='col-6 dash__list-heading'>Status</h5>
+                        <h5 class='col-6 dash__list-heading'>Items</h5>
+                    </li>
+                    {% for status in data.status %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ status.statusName }}</span>
+                        <span class='col-6'>{{ status.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class='data-display'>
+                    <div id='open-closed-graph' class='chart-container'></div>
+                    <p id='open-closed-legend' class='flex-column'></p>
+                </div>
             </div>
+            <footer class='card-footer'>
+                <a href='DisplayStatuses.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of statuses {{ data.status | length }}</a>
+            </footer>
         </div>
-        <footer class='card-footer'>
-            <a href='DisplayStatuses.php' class='btn btn-lg btn-outline btn-a'>Number of statuses {{ data.status | length }}</a>
-        </footer>
     </div>
-    <div class='card dash-card'>
-        <header class='card-header'>
-            <h4>Severities</h4>
-        </header>
-        <div class='card-body grey-bg'>
-            <ul class='dash-list'>
-                <li class='bg-secondary text-white dash-list-heading'>
-                    <span class='dash-list-left dash-list-name'>Severity</span>
-                    <span class='dash-list-right dash-list-count'>Open Items</span>
-                </li>
-                {% for severity in data.severity %}
-                <li class='dash-list-item'>
-                    <span class='dash-list-left'>{{ severity.severityName }}</span>
-                    <span class='dash-list-right'>{{ severity.count }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-            <div class="data-display">
-                <div id="severity-graph" class="chart-container"></div>
-                <p id="open-closed-legend" class="legend"></p>
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Severities</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <span class='col-6 dash__list-heading'>Severity</span>
+                        <span class='col-6 dash__list-heading'>Open Items</span>
+                    </li>
+                    {% for severity in data.severity %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ severity.severityName }}</span>
+                        <span class='col-6'>{{ severity.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="data-display">
+                    <div id="severity-graph" class="chart-container"></div>
+                    <p id="open-closed-legend" class="legend"></p>
+                </div>
             </div>
+            <footer class='card-footer'>
+                <a href='DisplaySeverities.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of severities {{ data.severity | length }}</a>
+            </footer>
         </div>
-        <footer class='card-footer'>
-            <a href='DisplaySeverities.php' class='btn btn-lg btn-outline btn-a'>Number of severities {{ data.severity | length }}</a>
-        </footer>
     </div>
-    <div class='card dash-card'>
-        <header class='card-header'>
-            <h4>Systems</h4>
-        </header>
-        <div class='card-body grey-bg'>
-            <ul class='dash-list'>
-                <li class='bg-secondary text-white row ml-0 mr-0'>
-                    <span class='col-sm-5'>System</span>
-                    <span class='col-sm-3 text-right'>Actions</span>
-                    <span class='col-sm-4'>Lead</span>
-                </li>
-                {% for system in data.system %}
-                <li class='row ml-0 mr-0 thin-grey-separator'>
-                    <span class='col-sm-5'>{{ system.systemName }}</span>
-                    <span class='col-sm-3 text-right'>{{ system.count }}</span>
-                    <span class='col-sm-4'>{{ system.lead }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <footer class='card-footer'>
-          <a href='DisplaySystems.php' class='btn btn-lg btn-outline btn-a'>Number of systems {{ data.system | length }}</a>
-        </footer>
-    </div>
-    <div class='card dash-card'>
-        <header class='card-header'>
-            <h4>Locations</h4>
-        </header>
-        <div class='card-body grey-bg'>
-            <ul class='dash-list'>
-                <li class='bg-secondary text-white dash-list-heading'>
-                    <span class='dash-list-left dash-list-name'>Location</span>
-                    <span class='dash-list-right dash-list-count'>Open Items</span>
-                </li>
-                {% for location in data.location %}
-                <li class='dash-list-item'>
-                    <span class='dash-list-left'>{{ location.locationName }}</span>
-                    <span class='dash-list-right'>{{ location.count }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <footer class='card-footer'>
-            <a href='DisplayLocations.php' class='btn btn-lg btn-outline btn-a'>Number of locations {{ data.location | length }}</a>
-        </footer>
-    </div>
-    {% include 'weekly-report.html.twig' %}
 </div>
+<div class="row">
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Systems</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <span class='col-sm-5 dash__list-heading'>System</span>
+                        <span class='col-sm-3 dash__list-heading text-right'>Actions</span>
+                        <span class='col-sm-4 dash__list-heading dash__list-col-lead'>Lead</span>
+                    </li>
+                    {% for system in data.system %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-sm-5'>{{ system.systemName }}</span>
+                        <span class='col-sm-3 text-right'>{{ system.count }}</span>
+                        <span class='col-sm-4 dash__list-col-lead'>{{ system.lead }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <footer class='card-footer'>
+            <a href='DisplaySystems.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of systems {{ data.system | length }}</a>
+            </footer>
+        </div>
+    </div>
+    <div class="col-sm pb-3">
+        <div class='card dash__card'>
+            <header class='card-header'>
+                <h4>Locations</h4>
+            </header>
+            <div class='card-body grey-bg'>
+                <ul class='dash__list'>
+                    <li class='bg-secondary text-white text-center row dash__list-row'>
+                        <span class='col-6 dash__list-heading'>Location</span>
+                        <span class='col-6 dash__list-heading'>Open Items</span>
+                    </li>
+                    {% for location in data.location %}
+                    <li class='row thin-grey-separator text-center dash__list-row'>
+                        <span class='col-6'>{{ location.locationName }}</span>
+                        <span class='col-6'>{{ location.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <footer class='card-footer'>
+                <a href='DisplayLocations.php' class='btn btn-lg btn-outline btn-a text-dark-blue'>Number of locations {{ data.location | length }}</a>
+            </footer>
+        </div>
+    </div>
+</div>
+{% include 'weekly-report.html.twig' %}
 {% endblock %}
 
 {% block scripts %}
