@@ -380,25 +380,16 @@ ul li {
 .dash__list-heading {
     margin-top: .3rem; margin-bottom: .4rem;
 }
-/* .dash__list-heading, .dash__list-item {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: .125rem;
-    padding: 0 1rem;
-    list-style-type: none;
+
+.dash__list-col-lead {
+    display: none;
 }
 
-.dash__list-item:not(:last-child) {
-    border-bottom: 1px solid #0002;
+@media screen and (min-width: 576px) {
+    .dash__list-col-lead {
+        display: block;
+    }
 }
-
-.dash__list-left, .dash__list-right {
-    display: block;
-    width: 48%;
-    text-align: center;
-} */
 
 .data-display {
     display: flex;
