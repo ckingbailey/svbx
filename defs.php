@@ -50,10 +50,10 @@ $projectTableHeadings = [
     'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '2', 'collapse' => 'sm', 'classList' => 'def-table__crop-content' ],
-    'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collasep' => '', 'classList' => 'def-table__crop-content' ],
-    'description' => [ 'value' => 'Description', 'cellWd' => '6' ],
+    'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collapse' => '', 'classList' => 'def-table__crop-content' ],
+    'description' => [ 'value' => 'Description', 'cellWd' => '6', 'collapse' => 'xs' ],
     'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '2', 'collapse' => 'md' ],
-    'requiredBy' => [ 'value' => 'Required prior to', 'cellWd' => '2', 'collapse' => 'md' ],
+    'requiredBy' => [ 'value' => 'Required prior to', 'cellWd' => '2', 'collapse' => '' ],
     'dueDate' => [ 'value' => 'Due date', 'cellWd' => '2', 'collapse' => 'md' ],
     'edit' => [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'classList' => 'def-table__edit', 'href' => '/updateDef.php?defID=' ]
 ];
