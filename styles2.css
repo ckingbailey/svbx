@@ -689,6 +689,7 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
 .def-table__crop-content {
     overflow: hidden;
     text-overflow: ellipsis;
+    hyphens: auto;
 }
 
 .table .def-table__edit {
