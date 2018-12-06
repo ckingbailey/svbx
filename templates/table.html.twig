@@ -1,6 +1,6 @@
 {% import "template_fcns/tables.xml.twig" as tables %}
 
-{{ tables.createTable(data, tableHeadings) }}
+{{ tables.createTable(data, tableHeadings, tableProps) }}
 
 {% set btnClasslist = not data is empty
     ? "btn btn-lg btn-success"

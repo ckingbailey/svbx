@@ -647,6 +647,23 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     table-layout: fixed;
 }
 
+.def-table td:not(:first-child), .def-table th:not(:first-child) {
+    padding-left: .125rem;
+}
+
+.def-table td:not(:last-child), .def-table th:not(:last-child) {
+    padding-right: .25rem;
+}
+
+.def-table__crop-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table .def-table__edit {
+    padding-left: 0; padding-right: 0;
+}
+
 /* Footer CSS */
 
 /* resize footer for different screen sizes */
