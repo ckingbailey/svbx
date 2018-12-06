@@ -4,25 +4,42 @@
 ##      ('collapse') =>
 ##      ('cellWd') => // cell width calculation uses a 24-col system so whatever number is passed as cellWd will get x/24 * 100%
 ##      ('href') =>
-#}  ]
+##  ]
+#}
+
+{% macro mapClasslistToCell(cell, cellHeading) %}
+    {% if cell is null %}{# classes only for heading #}
+        {% set cellWd = cellHeading.cellWd is empty ? '' : ' table-cell__' ~ cellHeading.cellWd %}{# cellWd belongs only on heading #}
+        {% set collapse = cellHeading.collapse is empty ? '' : ' collapse-' ~ cellHeading.collapse %}
+        {% set classList = cellWd ~ collapse %}
+    {% elseif not cellHeading is null %}{# classes inherited by cell from heading #}
+        {% set collapse = cellHeading.collapse is empty ? '' : ' collapse-' ~ cellHeading.collapse %}
+        {% set emptyCell = (cell is empty or cell is same as('0000-00-00')) ? ' empty-cell' : '' %}
+        {% set classList = cellHeading.classList ~ collapse ~ emptyCell %}
+    {% else %}{# cell has its own class list #}
+        {% set collapse = cell.collapse is empty ? '' : 'collapse-' ~ cell.collapse %}
+        {% set emptyCell = (cell is empty or cell is same as('0000-00-00')) ? ' empty-cell' : '' %}
+        {% set classList = cell.classList ~ collapse ~ emptyCell %}
+    {% endif %}
+    {{- classList -}}
+{% endmacro %}
 
 {# CREATETABLE OUGHT TO ALSO HANDLE:
 ##   • mapping of collapse classes from headings to cells
 ##   • appending of ID to href's
 #}
-{% macro createTable(data, headings) %}
+{% macro createTable(data, headings, tableProps) %}
     {% import _self as tables %}
-    {% set classList = not data is empty
-        ? "table table-responsive table-layout-fixed table-striped"
-        : "table table-layout-fixed table-striped"
+    {% set classList = "table table-layout-fixed table-striped"
+        ~ (tableProps.classList is empty ? '' : (' ' ~ tableProps.classList))
     %}
     <table class='{{ classList }}'>
         <thead>
-            <tr scope="col" class="bg-dark-blue text-white">
+            <tr class="bg-dark-blue text-white">
                 {{ tables.createHeadings(headings) }}
             </tr>
         </thead>
-        <tbody style='width: 100%'>
+        <tbody>
         {% if not data is empty %}
             {% for row in data %}
                 {{ tables.createRow(row, headings) }}
@@ -38,7 +55,7 @@
     {% import _self as tables %}
     {% for heading in headings %}
         {% if not heading is iterable %}
-            <th>{{ heading }}</th>
+            <th scope="col">{{ heading }}</th>
         {% else %}
             {{ tables.createHeadingFromArray(heading) }}
         {% endif %}
@@ -46,12 +63,14 @@
 {% endmacro%}
 
 {% macro createHeadingFromArray(array) %}
-    {% set cellWd = array.cellWd is empty ? '' : 'width: ' ~ (array.cellWd / 24 * 100)|round(0, 'floor') ~ '%' %}
+    {% import _self as tables %}
+    {% set cellWd = array.cellWd is empty ? '' : 'table-cell__' ~ array.cellWd %}
     {% set collapse = array.collapse is empty ? '' : 'collapse-' ~ array.collapse %}
+    {% set classList = cellWd ~ (collapse is empty ? '' : ' ' ~ collapse) %}
     <th
         scope='col'
-        class='{{ collapse }}'
-        style='{{ cellWd }}'
+        class='{{ tables.mapClasslistToCell(null, array) | trim }}'
+        {# style='{{ cellWd }}' #}
     >{{ array.value }}</th>
 {% endmacro %}
 
@@ -65,18 +84,16 @@
         {% else %}{% endif %}
     {% endset %}
     <tr>
-        {#
-            iterate over data row, rendering data in tr's
-            data may or may not be attached to array describing visual table structure
-        #}
-        {% for fieldName, field in row %}
+        {# iterate over data row, rendering data in tr's
+        data may or may not be attached to array describing visual table structure #}
+        {% for fieldName, cell in row %}
             {# initialize href to empty at the start of each each iteration #}
             {% set href = false %}
 
-            {# check for href on current field #}
-            {% if not field.href is empty %}
-                {# if href on field, concat field.href + id #}
-                {% set href = not field.href|trim|last is same as(equalSign) ? field.href|trim : field.href|trim ~ id %}
+            {# check for href on current cell #}
+            {% if not cell.href is empty %}
+                {# if href on cell, concat cell.href + id #}
+                {% set href = not cell.href|trim|last is same as(equalSign) ? cell.href|trim : cell.href|trim ~ id %}
             {% elseif not headings[fieldName].href is empty %}
                 {# if href on heading, concat heading.href + id #}
                 {% set href = not headings[fieldName].href|trim|last is same as(equalSign)
@@ -84,33 +101,30 @@
                     : headings[fieldName].href|trim ~ id|trim %}
             {% else %}{% endif %}
             
-            {% if not field is iterable %}
-                {# if field is simple scalar then check for href, collapse attributes on heading for field #}
-                {% set collapse = headings[fieldName].collapse is empty ? '' : 'collapse-' ~ headings[fieldName].collapse %}
+            {% if not cell is iterable %}
+                {# if cell is simple scalar then check for href, classes on heading for cell #}
                 {% set cellContent %}
                     {% if not href is empty %}
                         {{ tables.anchorTag(href, id | trim) }}
-                    {% elseif not field is empty %}
-                        {{ field | trim | raw | nl2br }}
+                    {% elseif cell is same as('0000-00-00') %}
+                        {{ '—' }}
+                    {% elseif not cell is empty %}
+                        {{ cell | trim | raw | nl2br }}
                     {% else %}
                         {{ '—' }}
                     {% endif %}
                 {% endset %}
-                <td class='{{ collapse }}'>{{- cellContent -}}</td>
+                <td class="{{ tables.mapClasslistToCell(cell, headings[fieldName]) | trim }}">{{- cellContent -}}</td>
                 
             {% else %}
-                {#
-                    field is iteratable
-                    headings and row keys must match
-                #}
-                {{ tables.createCellFromArray(field, headings[fieldName]) }}
+                {# cell is iteratable
+                    headings and row keys must match #}
+                {{ tables.createCellFromArray(cell, headings[fieldName]) }}
             {% endif %}
         {% endfor %}
-        {#
-            after iterating over row fields, add any [field] that is on headings[] but not on row[]
-            e.g., edit, delete
-        #}
-        {% for fieldName, field in headings if fieldName not in (row | keys) %}
+        {# after iterating over row fields, add any [cell] that is on headings[] but not on row[]
+            e.g., edit, delete #}
+        {% for fieldName, heading in headings if fieldName not in (row | keys) %}
             {% if fieldName is same as("edit") %}
                 {% set href = not headings[fieldName].href|trim|last is same as(equalSign)
                     ? headings[fieldName].href|trim
@@ -119,8 +133,9 @@
             {% elseif fieldName is same as("delete") %}
                 {# delete button template here #}
             {% endif %}
-            {% set collapse = field.collapse is empty ? '' : 'collapse-' ~ field.collapse %}
-            <td class='{{ collapse }}'>{{- cellContent -}}</td>
+            {% set collapse = heading.collapse is empty ? '' : 'collapse-' ~ heading.collapse %}
+            {% set classList = (heading.classList is empty ? '' : heading.classList ~ ' ') ~ collapse %}
+            <td class="{{ tables.mapClasslistToCell(null, heading) | trim }}">{{- cellContent -}}</td>
         {% endfor %}
     </tr>
 {% endmacro %}
@@ -128,6 +143,8 @@
 {% macro createCellFromArray(field, heading) %}
     {% import _self as tables %}
     {% set cellContent %}
+        {% set collapse = field.collapse is empty ? '' : ('collapse-' ~ field.collapse) %}
+        {% set classList = ((field.classList is empty ? '' : field.classList ~ ' ') ~ collapse) %}
         {% if not field.href is empty %}
             {{ tables.anchorTag(field.href, field.value) }}
         {% elseif not heading.href is empty %}
@@ -139,7 +156,7 @@
         {% else %} {{ field.value }}
         {% endif %}
     {% endset %}
-    {% set cellAttrs = field.collapse is empty ? '' : 'class=collapse-' ~ field.collapse %}
+    {% set cellAttrs = classList is empty ? '' : 'class=' ~ classList %}
     <td {{ cellAttrs }}>{{ cellContent }}</td>
 {% endmacro %}
 
@@ -148,5 +165,5 @@
 {% endmacro %}
 
 {% macro editButton(href) %}
-    <a href='{{ href|trim }}' class='btn btn-outline' target="_blank"><i class="typcn typcn-edit"></i></a>
+    <a href='{{ href|trim }}' class='btn btn-outline edit-btn-sm' target="_blank"><i class="typcn typcn-edit"></i></a>
 {% endmacro %}

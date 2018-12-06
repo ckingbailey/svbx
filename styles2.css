@@ -611,40 +611,97 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     --breakpoint-md: 768px;
     --breakpoint-lg: 992px;
     --breakpoint-xl: 1200px; */
-@media all and (min-width: 768px) and (max-width: 992px) {
-    .collapse-md{
-        display:none;
-        width:0;
-        height:0;
-        opacity:0;
-        visibility: collapse;
-    }
+.table-cell__1, .table-cell_2, .table-cell_3, .table-cell_4,
+.table-cell_5, .table-cell_6, .table-cell_7, .table-cell_8,
+.table-cell_9, .table-cell_10, .table-cell_11, .table-cell_12,
+.table-cell_13, .table-cell_14, .table-cell_15, .table-cell_16,
+.table-cell_17, .table-cell_18, .table-cell_19, .table-cell_20,
+.table-cell_21, .table-cell_22, .table-cell_23, .table-cell_24 {
+    width: auto;
 }
+
+.collapse-xs, .collapse-sm, .collapse-md {
+    display:none;
+}
+
+.def-table__col-id {
+    width: 12%;
+}
+
 /* #Mobile (Landscape) */
-@media all and (min-width: 576px) and (max-width: 767px) {
-    .collapse-sm{
-        display:none;
-        width:0;
-        height:0;
-        opacity:0;
-        visibility: collapse;
+@media screen and (min-width: 576px) {
+    .table-cell__1 {
+        width: 4.15%;
     }
 
-}
-/*  #Mobile (Portrait) */
-@media all and (max-width: 575px) {
-    .collapse-xs{
+    .table-cell__2 {
+        width: 8.3%;
+    }
+
+    .table-cell__3 {
+        width: 12.5%;
+    }
+
+    .table-cell__4 {
+        width: 16.5%;
+    }
+
+    .table-cell__6 {
+        width: 25%;
+    }
+
+    .table-cell__12 {
+        width: 50%;
+    }
+
+    .collapse-xs {
+        display: table-cell;
+    }
+    .collapse-sm{
         display:none;
-        width:0;
-        height:0;
-        opacity:0;
-        visibility: collapse;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .collapse-xs, .collapse-sm {
+        display: table-cell;
+    }
+    .collapse-md{
+        display:none;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .collapse-xs, .collapse-sm, .collapse-md {
+        display: table-cell;
     }
 }
 
 .table-layout-fixed, .table-layout-fixed>thead, .table-layout-fixed>tbody,
 .table-layout-fixed th, .table-layout-fixed tr, .table-layout-fixed td {
     table-layout: fixed;
+}
+
+.def-table td:not(:first-child), .def-table th:not(:first-child) {
+    padding-left: .125rem;
+}
+
+td:not(:last-child), th:not(:last-child) {
+    padding-right: .25rem;
+}
+
+.def-table__crop-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    hyphens: auto;
+}
+
+.table .def-table__edit {
+    padding-left: 0; padding-right: 0;
+}
+
+.edit-btn-sm {
+    padding: .0625rem .25rem .2rem .4375rem;
 }
 
 /* Footer CSS */
