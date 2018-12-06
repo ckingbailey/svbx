@@ -695,7 +695,7 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     padding-left: 0; padding-right: 0;
 }
 
-.def-table__edit .btn {
+.edit-btn-sm {
     padding: .0625rem .25rem .2rem .4375rem;
 }
 
