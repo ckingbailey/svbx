@@ -45,7 +45,7 @@ $bartTableHeadings = [
 ];
 
 $projectTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'href' => '/viewDef.php?defID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?defID=' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],

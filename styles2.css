@@ -624,6 +624,10 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     display:none;
 }
 
+.def-table__col-id {
+    width: 12%;
+}
+
 /* #Mobile (Landscape) */
 @media screen and (min-width: 576px) {
     .table-cell__1 {
