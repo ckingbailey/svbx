@@ -33,7 +33,7 @@
     %}
     <table class='{{ classList }}'>
         <thead>
-            <tr scope="col" class="bg-dark-blue text-white">
+            <tr class="bg-dark-blue text-white">
                 {{ tables.createHeadings(headings) }}
             </tr>
         </thead>
@@ -53,7 +53,7 @@
     {% import _self as tables %}
     {% for heading in headings %}
         {% if not heading is iterable %}
-            <th>{{ heading }}</th>
+            <th scope="col">{{ heading }}</th>
         {% else %}
             {{ tables.createHeadingFromArray(heading) }}
         {% endif %}
@@ -67,7 +67,7 @@
     {% set classList = cellWd ~ (collapse is empty ? '' : ' ' ~ collapse) %}
     <th
         scope='col'
-        class='{{ tables.mapClasslistToCell(null, array) }}'
+        class='{{ tables.mapClasslistToCell(null, array) | trim }}'
         {# style='{{ cellWd }}' #}
     >{{ array.value }}</th>
 {% endmacro %}
@@ -112,8 +112,7 @@
                         {{ '—' }}
                     {% endif %}
                 {% endset %}
-                {# {% set cellAttr = classList is empty ? '' : (('class="' ~ classList ~ '"') | raw) %} #}
-                <td class="{{ tables.mapClasslistToCell(cell, headings[fieldName]) }}">{{- cellContent -}}</td>
+                <td class="{{ tables.mapClasslistToCell(cell, headings[fieldName]) | trim }}">{{- cellContent -}}</td>
                 
             {% else %}
                 {# cell is iteratable
@@ -134,8 +133,7 @@
             {% endif %}
             {% set collapse = heading.collapse is empty ? '' : 'RedMan collapse-' ~ heading.collapse %}
             {% set classList = (heading.classList is empty ? '' : heading.classList ~ ' ') ~ collapse %}
-            {# {% set cellAttr = classList is empty ? '' : 'class=' ~ classList %} #}
-            <td class="{{ tables.mapClasslistToCell(null, heading) }}">{{- cellContent -}}</td>
+            <td class="{{ tables.mapClasslistToCell(null, heading) | trim }}">{{- cellContent -}}</td>
         {% endfor %}
     </tr>
 {% endmacro %}
@@ -165,5 +163,5 @@
 {% endmacro %}
 
 {% macro editButton(href) %}
-    <a href='{{ href|trim }}' class='btn btn-outline' target="_blank"><i class="typcn typcn-edit"></i></a>
+    <a href='{{ href|trim }}' class='btn btn-outline edit-btn-sm' target="_blank"><i class="typcn typcn-edit"></i></a>
 {% endmacro %}
