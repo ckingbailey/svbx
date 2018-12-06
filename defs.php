@@ -38,8 +38,8 @@ $bartTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
-    'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '' ],
-    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs' ],
+    'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
+    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
     'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3', 'collapse' => 'xs' ],
     'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
 ];
@@ -51,7 +51,7 @@ $projectTableHeadings = [
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '2', 'collapse' => 'sm', 'classList' => 'def-table__crop-content' ],
     'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collapse' => '', 'classList' => 'def-table__crop-content' ],
-    'description' => [ 'value' => 'Description', 'cellWd' => '6', 'collapse' => 'xs' ],
+    'description' => [ 'value' => 'Description', 'cellWd' => '6', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
     'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '2', 'collapse' => 'md' ],
     'requiredBy' => [ 'value' => 'Required prior to', 'cellWd' => '2', 'collapse' => '' ],
     'dueDate' => [ 'value' => 'Due date', 'cellWd' => '2', 'collapse' => 'md' ],
