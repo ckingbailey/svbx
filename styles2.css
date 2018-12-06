@@ -638,8 +638,12 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
         width: 8.3%;
     }
 
-    .table-cell__4 {
+    .table-cell__3 {
         width: 12.5%;
+    }
+
+    .table-cell__4 {
+        width: 16.5%;
     }
 
     .table-cell__6 {
