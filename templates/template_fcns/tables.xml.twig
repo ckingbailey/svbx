@@ -9,15 +9,17 @@
 
 {% macro mapClasslistToCell(cell, cellHeading) %}
     {% if cell is null %}{# classes only for heading #}
-        {% set cellWd = (cellHeading.cellWd is empty ? '' : 'table-cell__' ~ cellHeading.cellWd) %}{# cellWd belongs only on heading #}
-        {% set collapse = (cellHeading.collapse is empty ? '' : 'collapse-' ~ cellHeading.collapse) %}
-        {% set classList = ((cellWd) ~ (collapse is empty ? '' : ' ' ~ collapse)) %}
+        {% set cellWd = cellHeading.cellWd is empty ? '' : ' table-cell__' ~ cellHeading.cellWd %}{# cellWd belongs only on heading #}
+        {% set collapse = cellHeading.collapse is empty ? '' : ' collapse-' ~ cellHeading.collapse %}
+        {% set classList = cellWd ~ collapse %}
     {% elseif not cellHeading is null %}{# classes inherited by cell from heading #}
-        {% set collapse = (cellHeading.collapse is empty ? '' : 'collapse-' ~ cellHeading.collapse) %}
-        {% set classList = ((cellHeading.classList is empty ? '' : cellHeading.classList ~ ' ') ~ collapse) %}
+        {% set collapse = cellHeading.collapse is empty ? '' : ' collapse-' ~ cellHeading.collapse %}
+        {% set emptyCell = (cell is empty or cell is same as('0000-00-00')) ? ' empty-cell' : '' %}
+        {% set classList = cellHeading.classList ~ collapse ~ emptyCell %}
     {% else %}{# cell has its own class list #}
-        {% set collapse = (cell.collapse is empty ? '' : 'collapse-' ~ cell.collapse) %}
-        {% set classList = ((cell.classList is empty ? '' : cell.classList ~ ' greenman! ') ~ collapse) %}
+        {% set collapse = cell.collapse is empty ? '' : 'collapse-' ~ cell.collapse %}
+        {% set emptyCell = (cell is empty or cell is same as('0000-00-00')) ? ' empty-cell' : '' %}
+        {% set classList = cell.classList ~ collapse ~ emptyCell %}
     {% endif %}
     {{- classList -}}
 {% endmacro %}
@@ -101,11 +103,11 @@
             
             {% if not cell is iterable %}
                 {# if cell is simple scalar then check for href, classes on heading for cell #}
-                {% set collapse = headings[fieldName].collapse is empty ? '' : 'collapse-' ~ headings[fieldName].collapse %}
-                {% set classList = (headings[fieldName].classList is empty ? '' : headings[fieldName].classList ~ ' greenman! ') ~ collapse %}
                 {% set cellContent %}
                     {% if not href is empty %}
                         {{ tables.anchorTag(href, id | trim) }}
+                    {% elseif cell is same as('0000-00-00') %}
+                        {{ '—' }}
                     {% elseif not cell is empty %}
                         {{ cell | trim | raw | nl2br }}
                     {% else %}
@@ -131,7 +133,7 @@
             {% elseif fieldName is same as("delete") %}
                 {# delete button template here #}
             {% endif %}
-            {% set collapse = heading.collapse is empty ? '' : 'RedMan collapse-' ~ heading.collapse %}
+            {% set collapse = heading.collapse is empty ? '' : 'collapse-' ~ heading.collapse %}
             {% set classList = (heading.classList is empty ? '' : heading.classList ~ ' ') ~ collapse %}
             <td class="{{ tables.mapClasslistToCell(null, heading) | trim }}">{{- cellContent -}}</td>
         {% endfor %}

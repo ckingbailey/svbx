@@ -35,12 +35,12 @@ $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'href' => '/viewDef.php?bartDefID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
-    'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3' ],
+    'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
     'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '' ],
-    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '' ],
-    'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3' ],
+    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs' ],
+    'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3', 'collapse' => 'xs' ],
     'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
 ];
 

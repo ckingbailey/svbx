@@ -686,7 +686,7 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     padding-left: .125rem;
 }
 
-.def-table td:not(:last-child), .def-table th:not(:last-child) {
+td:not(:last-child), th:not(:last-child) {
     padding-right: .25rem;
 }
 
