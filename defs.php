@@ -35,26 +35,27 @@ $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?bartDefID=' ],
-    'status' => [ 'value' => 'Status', 'cellWd' => '' ],
-    'date_created'=> [ 'value' => 'Date created', 'cellWd' => '' ],
-    'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '' ],
-    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '' ],
-    'next_step'=> [ 'value' => 'Next step', 'cellWd' => '' ],
-    'edit'=> [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?bartDefID=' ],
+    'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
+    'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
+    'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
+    'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
+    'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3', 'collapse' => 'xs' ],
+    'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
 ];
 
 $projectTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '', 'href' => '/viewDef.php?defID=' ],
-    'location' => [ 'value' => 'Location', 'cellWd' => '', 'collapse' => 'sm' ],
-    'severity' => [ 'value' => 'Severity', 'cellWd' => '', 'collapse' => 'xs' ],
-    'status' => [ 'value' => 'Status', 'cellWd' => '' ],
-    'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '', 'collapse' => 'sm' ],
-    'description' => [ 'value' => 'Description', 'cellWd' => '' ],
-    'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '', 'collapse' => 'md' ],
-    'requiredBy' => [ 'value' => 'Required By', 'cellWd' => '', 'collapse' => 'md' ],
-    'dueDate' => [ 'value' => 'Due date', 'cellWd' => '', 'collapse' => 'md' ],
-    'edit' => [ 'value' => 'Edit', 'cellWd' => '', 'collapse' => 'sm', 'href' => '/updateDef.php?defID=' ]
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?defID=' ],
+    'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
+    'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
+    'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
+    'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '2', 'collapse' => 'sm', 'classList' => 'def-table__crop-content' ],
+    'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collapse' => '', 'classList' => 'def-table__crop-content' ],
+    'description' => [ 'value' => 'Description', 'cellWd' => '6', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
+    'specLoc' => [ 'value' => 'Specific location', 'cellWd' => '2', 'collapse' => 'md' ],
+    'requiredBy' => [ 'value' => 'Required prior to', 'cellWd' => '2', 'collapse' => '' ],
+    'dueDate' => [ 'value' => 'Due date', 'cellWd' => '2', 'collapse' => 'md' ],
+    'edit' => [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'classList' => 'def-table__edit', 'href' => '/updateDef.php?defID=' ]
 ];
 
 $bartFields = [
@@ -72,6 +73,7 @@ $projectFields = [
     "s.severityName AS severity",
     "t.statusName AS status",
     "y.systemName AS systemAffected",
+    "g.systemName AS groupToResolve",
     "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
@@ -88,7 +90,8 @@ $projectJoins = [
     "requiredBy r" => "c.requiredBy = r.reqByID",
     "severity s" => "c.severity = s.severityID",
     "status t" => "c.status = t.statusID",
-    "system y" => "c.systemAffected = y.systemID"
+    "system y" => "c.systemAffected = y.systemID",
+    "system g" => "c.groupToResolve = g.systemID"
 ];
 
 $bartFilters = [
@@ -320,6 +323,9 @@ $context = [
     'view' => $view,
     // table vars
     'tableName' => $table,
+    'tableProps' => [
+        'classList' => 'def-table'
+    ],
     'dataDisplayName' => 'deficiency',
     'tableHeadings' => $tableHeadings
 ];
@@ -378,7 +384,6 @@ try {
     $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
     $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
 
-    $context['meta'] = $_SERVER;
     $context['count'] = $link->count;
 
     $template->display($context);
