@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 
 class Report {
     private $data = [];
+    public $query = '';
 
     private $table = null;
     private $fields = [];
@@ -34,7 +35,7 @@ class Report {
             ->where($whereField, $milestone)
             ->getValue('requiredBy', 'reqByID');
         $where = [
-            [ 'dateClosed', 'IS NOT NULL' ],
+            [ 'dateClosed', 'NULL', '<>' ],
             [ 'requiredBy', $reqByID, '<']
         ];    
         
@@ -50,22 +51,18 @@ class Report {
     
     private function __construct($table = null, $fields = [], $join = null, $where = null, $groupBy = null) {
         $this->table = $table;
-
         $this->fields = $fields;
 
         if (!empty($join)) {
             if (is_array($join[0])) $this->join = $join;
             else array_push($this->join, $join);
         }
-        
         if (!empty($where)) {
             if (is_array($where[0])) $this->where = $where;
             else $this->where[] = $where;
         }
-
         $this->groupBy = $groupBy;
 
-        // TODO: constructor fetches data after setting query conds
         $this->fetch();
     }
 
@@ -84,9 +81,11 @@ class Report {
             } else $link->where($where[0], $where[1], $where[2]);
         }
 
+        if (!empty($this->groupBy)) $link->groupBy($this->groupBy);
+
         $result = $link // TODO: what happens if I pass null to any Joshcam metho?
-            ->groupBy($this->groupBy)
             ->get($this->table, null, $this->fields);
+        $this->query = $link->getLastQuery();
         $link->disconnect();
 
         $this->data = $result;
