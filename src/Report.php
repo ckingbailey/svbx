@@ -2,8 +2,8 @@
 namespace SVBX;
 
 use MysqliDB;
-use Carbon;
-use CarbonImmutable;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 
 class Report {
     private $data = [];
@@ -28,6 +28,11 @@ class Report {
         
         $join = ['system', 'groupToResolve = system.systemID', 'LEFT'];
         
+        $link = new MysqliDb(DB_CREDENTIALS);
+        $whereField = is_int($milestone) ? 'reqByID' : 'requiredBy';
+        $reqByID = $link
+            ->where($whereField, $milestone)
+            ->getValue('requiredBy', 'reqByID');
         $where = [
             [ 'dateClosed', 'IS NOT NULL' ],
             [ 'requiredBy', $reqByID, '<']
@@ -36,23 +41,28 @@ class Report {
         if (!empty($system)) {
             list($groupBy, $where[]) = [ null, [ 'groupToResolve', $system ] ];
         } else $groupBy = 'groupToResolve';
-        
-        $link = new MysqliDb(DB_CREDENTIALS);
-        $whereField = is_int($milestone) ? 'reqByID' : 'requiredBy';
-        $reqByID = $link
-            ->where($whereField, $milestone)
-            ->getValue('requiredBy', 'reqByID');
     
         if (empty($reqByID)) throw new \Exception("Could not find milestone for query term $milestone");
 
-        return $this->__construct('CDL', $fields, $join, $where, $groupBy);
+        return new Report('CDL', $fields, $join, $where, $groupBy);
         
     }    
     
-    private function __construct($table = null, $fields = [], $join = [], $where = [], $groupBy = null) {
+    private function __construct($table = null, $fields = [], $join = null, $where = null, $groupBy = null) {
+        $this->table = $table;
+
         $this->fields = $fields;
-        $this->join = $join;
-        $this->where = $where;
+
+        if (!empty($join)) {
+            if (is_array($join[0])) $this->join = $join;
+            else array_push($this->join, $join);
+        }
+        
+        if (!empty($where)) {
+            if (is_array($where[0])) $this->where = $where;
+            else $this->where[] = $where;
+        }
+
         $this->groupBy = $groupBy;
 
         // TODO: constructor fetches data after setting query conds
