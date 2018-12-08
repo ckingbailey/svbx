@@ -7,7 +7,7 @@ use Carbon\CarbonImmutable;
 
 class Report {
     private $data = [];
-    public $query = '';
+    private $lastQuery = '';
 
     private $table = null;
     private $fields = [];
@@ -18,16 +18,21 @@ class Report {
     // private $queryString = "SELECT sy.systemName AS system, %s, %s FROM CDL c JOIN system sy ON c.systemAffected = sy.systemID WHERE dateClosed IS NOT NULL and c.requiredBy < %u GROUP BY c.systemAffected";
 
     public static function delta($milestone, $date = null, $system = null) {
-        $caseStr = "COUNT(CASE WHEN dateClosed <= CAST('%s' AS DATE) THEN defID ELSE NULL END) AS %s";
+        $openLastWeek = 'COUNT(CASE'
+            . ' WHEN CDL.dateCreated > CAST("%1$s" AS DATE) THEN NULL' // didn't yet exist last week
+            . ' WHEN dateClosed <= CAST("%1$s" AS DATE) THEN NULL' // already closed last week
+            // . ' WHEN dateClosed > CAST("%1$s" AS DATE) THEN defID' // existed. closed sometime after last week
+            . ' ELSE defID END) AS openLastWeek';
+        // $caseStr = "COUNT(CASE WHEN dateClosed <= CAST('%s' AS DATE) THEN defID ELSE NULL END) AS %s";
         $toDate = new CarbonImmutable($date); // will Carbon accept any format as arg?
-        $fromDate = $toDate->subWeek();
+        $fromDate = $toDate->subWeek()->toDateString();
         $fields = [
             'systemName AS system',
-            sprintf($caseStr, $fromDate, 'openLastWeek'),
-            sprintf($caseStr, $toDate, 'openThisWeek')
+            sprintf($openLastWeek, $fromDate),
+            "COUNT(IF(status = 1, defID, NULL)) as openThisWeek"
         ];
         
-        $join = ['system', 'groupToResolve = system.systemID', 'LEFT'];
+        $join = ['system', 'systemAffected = system.systemID', 'LEFT'];
         
         $link = new MysqliDb(DB_CREDENTIALS);
         $whereField = is_int($milestone) ? 'reqByID' : 'requiredBy';
@@ -35,13 +40,13 @@ class Report {
             ->where($whereField, $milestone)
             ->getValue('requiredBy', 'reqByID');
         $where = [
-            [ 'dateClosed', 'NULL', '<>' ],
-            [ 'requiredBy', $reqByID, '<']
+            [ 'requiredBy', $reqByID, '<='],
+            [ 'status', '3', '<>']
         ];    
         
         if (!empty($system)) {
-            list($groupBy, $where[]) = [ null, [ 'groupToResolve', $system ] ];
-        } else $groupBy = 'groupToResolve';
+            list($groupBy, $where[]) = [ null, [ 'systemAffected', $system ] ];
+        } else $groupBy = 'systemAffected';
     
         if (empty($reqByID)) throw new \Exception("Could not find milestone for query term $milestone");
 
@@ -85,19 +90,15 @@ class Report {
 
         $result = $link // TODO: what happens if I pass null to any Joshcam metho?
             ->get($this->table, null, $this->fields);
-        $this->query = $link->getLastQuery();
+        $this->lastQuery = $link->getLastQuery();
         $link->disconnect();
 
         $this->data = $result;
     }
 
-    // private function buildQueryString() {
-    //     $today = new CarbonImmutable();
-    //     $caseThisWeek = sprintf($this->caseStr, $today, 'openThisWeek');
-    //     $caseLastWeek = sprintf($this->caseStr, $today->subWeek(), 'openLastWeek');
-
-    //     return sprintf($this->queryString, $caseThisWeek, $caseLastWeek, $this->requiredBy);
-    // }
+    public function getQuery() {
+        return $this->lastQuery;
+    }
 
     public function get() {
         return $this->data;
