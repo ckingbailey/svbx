@@ -15,16 +15,12 @@ class Report {
     private $where = [];
     private $groupBy = null;
 
-    // private $queryString = "SELECT sy.systemName AS system, %s, %s FROM CDL c JOIN system sy ON c.systemAffected = sy.systemID WHERE dateClosed IS NOT NULL and c.requiredBy < %u GROUP BY c.systemAffected";
-
     public static function delta($milestone, $date = null, $system = null) {
         $openLastWeek = 'COUNT(CASE'
             . ' WHEN CDL.dateCreated > CAST("%1$s" AS DATE) THEN NULL' // didn't yet exist last week
             . ' WHEN dateClosed <= CAST("%1$s" AS DATE) THEN NULL' // already closed last week
-            // . ' WHEN dateClosed > CAST("%1$s" AS DATE) THEN defID' // existed. closed sometime after last week
             . ' ELSE defID END) AS openLastWeek';
-        // $caseStr = "COUNT(CASE WHEN dateClosed <= CAST('%s' AS DATE) THEN defID ELSE NULL END) AS %s";
-        $toDate = new CarbonImmutable($date); // will Carbon accept any format as arg?
+        $toDate = new CarbonImmutable($date);
         $fromDate = $toDate->subWeek()->toDateString();
         $fields = [
             'systemName AS system',

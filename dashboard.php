@@ -65,7 +65,6 @@ if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug())
 
 // instantiate report object
 $sit3delta = Report::delta('SIT3');
-// $weeklySIT3delta = new WeeklyDelta('SIT3');
 $context['data']['weeklyReport'] = $sit3delta->get();
 
 $twig->display('dashboard.html.twig', $context);
