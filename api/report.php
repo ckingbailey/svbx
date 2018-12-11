@@ -6,28 +6,42 @@ $basedir = __DIR__ . '/..';
 require "$basedir/vendor/autoload.php";
 require "$basedir/session.php";
 
-/* query params:
-**  milestone
-**  date
-**  system
-**  type
-**  format => if Export class lacks $format method, return bad http response
-*/
-// TODO: clean data
-// TODO: validate query params
-// TODO: check `format` param
+// query params:
+//  milestone
+//  TODO: date
+//  TODO: system
+//  type
+//  format => if Export class lacks $format method, return bad http response 
 if (!method_exists('SVBX\Export', $_GET['format'])) {
     header('Malformed request', true, 400);
+    error_log(__FILE__ . '(' . __LINE__ . ')' . ' Invalid format requested from Report API');
     exit;
 }
 
-$format = $_GET['format'];
-$reportType = 'delta';
+if (!method_exists('SVBX\Report', $_GET['type'])) {
+    header('Malformed request', true, 400);
+    error_log(__FILE__ . '(' . __LINE__ . ')' . ' Invalid report type requested from Report API');
+    exit;
+}
 
-$report = Report::delta($_GET['milestone'])->get();
-$headings = array_keys($report[0]);
-array_unshift($report, $headings);
+try {
+    $format = $_GET['format'];
+    $reportType = $_GET['type'];
 
-echo Export::$format($report);
+    $report = Report::delta($_GET['milestone'])->get();
+    $headings = array_keys($report[0]);
+    array_unshift($report, $headings);
 
-exit;
+    echo Export::$format($report);
+} catch (\UnexpectedValueException $e) {
+    error_log($e);
+    header('Bad query param', true, 400);
+} catch (\Exception $e) {
+    error_log($e);
+    header('Internal server error', true, 500);
+} catch (\Error $e) {
+    error_log($e);
+    header('Internal server error', true, 500);
+} finally {
+    exit;
+}
