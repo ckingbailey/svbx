@@ -31,7 +31,7 @@ class Report {
         $join = ['system', 'systemAffected = system.systemID', 'LEFT'];
         
         $link = new MysqliDb(DB_CREDENTIALS);
-        $whereField = is_int($milestone) ? 'reqByID' : 'requiredBy';
+        $whereField = intval($milestone) ? 'reqByID' : 'requiredBy';
         $reqByID = $link
             ->where($whereField, $milestone)
             ->getValue('requiredBy', 'reqByID');
@@ -44,7 +44,7 @@ class Report {
             list($groupBy, $where[]) = [ null, [ 'systemAffected', $system ] ];
         } else $groupBy = 'systemAffected';
     
-        if (empty($reqByID)) throw new \Exception("Could not find milestone for query term $milestone");
+        if (empty($reqByID)) throw new \UnexpectedValueException("Could not find milestone for query term $milestone");
 
         return new Report('CDL', $fields, $join, $where, $groupBy);
         
