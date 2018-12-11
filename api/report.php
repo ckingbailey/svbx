@@ -24,8 +24,10 @@ if (!method_exists('SVBX\Export', $_GET['format'])) {
 $format = $_GET['format'];
 $reportType = 'delta';
 
-echo Export::$format(
-    Report::delta($_GET['milestone'])->get()
-);
+$report = Report::delta($_GET['milestone'])->get();
+$headings = array_keys($report[0]);
+array_unshift($report, $headings);
+
+echo Export::$format($report);
 
 exit;
