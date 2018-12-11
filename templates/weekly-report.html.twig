@@ -8,16 +8,19 @@
 #}
 
 {% set thisWeekLabel = "Open this week: " %}
-{% set lastWeekLabel = "Open Last week: " %}
+{% set lastWeekLabel = "Open last week: " %}
 {% set deltaLabel = "Delta this week: " %}
 <div id="weeklyReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
         <div class="thin-grey-border border-radius">
-            <header class="pad grey-bg item-margin-bottom">Weekly delta of open Deficiencies that are required for closure prior to Phase 3 start</header>
+            <header class="d-flex justify-content-between pad grey-bg item-margin-bottom">
+                <span>Weekly delta of open Deficiencies that are required for closure prior to Phase 3 start</span>
+                <button id='downloadReport' type='button' onclick='return downloadReport()' class="btn btn-sm btn-success">Download this data</button>
+            </header>
             <div class="row thick-black-line ml-0 mr-0 mb-1 weekly-report__list-heading">
                 <div class="col-sm-3">System</div>
-                <div class="col-sm-3 text-right">{{ thisWeekLabel }}</div>
                 <div class="col-sm-3 text-right">{{ lastWeekLabel }}</div>
+                <div class="col-sm-3 text-right">{{ thisWeekLabel }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
             </div>
             {% for row in data.weeklyReport %}
@@ -26,13 +29,13 @@
                     <div class="weekly-report__system-name">{{ row.system }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ thisWeekLabel }}</span>{{ row.openThisWeek }}</div>
-                </div>
-                <div class="col-sm-3 text-right">
                     <div><span class="weekly-report__label">{{ lastWeekLabel }}</span>{{ row.openLastWeek }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.openThisWeek - row.openLastWeek }}</div>
+                    <div><span class="weekly-report__label">{{ thisWeekLabel }}</span>{{ row.openThisWeek }}</div>
+                </div>
+                <div class="col-sm-3 text-right">
+                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.openLastWeek - row.openThisWeek }}</div>
                 </div>
             </div>
             {% endfor %}

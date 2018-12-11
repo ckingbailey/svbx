@@ -80,9 +80,9 @@ $link->orWhere('table_name', 'BARTDL');
 $cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
 $cols = array_map('strtolower', $cols);
 
-$postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]);
+$postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
 
-if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]);
+if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match ID col name
 
 foreach ($postKeys as $key) {
     if (array_search(strtolower($key), $cols) === false) {
@@ -97,7 +97,7 @@ $host = substr($_SERVER['SERVER_PROTOCOL'], 0, strpos($_SERVER['SERVER_PROTOCOL'
 header('Content-Type: text/csv', true);
 // header("Access-Control-Allow-Origin: $host");
 
-// if (empty($_SERVER['HTTP_ORIGIN']) || strcasecmp($_SERVER['HTTP_ORIGIN'], $host)) {
+// if (empty($_SERVER['HTTP_ORIGIN']) || strcasecmp($_SERVER['HTTP_ORIGIN'], $host)) { // todo: make list specifying which Origins are allowed
 //     header('No cors allowed, buddy', true, 403);
 //     exit;
 // }

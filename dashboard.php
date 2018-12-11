@@ -1,4 +1,6 @@
 <?php
+use SVBX\Report;
+
 require 'vendor/autoload.php';
 // include('SQLFunctions.php');
 require 'WeeklyDelta.php';
@@ -62,7 +64,7 @@ $twig = new Twig_Environment($loader, [
 if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
 // instantiate report object
-$weeklySIT3delta = new WeeklyDelta('SIT3');
-$context['data']['weeklyReport'] = $weeklySIT3delta->getData();
+$sit3delta = Report::delta('SIT3');
+$context['data']['weeklyReport'] = $sit3delta->get();
 
 $twig->display('dashboard.html.twig', $context);
