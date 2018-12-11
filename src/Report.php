@@ -101,7 +101,7 @@ class Report {
     }
 
     public function __toString() {
-        print_r($this->get());
+        print_r($this->get(), true);
     }
 
 }
