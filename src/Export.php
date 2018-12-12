@@ -11,6 +11,9 @@ class Export {
     private static function str_putcsv(array $input, $delimiter = ',', $enclosure = '"') {
         $pointer = fopen('php://temp', 'r+b'); // open memory stream with read/write permission and binary mode on
         foreach ($input as $line) {
+            $line = array_map(function($el) {
+                return html_entity_decode($el, ENT_QUOTES, 'utf-8');
+            }, $line);
             fputcsv($pointer, $line, $delimiter, $enclosure); // puts a single line
         }
         rewind($pointer);
