@@ -27,9 +27,30 @@
     <script src='js/pie_chart.js'></script>
     <script>
         document.getElementById('getCsvBtn').addEventListener('click', event => {
-            const jsonData = {{ dataWithHeadings | json_encode | raw }}
-            getCsv(event, jsonData, res => {
-                download(res, `def_dump_${Date.now()}.csv`, 'text/csv')
+            const json = JSON.stringify({{ dataWithHeadings | json_encode | raw }})
+            fetch('/api/def.php', {
+                method: 'POST',
+                body: json,
+                credentials: 'same-origin',
+                headers: {
+                    'Content-type': 'application/json',
+                    'Accept': 'text/csv'
+                }
+            }).then(res => {
+                if (!res.ok) throw res
+                return res.text()
+            }).then(text => {
+                const d = new Date()
+                const timestamp = d.getFullYear()
+                    + '' + (d.getMonth() + 1)
+                    + '' + d.getDate()
+                    + '' + d.getHours()
+                    + '' + d.getMinutes()
+                    + '' + d.getSeconds()
+                download(text, `defs_summary_${timestamp}.csv`, 'text/csv')
+            }).catch(err => {
+                if (err.status) console.err(`${err.status} ${res.statusText} ${res.url}`)
+                else console.err(err)
             })
         })
     {% if view is same as('BART') %}
