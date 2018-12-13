@@ -4,14 +4,17 @@
   "description": "report and display deficiency data",
   "main": "index.php",
   "dependencies": {
+    "bootstrap-multiselect": "^0.9.13-1",
     "d3": "^5.0.0"
   },
   "devDependencies": {
     "db-migrate": "^0.11.4",
-    "db-migrate-mysql": "^1.1.10"
+    "db-migrate-mysql": "^1.1.10",
+    "gulp": "^4.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp"
   },
   "repository": {
     "type": "git",
