@@ -24,6 +24,10 @@ node_modules
 composer.phar
 /vendor/
 
+# this stuff will be built with gulp
+assets/css
+assets/js
+
 # db backups
 CDLdump.sql
 

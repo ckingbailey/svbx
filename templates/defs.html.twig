@@ -1,5 +1,9 @@
 {% extends "page.html.twig" %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap-multiselect.css" />
+{% endblock %}
+
 {% block content %}
     {% if bartDefs %}
     {% set selected, unselected = " btn-light border-dark-blue box-shadow-blue ", " btn-secondary text-white " %}
@@ -19,7 +23,10 @@
     {% include view is same as('BART') ? "bartDefsFilter.html.twig" : "defsFilter.html.twig" %}
     {% include "table.html.twig" %}
 {% endblock %}
+
 {% block scripts %}
+    <script type="text/javascript" src="/assets/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" src="/assets/js/bootstrap-multiselect-collapsible-groups.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.js"></script>
     <script src='js/reset_search.js'></script>
     <script src='https://d3js.org/d3.v5.js'></script>
