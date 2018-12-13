@@ -7,7 +7,7 @@ require 'session.php';
 include 'uploadImg.php';
 
 // prepare POST and sql string for commit
-$post = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS); // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
+$post = $_POST; // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
 $defID = $post['defID'];
 $userID = $_SESSION['userID'];
 $username = $_SESSION['username'];
@@ -67,6 +67,11 @@ if ($post['status'] === '2') { // TODO: closure needs to be checked against db b
 $post['updated_by'] = $username;
 
 try {
+    foreach ($post as $key => $val) {
+        $post[$key] = trim($val);
+    }
+    $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS); // TODO instantiate Deficiency object right here, then use its methods to validate data and update db
+
     $link = new MysqliDb(DB_CREDENTIALS);
     // update CDL table
     $link->where('defID', $defID);
@@ -146,6 +151,9 @@ try {
 } catch (Exception $e) {
     header("Location: updateDef.php?defID=$defID");
     $_SESSION['errorMsg'] = "There was an error in committing your submission: $e";
+} catch (Error $e) {
+    $_SESSION['errorMsg'] = "There was an error in committing your submission: $e";
+    WindowHack::goBack();
 } finally {
     if (is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
