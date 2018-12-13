@@ -28,18 +28,18 @@ try {
 
     // if Auth ok, validate fields on first data element of POST against fields in DB
     // note: element at index 0 is heading names, not table data
-    $post = trim(file_get_contents('php://input'));
-    $post = json_decode($post, true);
-    $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
-
     $link->where('table_name', 'CDL');
     $link->orWhere('table_name', 'BARTDL');
     $cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
     $cols = array_map('strtolower', $cols);
+    
+    $post = trim(file_get_contents('php://input'));
+    $post = json_decode($post, true);
+    // $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
 
     $postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
 
-    if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match ID col name
+    if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match name of ID col
 
     foreach ($postKeys as $key) {
         if (array_search(strtolower($key), $cols) === false) {
