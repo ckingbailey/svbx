@@ -115,10 +115,33 @@
 {% endblock %}
 
 {% block scripts %}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.js"></script>
 <script src='https://d3js.org/d3.v5.js'></script>
 <script src='js/pie_chart.js'></script>
 <script>
-    window.drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
-    window.drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
+    drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
+
+    function downloadReport() {
+        fetch('/api/report.php?milestone=sit3&format=csv&type=delta', {
+            credentials: 'same-origin'
+        }).then(res => {
+            if (!res.ok) throw res
+            return res.text();
+        }).then(text => {
+            const date = new Date()
+            const timestamp = date.getFullYear()
+                + '' + (date.getMonth() + 1)
+                + '' + date.getDate()
+                + '' + date.getHours()
+                + '' + date.getMinutes()
+                + '' + date.getSeconds()
+            download(text, `weekly_delta_${timestamp}.csv`, 'text/csv')
+        }).catch(err => {
+            if (err.status) // err was thrown by previous handler, and is a bad http response wrapped in a promise
+                console.error(`${err.url} ${err.status} ${err.statusText}`)
+            else console.error(err) // only "network error" results in Promise reject
+        })
+    }
 </script>
 {% endblock %}
