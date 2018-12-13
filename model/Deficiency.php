@@ -225,7 +225,12 @@ class Deficiency
                 // set new vals for any string keys
                 if (is_string($key) && property_exists(__CLASS__, $key)) {
                     $this->$key = empty(self::$foreignKeys[$key])
-                        ? trim($val)
+                         // TODO: this ‘custom‘ version of trim is to deal with the specific case of newline encoded as \r\n getting transposed to a literal “\r\n“
+                         // Best guess is that this is a problem somewhere in the pipeline of translating from MS Excel -> browser -> MySQL
+                         // I believe this is an artifact of a way I was preparing form inputted text for DB insertion
+                         // any Def that is so tainted should get automatically cleaned on update
+                         // and this custom trim method should not be necessary forever
+                        ? self::trim($val)
                         : intval($val);
                 } elseif (is_numeric($key) && property_exists(__CLASS__, $val)) {
                     $this->$val = null;
@@ -418,6 +423,10 @@ class Deficiency
                 if (is_a($link, 'MysqliDb')) $link->disconnect();
             }
         }
+    }
+
+    public static function trim(string $str) {
+        return trim($str, " \r\n\t\0\x0B" . '\r\n');
     }
     
     public function __toString() {
