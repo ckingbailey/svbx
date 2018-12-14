@@ -60,7 +60,7 @@
             <select name="systemAffected[]" class="form-control selectpicker" multiple>
                 <option></option>
                 {% for value, text in selectOptions.systemAffected %}
-                    {% set selected = (not values.systemAffected is empty and values.systemAffected == value)
+                    {% set selected = (not values.systemAffected is empty and value in values.systemAffected)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}

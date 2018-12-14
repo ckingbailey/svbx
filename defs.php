@@ -331,7 +331,8 @@ try {
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($link, $filters);
-    error_log(print_r($context['selectOptions'], true));
+    error_log('values: ' . print_r($context['values'], true));
+    error_log('options: ' . print_r($context['selectOptions'], true));
 
     // build defs query
     foreach ($queryParams['joins'] as $tableName => $on) {
