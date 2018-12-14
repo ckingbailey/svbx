@@ -331,8 +331,6 @@ try {
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($link, $filters);
-    error_log('values: ' . print_r($context['values'], true));
-    error_log('options: ' . print_r($context['selectOptions'], true));
 
     // build defs query
     foreach ($queryParams['joins'] as $tableName => $on) {
@@ -345,11 +343,15 @@ try {
             if ($param === 'description'
                 || $param === 'defID'
                 || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
-            elseif (is_array($val)) {
-                $link->where("$tableAlias.$param", array_shift($val));
+            elseif ($param === 'systemAffected'
+                || $param === 'groupToResolve'
+                && is_array($val))
+            {
+                $arrayVals = [ array_shift($val) ];
                 foreach ($val as $extraVal) {
-                    $link->orWhere("$tableAlias.$param", $extraVal);
+                    array_push($arrayVals, $extraVal);
                 }
+                $link->where("$tableAlias.$param", $arrayVals, 'IN');
             }
             else $link->where("$tableAlias.$param", $val);
         }
@@ -360,6 +362,7 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    error_log($link->getLastQuery());
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
