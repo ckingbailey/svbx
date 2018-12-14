@@ -9,7 +9,6 @@ $view = !empty(($_GET['view']))
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET['search'])) {
-    error_log(print_r($_GET, true));
     $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
     $get = array_filter($get); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
@@ -229,11 +228,11 @@ $projectFilters = [
         ],
         'groupBy' => 'l.locationID'
     ],
-    "specLoc" => [
-        'table' => 'CDL',
-        'fields' => 'specLoc',
-        'groupBy' => 'specLoc'
-    ],
+    // "specLoc" => [
+    //     'table' => 'CDL',
+    //     'fields' => 'specLoc',
+    //     'groupBy' => 'specLoc'
+    // ],
     "identifiedBy" => [
         'table' => 'CDL',
         'fields' => 'identifiedBy',
@@ -307,14 +306,8 @@ function getBartStatusCount($link) {
 // base context
 $context = [
     'session' => $_SESSION,
-    // 'navbarHeading' => !empty($_SESSION['username'])
-    //     ? ( !empty($_SESSION['firstname']) && !empty($_SESSION['lastname'])
-    //         ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
-    //         : $_SESSION['username'] )
-    //     : '',
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
-    // 'bartDefs' => $_SESSION['bdPermit'],
     'info' => 'Click Deficiency ID number to see full details',
     'addPath' => $addPath,
     // filter vars
@@ -331,28 +324,6 @@ $context = [
     'tableHeadings' => $tableHeadings
 ];
 
-// get nav items for user permissions level
-// $context['navItems'] = $_SESSION['inspector']
-//     ? [
-//         'Home' => '/dashboard.php',
-//         'Help' => '/help.php',
-//         'Deficiencies' => $_SESSION['bdPermit']
-//             ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-//             : '/defs.php',
-//         'Safety Certs' => '/ViewSC.php',
-//         'Daily Report' => 'idr.php',
-//         'Logout' => '/logout.php'
-//     ]
-//     : [
-//         'Home' => '/dashboard.php',
-//         'Help' => '/help.php',
-//         'Deficiencies' => $_SESSION['bdPermit']
-//             ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-//             : '/defs.php',
-//         'Safety Certs' => '/ViewSC.php',
-//         'Logout' => '/logout.php'
-//     ];
-
 try {
     $link = new MySqliDB(DB_CREDENTIALS);
 
@@ -360,6 +331,7 @@ try {
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($link, $filters);
+    error_log(print_r($context['selectOptions'], true));
 
     // build defs query
     foreach ($queryParams['joins'] as $tableName => $on) {
@@ -369,7 +341,9 @@ try {
     // filter on user-selected query params
     if ($get) {
         foreach ($get as $param => $val) {
-            if ($param === 'description' || $param === 'defID') $link->where($param, "%{$val}%", 'LIKE');
+            if ($param === 'description'
+                || $param === 'defID'
+                || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
             elseif (is_array($val)) {
                 $link->where("$tableAlias.$param", array_shift($val));
                 foreach ($val as $extraVal) {

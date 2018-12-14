@@ -107,14 +107,7 @@
         </div>
         <div id="container_select_specLoc" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Specific location</label>
-            <select name="specLoc" class="form-control">
-                <option></option>
-                {% for value, text in selectOptions.specLoc %}
-                    {% set selected = (not values.specLoc is empty and values.specLoc == value)
-                        ? ' selected' : '' %}
-                    <option value="{{value}}"{{selected}}>{{text}}</option>
-                {% endfor %}
-            </select>
+            <input name="specLoc" type="text" value="{{values.specLoc}}" class="form-control" />
         </div>
         <div id="container_select_identifiedBy" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Identified by</label>
