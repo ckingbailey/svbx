@@ -251,7 +251,7 @@ $projectFilters = [
     ]
 ];
 
-list($table, $tableAbbrev, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
+list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
     : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
@@ -370,7 +370,13 @@ try {
     if ($get) {
         foreach ($get as $param => $val) {
             if ($param === 'description' || $param === 'defID') $link->where($param, "%{$val}%", 'LIKE');
-            else $link->where("$tableAbbrev.$param", $val);
+            elseif (is_array($val)) {
+                $link->where("$tableAlias.$param", array_shift($val));
+                foreach ($val as $extraVal) {
+                    $link->orWhere("$tableAlias.$param", $extraVal);
+                }
+            }
+            else $link->where("$tableAlias.$param", $val);
         }
     }
 
