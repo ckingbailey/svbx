@@ -7,7 +7,7 @@
                     <p>{{errorMsg}}</p>
                     {% endif %}
                     <span>{{ info }}</span>
-                    {% if role > 10 %}
+                    {% if session.role > 10 %}
                     <a href='/{{ addPath }}' class='btn btn-outline'>Add new {{ dataDisplayName }}</a>
                     {% endif %}
                 </div>

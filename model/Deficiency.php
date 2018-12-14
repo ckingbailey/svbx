@@ -421,40 +421,6 @@ class Deficiency
     }
     
     public function __toString() {
-        return print_r([
-            'ID' => $this->ID,
-            'safetyCert' => $this->safetyCert,
-            'systemAffected' => $this->systemAffected,
-            'location' => $this->location,
-            'specLoc' => $this->specLoc,
-            'status' => $this->status,
-            'severity' => $this->severity,
-            'dueDate' => $this->dueDate,
-            'groupToResolve' => $this->groupToResolve,
-            'requiredBy' => $this->requiredBy,
-            'contractID' => $this->contractID,
-            'identifiedBy' => $this->identifiedBy,
-            'defType' => $this->defType,
-            'description' => $this->description,
-            'spec' => $this->spec,
-            'actionOwner' => $this->actionOwner,
-            'evidenceType' => $this->evidenceType,
-            'repo' => $this->repo,
-            'evidenceID' => $this->evidenceID,
-            'evidenceLink' => $this->evidenceLink,
-            'oldID' => $this->oldID,
-            'closureComments' => $this->closureComments,
-            'created_by' => $this->created_by,
-            'updated_by' => $this->updated_by,
-            'dateCreated' => $this->dateCreated,
-            'lastUpdated' => $this->lastUpdated,
-            'dateClosed' => $this->dateClosed,
-            'closureRequested' => $this->closureRequested,
-            'closureRequestedBy' => $this->closureRequestedBy,
-            'comments' => $this->comments,
-            'newComment' => $this->newComment,
-            'pics' => $this->pics,
-            'newPic' => $this->newPic
-        ], true);
+        return print_r($this->get(), true);
     }
 }
