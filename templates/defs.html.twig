@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    {% if bartDefs %}
-    {% set selected, unselected = " btn-light border-dark-blue box-shadow-blue ", " btn-secondary text-white " %}
+    {% if session.bdPermit %}
+        {% set selected, unselected = " btn-light border-dark-blue box-shadow-blue ", " btn-secondary text-white " %}
     {% if view is same as('BART') %}
         {% set projectClasslist, bartClasslist = unselected, selected %}
     {% else %}
