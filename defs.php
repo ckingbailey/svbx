@@ -9,6 +9,7 @@ $view = !empty(($_GET['view']))
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET['search'])) {
+    error_log(print_r($_GET, true));
     $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
     $get = array_filter($get); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
@@ -209,14 +210,14 @@ $projectFilters = [
         'groupBy' => 's.systemID'
     ],
     "groupToResolve" => [
-        'table' => 'system s',
+        'table' => 'system g',
         'fields' => ['systemID', 'systemName'],
         'join' => [
             'joinTable' => 'CDL c',
-            'joinOn' => 's.systemID = c.groupToResolve',
+            'joinOn' => 'g.systemID = c.groupToResolve',
             'joinType' => 'INNER'
         ],
-        'groupBy' => 's.systemID'
+        'groupBy' => 'g.systemID'
     ],
     "location" => [
         'table' => 'location l',
@@ -305,15 +306,15 @@ function getBartStatusCount($link) {
 
 // base context
 $context = [
-    'navbarHeading' => !empty($_SESSION['username'])
-        ? ( !empty($_SESSION['firstname']) && !empty($_SESSION['lastname'])
-            ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
-            : $_SESSION['username'] )
-        : '',
+    'session' => $_SESSION,
+    // 'navbarHeading' => !empty($_SESSION['username'])
+    //     ? ( !empty($_SESSION['firstname']) && !empty($_SESSION['lastname'])
+    //         ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
+    //         : $_SESSION['username'] )
+    //     : '',
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
-    'bartDefs' => $_SESSION['bdPermit'],
-    'role' => $_SESSION['role'],
+    // 'bartDefs' => $_SESSION['bdPermit'],
     'info' => 'Click Deficiency ID number to see full details',
     'addPath' => $addPath,
     // filter vars
@@ -331,26 +332,26 @@ $context = [
 ];
 
 // get nav items for user permissions level
-$context['navItems'] = $_SESSION['inspector']
-    ? [
-        'Home' => '/dashboard.php',
-        'Help' => '/help.php',
-        'Deficiencies' => $_SESSION['bdPermit']
-            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-            : '/defs.php',
-        'Safety Certs' => '/ViewSC.php',
-        'Daily Report' => 'idr.php',
-        'Logout' => '/logout.php'
-    ]
-    : [
-        'Home' => '/dashboard.php',
-        'Help' => '/help.php',
-        'Deficiencies' => $_SESSION['bdPermit']
-            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-            : '/defs.php',
-        'Safety Certs' => '/ViewSC.php',
-        'Logout' => '/logout.php'
-    ];
+// $context['navItems'] = $_SESSION['inspector']
+//     ? [
+//         'Home' => '/dashboard.php',
+//         'Help' => '/help.php',
+//         'Deficiencies' => $_SESSION['bdPermit']
+//             ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
+//             : '/defs.php',
+//         'Safety Certs' => '/ViewSC.php',
+//         'Daily Report' => 'idr.php',
+//         'Logout' => '/logout.php'
+//     ]
+//     : [
+//         'Home' => '/dashboard.php',
+//         'Help' => '/help.php',
+//         'Deficiencies' => $_SESSION['bdPermit']
+//             ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
+//             : '/defs.php',
+//         'Safety Certs' => '/ViewSC.php',
+//         'Logout' => '/logout.php'
+//     ];
 
 try {
     $link = new MySqliDB(DB_CREDENTIALS);

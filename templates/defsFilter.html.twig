@@ -57,7 +57,7 @@
         </div>
         <div id="container_select_sysAffected" class="col-6 col-sm-2 pl-1 pr-1">
             <label>System affected</label>
-            <select name="systemAffected" class="form-control">
+            <select name="systemAffected[]" class="form-control selectpicker" multiple>
                 <option></option>
                 {% for value, text in selectOptions.systemAffected %}
                     {% set selected = (not values.systemAffected is empty and values.systemAffected == value)
@@ -68,7 +68,7 @@
         </div>
         <div id="container_select_groupToRes" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Group to resolve</label>
-            <select name="groupToResolve" class="form-control">
+            <select name="groupToResolve[]" class="form-control selectpicker" multiple>
                 <option></option>
                 {% for value, text in selectOptions.groupToResolve %}
                     {% set selected = (not values.groupToResolve is empty and values.groupToResolve == value)
