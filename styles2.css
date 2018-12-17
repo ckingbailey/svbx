@@ -8,6 +8,7 @@
     --breakpoint-lg: 992px;
     --breakpoint-xl: 1200px;
     --bs-jumbo-grey: #e9ecef;
+    --near-black: #495057;
     --quarter-trans-grey: #0000003f;
     --tenth-trans-grey: #00000018;
     --red: #bf211e;
@@ -581,6 +582,31 @@ select:invalid {
 
 .btn-outline:hover {
     background-color: var(--tenth-trans-grey);
+}
+
+.btn-form-control {
+    border-color: #ced4da;
+    background-color: #fff;
+    color: var(--near-black);
+}
+
+.bootstrap-select > select.mobile-device:focus + .btn-form-control.dropdown-toggle,
+.bootstrap-select .btn-form-control.dropdown-toggle:focus {
+    outline: none!important;
+    border-color: var(--yellow);
+    box-shadow: 0 0 2px 1px var(--yellow);
+}
+
+.bootstrap-select .btn-form-control.dropdown-toggle > :nth-child(n):focus {
+    outline: none;
+}
+
+.btn-form-control.dropdown-toggle::after {
+    border-top-color: var(--near-black);
+}
+
+.dropup .btn-form-control.dropdown-toggle::after {
+    border-bottom-color: var(--near-black);
 }
 
 .btn>i.typcn {

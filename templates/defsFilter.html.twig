@@ -57,10 +57,9 @@
         </div>
         <div id="container_select_sysAffected" class="col-6 col-sm-2 pl-1 pr-1">
             <label>System affected</label>
-            <select name="systemAffected" class="form-control">
-                <option></option>
+            <select name="systemAffected[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 {% for value, text in selectOptions.systemAffected %}
-                    {% set selected = (not values.systemAffected is empty and values.systemAffected == value)
+                    {% set selected = (not values.systemAffected is empty and value in values.systemAffected)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -68,10 +67,9 @@
         </div>
         <div id="container_select_groupToRes" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Group to resolve</label>
-            <select name="groupToResolve" class="form-control">
-                <option></option>
+            <select name="groupToResolve[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 {% for value, text in selectOptions.groupToResolve %}
-                    {% set selected = (not values.groupToResolve is empty and values.groupToResolve == value)
+                    {% set selected = (not values.groupToResolve is empty and value in values.groupToResolve)
                             ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -107,14 +105,7 @@
         </div>
         <div id="container_select_specLoc" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Specific location</label>
-            <select name="specLoc" class="form-control">
-                <option></option>
-                {% for value, text in selectOptions.specLoc %}
-                    {% set selected = (not values.specLoc is empty and values.specLoc == value)
-                        ? ' selected' : '' %}
-                    <option value="{{value}}"{{selected}}>{{text}}</option>
-                {% endfor %}
-            </select>
+            <input name="specLoc" type="text" value="{{values.specLoc}}" class="form-control" />
         </div>
         <div id="container_select_identifiedBy" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Identified by</label>

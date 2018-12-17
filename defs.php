@@ -209,14 +209,14 @@ $projectFilters = [
         'groupBy' => 's.systemID'
     ],
     "groupToResolve" => [
-        'table' => 'system s',
+        'table' => 'system g',
         'fields' => ['systemID', 'systemName'],
         'join' => [
             'joinTable' => 'CDL c',
-            'joinOn' => 's.systemID = c.groupToResolve',
+            'joinOn' => 'g.systemID = c.groupToResolve',
             'joinType' => 'INNER'
         ],
-        'groupBy' => 's.systemID'
+        'groupBy' => 'g.systemID'
     ],
     "location" => [
         'table' => 'location l',
@@ -228,11 +228,11 @@ $projectFilters = [
         ],
         'groupBy' => 'l.locationID'
     ],
-    "specLoc" => [
-        'table' => 'CDL',
-        'fields' => 'specLoc',
-        'groupBy' => 'specLoc'
-    ],
+    // "specLoc" => [
+    //     'table' => 'CDL',
+    //     'fields' => 'specLoc',
+    //     'groupBy' => 'specLoc'
+    // ],
     "identifiedBy" => [
         'table' => 'CDL',
         'fields' => 'identifiedBy',
@@ -250,7 +250,7 @@ $projectFilters = [
     ]
 ];
 
-list($table, $tableAbbrev, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
+list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
     : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
@@ -305,15 +305,9 @@ function getBartStatusCount($link) {
 
 // base context
 $context = [
-    'navbarHeading' => !empty($_SESSION['username'])
-        ? ( !empty($_SESSION['firstname']) && !empty($_SESSION['lastname'])
-            ? $_SESSION['firstname'] . ' ' . $_SESSION['lastname']
-            : $_SESSION['username'] )
-        : '',
+    'session' => $_SESSION,
     'title' => 'Deficiencies List',
     'pageHeading' => 'Deficiencies',
-    'bartDefs' => $_SESSION['bdPermit'],
-    'role' => $_SESSION['role'],
     'info' => 'Click Deficiency ID number to see full details',
     'addPath' => $addPath,
     // filter vars
@@ -329,28 +323,6 @@ $context = [
     'dataDisplayName' => 'deficiency',
     'tableHeadings' => $tableHeadings
 ];
-
-// get nav items for user permissions level
-$context['navItems'] = $_SESSION['inspector']
-    ? [
-        'Home' => '/dashboard.php',
-        'Help' => '/help.php',
-        'Deficiencies' => $_SESSION['bdPermit']
-            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-            : '/defs.php',
-        'Safety Certs' => '/ViewSC.php',
-        'Daily Report' => 'idr.php',
-        'Logout' => '/logout.php'
-    ]
-    : [
-        'Home' => '/dashboard.php',
-        'Help' => '/help.php',
-        'Deficiencies' => $_SESSION['bdPermit']
-            ? [ 'Project deficiencies' => '/defs.php', 'BART deficiencies' => '/defs.php?view=BART' ]
-            : '/defs.php',
-        'Safety Certs' => '/ViewSC.php',
-        'Logout' => '/logout.php'
-    ];
 
 try {
     $link = new MySqliDB(DB_CREDENTIALS);
@@ -368,8 +340,20 @@ try {
     // filter on user-selected query params
     if ($get) {
         foreach ($get as $param => $val) {
-            if ($param === 'description' || $param === 'defID') $link->where($param, "%{$val}%", 'LIKE');
-            else $link->where("$tableAbbrev.$param", $val);
+            if ($param === 'description'
+                || $param === 'defID'
+                || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
+            elseif ($param === 'systemAffected'
+                || $param === 'groupToResolve'
+                && is_array($val))
+            {
+                $arrayVals = [ array_shift($val) ];
+                foreach ($val as $extraVal) {
+                    array_push($arrayVals, $extraVal);
+                }
+                $link->where("$tableAlias.$param", $arrayVals, 'IN');
+            }
+            else $link->where("$tableAlias.$param", $val);
         }
     }
 
@@ -378,6 +362,7 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    error_log($link->getLastQuery());
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
