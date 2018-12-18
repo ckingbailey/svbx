@@ -237,9 +237,15 @@ class Deficiency
         }
     }
 
+    private function getInsertableFieldNames() {
+        $fields = array_values($this->fields);
+        unset($fields[$array_search($this->fields['ID'], $fields)]);
+        return $fields;
+    }
+
     public function getNonNullProps() {
-        return array_reduce(array_values($this->fields), function ($acc, $prop) {
-            if ($this->$props[$prop] !== null) $acc[$prop] = $this->$props[$prop];
+        return array_reduce($this->getInsertableFieldNames(), function ($acc, $prop) {
+            if ($this->props[$prop] !== null) $acc[$prop] = $this->props[$prop];
             return $acc;
         }, []);
     }
@@ -249,27 +255,19 @@ class Deficiency
     }
 
     public function validate($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        // TODO: validate dates, required info, closure info where appropriate
-    }
-
-    // TODO: add fn to handle relatedAsset, newComment, newAttachment
-    public function insert() {
-        $newID = false;
-        $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
-
         // validate creation info
         if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
         if (empty($this->props['dateCreated'])) $this->set('dateCreated');
-        
+
         // validate mod info
         if (empty($this->props['updated_by']) || !$this->props['updated_by'] === $this->props['created_by']) {
             if (!$this->props['updated_by'] = $this->props['created_by'])
                 throw new \Exception('Missing value @ `updated_by`');
         }
-        
+
         // validate required info
         foreach ($this->requiredFields as $field) {
-            if (empty($this->$field)) throw new \Exception("Missing required info @ `$field`");
+            if (empty($this->props[$field])) throw new \Exception("Missing required info @ `$field`");
         }
         
         // validate / set closure info if appropriate
@@ -279,8 +277,17 @@ class Deficiency
             if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
             if (empty($this->props['dateClosed'])) $this->set('dateClosed');
         }
-        
+    }
+
+    // TODO: add fn to handle relatedAsset, newComment, newAttachment
+    public function insert() {
+        $newID = null;
+        $this->props['lastUpdated'] = null; // lastUpdated gets timestamp by mysql
+
+        $this->validate();
+
         $insertableData = $this->getNonNullProps();
+        unset($insertableData['ID']);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
         
         try {
@@ -357,8 +364,8 @@ class Deficiency
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
                 
-                if (empty($this->ID)) throw new \Exception('No ID found for Deficiency');
-                $link->where('defID', $this->ID);
+                if (empty($this->props['ID'])) throw new \Exception('No ID found for Deficiency');
+                $link->where($this->fields['ID'], $this->props['ID']);
                 
                 $props = $this->get();
                 $lookupFields = [];
