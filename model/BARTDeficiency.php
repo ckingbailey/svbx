@@ -78,10 +78,10 @@ class BARTDeficiency extends Deficiency {
         'closureComment' => 'closureComment'
     ];
 
-    protected $requiredField = [
+    protected $requiredFields = [
         'creator',
         'status',
-        'description',
+        'descriptive_title_vta',
         'root_prob_vta',
         'resolution_vta',
         'priority_vta',
@@ -122,4 +122,9 @@ class BARTDeficiency extends Deficiency {
             'fields' => [ 'repoID', 'repoName' ]
         ]
     ];
+
+    public function validateCreationInfo($props = null) {
+        if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
+        if (empty($this->props['date_created'])) $this->set('date_created');
+    }
 }

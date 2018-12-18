@@ -239,7 +239,7 @@ class Deficiency
 
     private function getInsertableFieldNames() {
         $fields = array_values($this->fields);
-        unset($fields[$array_search($this->fields['ID'], $fields)]);
+        unset($fields[array_search($this->fields['ID'], $fields)]);
         return $fields;
     }
 
@@ -254,23 +254,32 @@ class Deficiency
         // TODO: intval props that ought to int
     }
 
-    public function validate($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        // validate creation info
+    // TODO: validate types of props (string, int, date)
+    public function validateCreationInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
         if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
         if (empty($this->props['dateCreated'])) $this->set('dateCreated');
+    }
 
-        // validate mod info
-        if (empty($this->props['updated_by']) || !$this->props['updated_by'] === $this->props['created_by']) {
-            if (!$this->props['updated_by'] = $this->props['created_by'])
+    public function validateModInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if ($action !== 'insert' && $action !== 'update')
+            throw new \Exception("Invalid action, $action, passed to validateModInfo");
+        if (empty($this->props['updated_by'])) {
+            if ($action === 'update' || ($action === 'insert'
+                && $this->props['updated_by'] !== $this->props['created_by']
+                && !$this->props['updated_by'] = $this->props['created_by']))
+            {
                 throw new \Exception('Missing value @ `updated_by`');
+            }
         }
+    }
 
-        // validate required info
+    public function validateRequiredInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
         foreach ($this->requiredFields as $field) {
             if (empty($this->props[$field])) throw new \Exception("Missing required info @ `$field`");
         }
-        
-        // validate / set closure info if appropriate
+    }
+
+    public function validateClosureInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
         if (intval($this->props['status']) === 2) { // TODO: numerical props should already be (int) by this point
             if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
@@ -279,12 +288,21 @@ class Deficiency
         }
     }
 
+    public function validate($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if ($action === 'insert') {
+            $this->validateCreationInfo();
+        }
+        $this->validateModInfo($action);
+        $this->validateRequiredInfo();
+        $this->validateClosureInfo();
+    }
+
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
         $this->props['lastUpdated'] = null; // lastUpdated gets timestamp by mysql
 
-        $this->validate();
+        $this->validate('insert');
 
         $insertableData = $this->getNonNullProps();
         unset($insertableData['ID']);
