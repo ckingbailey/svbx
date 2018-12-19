@@ -122,9 +122,10 @@ $bartAttachmentsTable = 'bartdlAttachments';
 $bartPathField = 'bdaFilepath';
 $bartTemplate = 'bartDef.html.twig';
 
-if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_NUMBER_INT);
 
 list(
+    $class,
     $id,
     $idField,
     $tableName,
@@ -138,6 +139,7 @@ list(
     $templatePath
 ) = (!empty($get['defID'])
     ? [
+        'SVBX\Deficiency',
         $get['defID'],
         $projectIdField,
         $projectTableName,
@@ -152,6 +154,7 @@ list(
         ]
         : (!empty($get['bartDefID'])
         ? [
+            'SVBX\BARTDeficiency',
             $get['bartDefID'],
             $bartIdField,
             $bartTableName,
@@ -167,32 +170,36 @@ list(
         : array_fill(0, 9, null)));
 // TODO: handle case of no def ID
 
+$context = [
+    'session' => $_SESSION,
+    'title' => "Deficiency no. $id",
+    'pageHeading' => "Deficiency No. $id",
+];
+
 try {
-    $link = new MySqliDB(DB_CREDENTIALS);
+    $def = new $class($id);
+    error_log($class . ' instatiated: ' . $def);
 
-    foreach ($joins as $joinTable => $onCondition) {
-        $link->join($joinTable, $onCondition, 'LEFT');
-    }
-
-    $link->where('statusName', 'deleted', '<>');
-    $link->where($idField, $id);
-
-    $data = $link->getOne("$tableName $tableAlias", $fields);
-
-    if (strcasecmp($data['status'], "open") === 0) {
+    
+    // foreach ($joins as $joinTable => $onCondition) {
+        //     $link->join($joinTable, $onCondition, 'LEFT');
+        // }
+        
+    // $link->where('statusName', 'deleted', '<>');
+    // $link->where($idField, $id);
+        
+    $context['data'] = $def->getReadable();
+    error_log('fetched def data: ' . print_r($context['data'], true));
+    // $link->getOne("$tableName $tableAlias", $fields);
+    
+    if (strcasecmp($context['data']['status'], "open") === 0) {
         $color = "bg-red text-white";
     } else {
         $color = "bg-green text-white";
     }
-
-    $context = [
-        'session' => $_SESSION,
-        'title' => "Deficiency no. $id",
-        'pageHeading' => "Deficiency No. $id",
-        'data' => $data
-    ];
-
+    
     // query for comments associated with this Def
+    $link = new MySqliDB(DB_CREDENTIALS);
     $link->join('users_enc u', "$commentTable.userID = u.userID");
     $link->orderBy("$commentTable.date_created", 'DESC');
     $link->where(($idField === 'defID' ? 'defID' : 'bartdlID'), $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
@@ -225,6 +232,6 @@ try {
     echo "Unable to retrieve record";
     error_log($e);
 } finally {
-    $link->disconnect();
+    if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
     exit;
 }
