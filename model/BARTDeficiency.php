@@ -4,6 +4,12 @@ namespace SVBX;
 use MysqliDb;
 
 class BARTDeficiency extends Deficiency {
+    const CREATION_INFO = [
+        'created_by',
+        'date_created'
+    ];
+    const TIMESTAMP_FIELD = 'form_modified';
+
     protected $table = 'BARTDL';
 
     protected $props = [
@@ -31,7 +37,7 @@ class BARTDeficiency extends Deficiency {
         'level_bart' => null,
         'dateOpen_bart' => null,
         'dateClose_bart' => null,
-        'Form_Modified' => null,
+        'form_modified' => null,
         'dateClosed' => null,
         'repo' => null,
         'evidenceID' => null,
@@ -69,7 +75,6 @@ class BARTDeficiency extends Deficiency {
         'level_bart' => 'level_bart',
         'dateOpen_bart' => 'dateOpen_bart',
         'dateClose_bart' => 'dateClose_bart',
-        'Form_Modified' => 'Form_Modified',
         'dateClosed' => 'dateClosed',
         'repo' => 'repo',
         'evidenceID' => 'evidenceID',
@@ -122,9 +127,4 @@ class BARTDeficiency extends Deficiency {
             'fields' => [ 'repoID', 'repoName' ]
         ]
     ];
-
-    public function validateCreationInfo($props = null) {
-        if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
-        if (empty($this->props['date_created'])) $this->set('date_created');
-    }
 }

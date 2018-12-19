@@ -6,12 +6,10 @@ use MysqliDb;
 class Deficiency
 {
     const DATE_FORMAT = 'Y-m-d';
-    const MOD_HISTORY = [
+    const TIMESTAMP_FIELD = 'lastUpdated';
+    const CREATION_INFO = [
         'created_by',
-        'updated_by',
-        'dateCreated',
-        'lastUpdated',
-        'dateClosed'
+        'dateCreated'
     ];
     const CLOSURE_INFO = [
         'evidenceType',
@@ -87,7 +85,6 @@ class Deficiency
         'created_by' => 'created_by',
         'updated_by' => 'updated_by',
         'dateCreated' => 'dateCreated',
-        'lastUpdated' => 'lastUpdated',
         'dateClosed' => 'dateClosed',
         'closureRequested' => 'closureRequested',
         'closureRequestedBy' => 'closureRequestedBy'
@@ -217,21 +214,18 @@ class Deficiency
 
     public function set($props, $val = null) {
         if (is_string($props) && array_key_exists($props, $this->props)) {
-            // if a date key is passed by itself, set to current date
-            if (strpos(strtolower($props), 'date') !== false) {
-                $val = trim($val) ?: time();
-                $this->props[$props] = date(self::DATE_FORMAT, $val);
-            } else $this->props[$props] = trim($val);
+            $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
-            foreach ($props as $key => $val) {
+            foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
                 if (is_string($key) && array_key_exists($key, $this->props)) {
                     $this->props[$key] = empty(self::$foreignKeys[$key])
-                        ? trim($val)
-                        : intval($val);
-                } elseif (is_numeric($key) && array_key_exists($val, $this->props)) {
-                    $this->props[$val] = null;
+                        ? trim($value)
+                        : intval($value);
+                } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
+                    echo __FILE__ . '(' . __LINE__ . ') key exists ' . $value . PHP_EOL;
+                    $this->props[$value] = null;
                 }
             }
         }
@@ -251,13 +245,15 @@ class Deficiency
     }
 
     public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
-        // TODO: intval props that ought to int
+        // TODO: intval props that ought to be int
     }
 
     // TODO: validate types of props (string, int, date)
-    public function validateCreationInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
-        if (empty($this->props['dateCreated'])) $this->set('dateCreated');
+    public function validateCreationInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if ($action === 'insert') {
+            if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
+            if (empty($this->props['dateCreated'])) $this->set('dateCreated', date(self::DATE_FORMAT));
+        }
     }
 
     public function validateModInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
@@ -273,9 +269,14 @@ class Deficiency
         }
     }
 
-    public function validateRequiredInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+    public function validateRequiredInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        // TODO: map each required field to type, validate or coerce types
         foreach ($this->requiredFields as $field) {
-            if (empty($this->props[$field])) throw new \Exception("Missing required info @ `$field`");
+            if (($action === 'insert' && empty($this->props[$field]))
+                || ($action === 'update' && $this->props[$field] === ''))
+            {
+                throw new \Exception("Missing required info @ `$field`");
+            }
         }
     }
 
@@ -284,23 +285,21 @@ class Deficiency
             if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
             if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($this->props['dateClosed'])) $this->set('dateClosed');
+            if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(self::DATE_CREATED));
         }
     }
 
     public function validate($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        if ($action === 'insert') {
-            $this->validateCreationInfo();
-        }
+        $this->validateCreationInfo($action);
         $this->validateModInfo($action);
-        $this->validateRequiredInfo();
+        $this->validateRequiredInfo($action);
         $this->validateClosureInfo();
     }
 
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
-        $this->props['lastUpdated'] = null; // lastUpdated gets timestamp by mysql
+        $this->set(self::TIMESTAMP_FIELD, null); // lastUpdated gets timestamp by mysql
 
         $this->validate('insert');
 
@@ -316,16 +315,41 @@ class Deficiency
             $link->disconnect();
         } catch (\Exception $e) {
             throw $e;
-        }
-        finally {
+        } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $newID;
+            return $this->get('ID');
         }
     }
     
     public function update() {
         // TODO: strip fields that never get updated, e.g., dateCreated
-        return false;
+        $this->set(self::TIMESTAMP_FIELD, null);
+        $this->set(self::CREATION_INFO, null);
+
+        $this->validate('update');
+
+        // TODO: sanitize should be a method that mutates the object's own props
+        // TODO: need an array of updatable keys
+        $updatableData = $this->getNonNullProps();
+        unset($updatableData['ID']);
+        echo 'props before cleaning: ' . $this;
+        $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
+
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $link->where($this->fields['ID'], $this->props['ID']);
+            // TODO: re-instantiate with new vals on success
+            echo 'Cleaned data before insert: ' . print_r($cleanData, true);
+            if (!$success = $link->update($this->table, $cleanData)) {
+                throw new \Exception("There was a problem updating the Deficiency {$this->props['ID']}");
+            }
+            $this->__construct($this->props['ID']);
+        } catch (\Exception $e) {
+            throw $e;
+        } finally  {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $success;
+        }
     }
     
     // TODO: this could check for which value should be selected (the value that is on data for the corresponding field)
