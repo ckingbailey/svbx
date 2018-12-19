@@ -6,16 +6,10 @@ use MysqliDb;
 class Deficiency
 {
     const DATE_FORMAT = 'Y-m-d';
-    const TIMESTAMP_FIELD = 'lastUpdated';
-    const CREATION_INFO = [
+    protected $timestampField = 'lastUpdated';
+    protected $creationFields = [
         'created_by',
         'dateCreated'
-    ];
-    const CLOSURE_INFO = [
-        'evidenceType',
-        'repo',
-        'evidenceID',
-        'dateClosed'
     ];
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
@@ -224,7 +218,6 @@ class Deficiency
                         ? trim($value)
                         : intval($value);
                 } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
-                    echo __FILE__ . '(' . __LINE__ . ') key exists ' . $value . PHP_EOL;
                     $this->props[$value] = null;
                 }
             }
@@ -299,7 +292,7 @@ class Deficiency
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
-        $this->set(self::TIMESTAMP_FIELD, null); // lastUpdated gets timestamp by mysql
+        $this->set($this->timestampField, null); // lastUpdated gets timestamp by mysql
 
         $this->validate('insert');
 
@@ -323,8 +316,10 @@ class Deficiency
     
     public function update() {
         // TODO: strip fields that never get updated, e.g., dateCreated
-        $this->set(self::TIMESTAMP_FIELD, null);
-        $this->set(self::CREATION_INFO, null);
+        $this->set($this->timestampField, null); // TODO: this should not be settable by constructor
+        $this->set($this->creationFields, null);
+
+        echo 'CREATION_INFO: ' . print_r($this->creationFields, true);
 
         $this->validate('update');
 

@@ -4,11 +4,11 @@ namespace SVBX;
 use MysqliDb;
 
 class BARTDeficiency extends Deficiency {
-    const CREATION_INFO = [
+    protected $timestampField = 'form_modified';
+    protected $creationFields = [
         'created_by',
         'date_created'
     ];
-    const TIMESTAMP_FIELD = 'form_modified';
 
     protected $table = 'BARTDL';
 
