@@ -12,126 +12,13 @@ if (empty($_GET['bartDefID']) && empty($_GET['defID'])) {
     exit;
 }
 
-// TODO: move these fields and queries into the Deficiency class
-// project def params
-$projectFields = [
-    'defID as ID',
-    'yesNoName as safetyCert',
-    'sys.systemName as systemAffected',
-    'locationName as location',
-    'specLoc',
-    'statusName as status',
-    'closureRequested',
-    'severityName as severity',
-    'dueDate',
-    'grp.systemName as groupToResolve',
-    'req.requiredBy',
-    'contractName as contract',
-    'identifiedBy',
-    'defTypeName as defType',
-    'description',
-    'spec',
-    'actionOwner',
-    'oldID',
-    'comments as moreInfo',
-    'eviTypeName as evidenceType',
-    'repoName as repo',
-    'evidenceID',
-    'evidenceLink',
-    'closureComments',
-    'c.dateCreated',
-    "CONCAT(cre.firstname, ' ', cre.lastName) as created_by",
-    'c.lastUpdated',
-    "CONCAT(upd.firstname, ' ', upd.lastName) as updated_by",
-    'dateClosed',
-    "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy"
-];
-
-$projectJoins = [
-    'yesNo' => 'c.safetyCert = yesNo.yesNoID',
-    'system sys' => 'c.systemAffected = sys.systemID',
-    'location' => 'c.location = location.locationID',
-    'status' => 'c.status = status.statusID',
-    'severity' => 'c.severity = severity.severityID',
-    'system grp' => 'c.groupToResolve = grp.systemID',
-    'requiredBy req' => 'c.requiredBy = req.reqByID',
-    'contract' => 'c.contractID = contract.contractID',
-    'defType' => 'c.defType = defType.defTypeID',
-    'evidenceType' => 'c.evidenceType = evidenceType.eviTypeID',
-    'repo' => 'c.repo = repo.repoID',
-    'users_enc cre' => 'c.created_by = cre.username',
-    'users_enc upd' => 'c.updated_by = upd.username',
-    'users_enc close' => 'c.closureRequestedBy = close.username'
-];
-
-$projectTableName = 'CDL';
-$projectTableAlias = 'c';
-$projectIdField = 'defID';
-$projectCommentsTable = 'cdlComments';
-$projectComments = 'cdlCommText';
-$projectAttachmentsTable = 'CDL_pics';
-$projectPathField = 'pathToFile';
-$projectTemplate = 'def.html.twig';
-
-// bart def params
-$bartFields = [
-    'ID',
-    'creator.partyName as creator',
-    'nextStepName as next_step',
-    'bic.partyName as bic',
-    'statusName as status',
-    'descriptive_title_vta',
-    'root_prob_vta',
-    'resolution_vta',
-    'priority_vta',
-    'agreeDisagreeName as agree_vta',
-    'yesNoName as safety_cert_vta',
-    'resolution_disputed',
-    'structural',
-    'id_bart',
-    'description_bart',
-    'cat1_bart',
-    'cat2_bart',
-    'cat3_bart',
-    'level_bart',
-    'dateOpen_bart',
-    'dateClose_bart',
-    'date_created',
-    "CONCAT(cre.firstname, ' ', cre.lastname)",
-    'Form_Modified',
-    "CONCAT(upd.firstname, ' ', upd.lastname)"
-];
-
-$bartJoins = [
-    'yesNo' => 'b.safety_cert_vta = yesNo.yesNoID',
-    'users_enc upd' => 'b.updated_by = upd.userID',
-    'bdNextStep' => 'b.next_step = bdNextStep.bdNextStepID',
-    'bdParties creator' => 'b.creator = creator.partyID',
-    'bdParties bic' => 'b.bic = bic.partyID',
-    'status' => 'b.status = status.statusID',
-    'agreeDisagree' => 'b.agree_vta = agreeDisagree.agreeDisagreeID',
-    'users_enc cre' => 'b.created_by = cre.userID'
-];
-
-$bartTableName = 'BARTDL';
-$bartTableAlias = 'b';
-$bartIdField = 'ID';
-$bartCommentTable = 'bartdlComments';
-$bartComments = 'bdCommText';
-$bartAttachmentsTable = 'bartdlAttachments';
-$bartPathField = 'bdaFilepath';
-$bartTemplate = 'bartDef.html.twig';
-
 if (!empty($_GET)) $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_NUMBER_INT);
 
+// TODO: move these fields and queries into the Deficiency class
 list(
     $class,
     $id,
     $idField,
-    $tableName,
-    $tableAlias,
-    $fields,
-    $joins,
     $commentTable,
     $commentTextField,
     $attachmentsTable,
@@ -141,33 +28,25 @@ list(
     ? [
         'SVBX\Deficiency',
         $get['defID'],
-        $projectIdField,
-        $projectTableName,
-        $projectTableAlias,
-        $projectFields,
-        $projectJoins,
-        $projectCommentsTable,
-        $projectComments,
-        $projectAttachmentsTable,
-        $projectPathField,
-        $projectTemplate
+        'defID',
+        'cdlComments',
+        'cdlCommText',
+        'CDL_pics',
+        'pathToFile',
+        'def.html.twig'
         ]
         : (!empty($get['bartDefID'])
-        ? [
-            'SVBX\BARTDeficiency',
-            $get['bartDefID'],
-            $bartIdField,
-            $bartTableName,
-            $bartTableAlias,
-            $bartFields,
-            $bartJoins,
-            $bartCommentTable,
-            $bartComments,
-            $bartAttachmentsTable,
-            $bartPathField,
-            $bartTemplate
-          ]
-        : array_fill(0, 9, null)));
+            ? [
+                'SVBX\BARTDeficiency',
+                $get['bartDefID'],
+                'ID',
+                'bartdlComments',
+                'bdCommText',
+                'bartdlAttachments',
+                'bdaFilepath',
+                'bartDef.html.twig'
+            ]
+            : array_fill(0, 8, null)));
 // TODO: handle case of no def ID
 
 $context = [
@@ -178,19 +57,7 @@ $context = [
 
 try {
     $def = new $class($id);
-    error_log($class . ' instatiated: ' . $def);
-
-    
-    // foreach ($joins as $joinTable => $onCondition) {
-        //     $link->join($joinTable, $onCondition, 'LEFT');
-        // }
-        
-    // $link->where('statusName', 'deleted', '<>');
-    // $link->where($idField, $id);
-        
     $context['data'] = $def->getReadable();
-    error_log('fetched def data: ' . print_r($context['data'], true));
-    // $link->getOne("$tableName $tableAlias", $fields);
     
     if (strcasecmp($context['data']['status'], "open") === 0) {
         $color = "bg-red text-white";
@@ -208,12 +75,11 @@ try {
     // query for photos linked to this Def
     // keep BART and Project photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
-    if ($tableName === 'CDL') {
+    if (!empty($get['defID'])) {
         $link->where($idField, $id);
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
         $context['data']['photos'] = array_chunk($photos, 3);
-    }
-    if ($tableName === 'BARTDL') {
+    } elseif (!empty($get['bartDefID'])) {
         $link->where('bartdlID', $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, [ "$pathField as filepath", 'filename' ]);
     }
