@@ -207,13 +207,19 @@ class Deficiency
     }
 
     public function set($props, $val = null) {
-        if (is_string($props) && array_key_exists($props, $this->props)) {
+        if (is_string($props)
+            && array_key_exists($props, $this->props)
+            && $props !== $this->timestampField)
+        {
             $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
             foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
-                if (is_string($key) && array_key_exists($key, $this->props)) {
+                if (is_string($key)
+                    && array_key_exists($key, $this->props)
+                    && $key !== $this->timestampField)
+                {
                     $this->props[$key] = empty(self::$foreignKeys[$key])
                         ? trim($value)
                         : intval($value);
@@ -292,7 +298,7 @@ class Deficiency
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
-        $this->set($this->timestampField, null); // lastUpdated gets timestamp by mysql
+        $this->set($this->timestampField, null);
 
         $this->validate('insert');
 
@@ -315,11 +321,8 @@ class Deficiency
     }
     
     public function update() {
-        // TODO: strip fields that never get updated, e.g., dateCreated
-        $this->set($this->timestampField, null); // TODO: this should not be settable by constructor
+        $this->set($this->timestampField, null);
         $this->set($this->creationFields, null);
-
-        echo 'CREATION_INFO: ' . print_r($this->creationFields, true);
 
         $this->validate('update');
 
@@ -327,14 +330,11 @@ class Deficiency
         // TODO: need an array of updatable keys
         $updatableData = $this->getNonNullProps();
         unset($updatableData['ID']);
-        echo 'props before cleaning: ' . $this;
         $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where($this->fields['ID'], $this->props['ID']);
-            // TODO: re-instantiate with new vals on success
-            echo 'Cleaned data before insert: ' . print_r($cleanData, true);
             if (!$success = $link->update($this->table, $cleanData)) {
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['ID']}");
             }
