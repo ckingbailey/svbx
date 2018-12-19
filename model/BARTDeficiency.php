@@ -93,7 +93,7 @@ class BARTDeficiency extends Deficiency {
         'safety_cert_vta'
     ];
 
-    static protected $foreignKeys = [
+    protected static $foreignKeys = [
         'safety_cert_vta' => [
             'table' => 'yesNo',
             'fields' => [ 'yesNoID', 'yesNoName' ]
@@ -108,6 +108,7 @@ class BARTDeficiency extends Deficiency {
         ],
         'bic' => [
             'table' => 'bdParties',
+            'alias' => 'bic',
             'fields' => [ 'partyID', 'partyName' ]
         ],
         'status' => [
@@ -115,7 +116,7 @@ class BARTDeficiency extends Deficiency {
             'fields' => [ 'statusID', 'statusName' ]
         ],
         'agree_vta' => [
-            'table' => 'agreeDisagreee',
+            'table' => 'agreeDisagree',
             'fields' => [ 'agreeDisagreeID', 'agreeDisagreeName' ]
         ],
         'evidenceType' => [

@@ -107,7 +107,7 @@ class Deficiency
         'newPic' // these are not strictly 'props' but are actually associated Objects
     ];
     
-    static protected $foreignKeys = [
+    protected static $foreignKeys = [
         'safetyCert' => [
             'table' => 'yesNo',
             'fields' => ['yesNoID', 'yesNoName']
@@ -349,7 +349,7 @@ class Deficiency
     
     // TODO: this could check for which value should be selected (the value that is on data for the corresponding field)
     // in that case it would have to take a Defificency object as argument
-    static function getLookUpOptions() {
+    public static function getLookUpOptions() {
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $options = [];
@@ -396,7 +396,7 @@ class Deficiency
         }
     }
 
-    public function getReadable($props = null) {
+    public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
         if ($props === null) { // join and return all props
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
@@ -404,10 +404,9 @@ class Deficiency
                 if (empty($this->props['ID'])) throw new \Exception('No ID found for Deficiency');
                 $link->where($this->fields['ID'], $this->props['ID']);
                 
-                $props = $this->get();
                 $lookupFields = [];
                 
-                foreach (self::$foreignKeys as $childField => $lookup) {
+                foreach (static::$foreignKeys as $childField => $lookup) {
                     $lookupTable = $lookup['table'];
                     $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
                     $lookupKey = $lookup['fields'][0];
@@ -432,7 +431,7 @@ class Deficiency
                 if (!$readable = $link->getOne($this->table, $lookupFields))
                     throw new \Exception('There was a problem fetching from the lookup fields: ' . $link->getLastQuery());
                 
-                return $readable + $props;
+                return $readable + $this->get();
             } catch (\Exception $e) {
                 throw $e;
             } finally {
