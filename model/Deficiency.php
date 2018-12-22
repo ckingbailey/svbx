@@ -6,6 +6,13 @@ use MysqliDb;
 class Deficiency
 {
     const DATE_FORMAT = 'Y-m-d';
+    const MOD_HISTORY = [
+        'created_by',
+        'updated_by',
+        'dateCreated',
+        'lastUpdated',
+        'dateClosed'
+    ];
     protected $timestampField = 'lastUpdated';
     protected $creationFields = [
         'created_by',
@@ -354,7 +361,7 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             $options = [];
             
-            foreach (self::$foreignKeys as $childField => $lookup) {
+            foreach (static::$foreignKeys as $childField => $lookup) {
                 $table = $lookup['table'];
                 $fields = $lookup['fields'];
                 $fields[0] .= ' AS id';
@@ -370,7 +377,6 @@ class Deficiency
                 }
                 
                 $options[$childField] = $link->get($table, null, $fields);
-                // $options[$childField] = [$table => [ $fields ]];
             }
             
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();

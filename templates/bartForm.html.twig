@@ -1,0 +1,289 @@
+{% extends 'defForm.html.twig' %}
+
+{% macro check(data) %}
+    {{ data ? ' checked' : '' }}
+{% endmacro %}
+
+{% import 'defForm.html.twig' as form %}
+{% import _self as self %}
+{% block formControls %}
+<input type='hidden' name='id' value='{{ data.ID }}'>
+<input type='hidden' name='class' value='bart'>
+<h5 class='grey-bg pad'>General Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='creator' class='required'>Creator</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='creator' id='creator' class='form-control' required="required">
+                            {{ form.renderOptions(options.creator, data.creator) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='next_step'>Next step</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='next_step' id='next_step' class='form-control'>
+                            {{ form.renderOptions(options.next_step, data.next_step) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='bic'>Ball in court</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='bic' id='bic' class='form-control'>
+                            {{ form.renderOptions(options.bic, data.bic) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='status' class='required'>Status</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='status' id='status' class='form-control' required="required">
+                            {{ form.renderOptions(options.status, data.status) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <label for='descriptive_title_vta' class='required'>Description</label>
+        <textarea name='descriptive_title_vta' id='descriptive_title_vta' class='form-control' maxlength='1000' required="required">{{ data.descriptive_title_vta }}</textarea>
+    </div>
+</div>
+<h5 class='grey-bg pad'>VTA Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-12 offset-md-0'>
+        <label for='root_prob_vta' class='required'>Root problem</label>
+        <textarea name='root_prob_vta' id='root_prob_vta' class='form-control' required="required">{{ data.root_prob_vta }}</textarea>
+    </div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-12 offset-md-0'>
+        <label for='resolution_vta' class='required'>Resolution</label>
+        <textarea name='resolution_vta' id='resolution_vta' class='form-control' required="required">{{ data.resolution_vta }}</textarea>
+    </div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='priority_vta' class='required'>Priority</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='priority_vta' id='priority_vta' class='form-control' required="required">
+                            {{ form.renderOptions(options.priority_vta, data.priority_vta) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='agree_vta'>Agree</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='agree_vta' id='agree_vta' class='form-control'>
+                            {{ form.renderOptions(options.agree_vta, data.agree_vta) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='safety_cert_vta' class='required'>Safety Certiable</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='safety_cert_vta' id='safety_cert_vta' class='form-control' required="required">
+                            {{ form.renderOptions(options.safety_cert_vta, data.safety_cert_vta) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-6'>
+                <div class='form-check form-check-inline'>
+                    <label for='resolution_disputed' class='form-check-label check-label-left'>Resolution disputed</label>
+                    <input name='resolution_disputed' id='resolution_disputed' type='checkbox' value='1' class='form-check-input' {{ self.check(data.resolution_disputed) }}>
+                </div>
+            </div>
+            <div class='col-md-6'>
+                <div class='form-check form-check-inline'>
+                    <label for='structural' class='form-check-label check-label-left'>Stuctural</label>
+                    <input name='structural' id='structural' type='checkbox' value='1' class='form-check-input' {{ self.check(data.structural) }}>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <label for='bartdlAttachments'>Attachments</label>
+                <div class='border-radius thin-grey-border pad scroll-y' style='height: 6.8rem'>
+                    <ul class='pl-0 mb-0'>
+                        {% for attachment in data.attachments %}
+                        <li>
+                            <a href='uploads/bartdlUploads/{{- attachment.filepath -}}'>{{- attachment.filepath -}}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='attachment'>Upload attachment</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='attachment' id='attachment' type='file' accept='application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-outlook, application/pdf, image/png, image/tiff, image/gif, image/jpeg' class='form-control'>
+                        <label class='text-red'>max. allowed file size 4Mb</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<h5 class='grey-bg pad'>BART Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-12 offset-md-0'>
+        <label for='id_bart'>BART ID</label>
+        <input name='id_bart' id='id_bart' type='text' value='{{ data.id_bart }}' class='form-control'>
+    </div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-12 offset-md-0'>
+        <label for='description_bart'>Description</label>
+        <textarea name='description_bart' id='description_bart' maxlength='1000' class='form-control'>{{ data.description_bart }}</textarea>
+    </div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='cat1_bart'>Category 1</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='cat1_bart' id='cat1_bart' type='text' maxlength='3' value='{{ data.cat1_bart }}' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='cat2_bart'>Category 2</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='cat2_bart' id='cat2_bart' type='text' maxlength='3' value='{{ data.cat2_bart }}' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='cat3_bart'>Category 3</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='cat3_bart' id='cat3_bart' type='text' maxlength='3' value='{{ data.cat3_bart }}' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='col-md-6'>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='level_bart'>Level</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <select name='level_bart' id='level_bart' class='form-control'>
+                            {{ form.renderOptions(options.level_bart, data.level_bart) }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='dateOpen_bart'>Date open</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='dateOpen_bart' id='dateOpen_bart' type='date' value='{{ data.dateOpen_bart }}' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row item-margin-bottom'>
+            <div class='col-md-12 offset-md-0'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <label for='dateClose_bart'>Date closed</label>
+                    </div>
+                    <div class='col-md-6'>
+                        <input name='dateClose_bart' id='dateClose_bart' type='date' value='{{ data.dateClose_bart }}' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<h5 class='grey-bg pad'>Comments</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-8 offset-md-2'>
+        <label for='comment'>Add comment</label>
+        <textarea name='comment' id='bdCommText' class='form-control'></textarea>
+    </div>
+</div>
+{% for comment in data.comments %}
+<div class='thin-grey-border pad mb-3'>
+    <h6 class='d-flex flex-row justify-content-between text-secondary'>
+        <span>{{ comment.user }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
+    <p>{{ comment.commentText | raw }}</p>
+</div>
+{% endfor %}
+<div class='center-content'>
+    <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
+</div>
+{% endblock %}

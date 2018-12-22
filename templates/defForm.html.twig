@@ -3,7 +3,7 @@
 {% macro renderOptions(options, curVal) %}
     <option></option>
     {% for option in options %}
-        {% set selected = option.id is same as(curVal) ? " selected" : "" %}
+        {% set selected = option.id  == curVal ? " selected" : "" %}
         <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
         {% set selected = "" %}
     {% endfor %}
@@ -27,7 +27,8 @@
 
 {% block content %}
 <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
-    <input type='hidden' name='defID' value='{{ data.ID }}'>
+    {% block formControls %}
+    <input type='hidden' name='id' value='{{ data.ID }}'>
     <h4 class='pad grey-bg'>Required Information</h4>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
@@ -291,6 +292,7 @@
         <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
         <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
     </div>
+    {% endblock %}
 </form>
 {% if session.role >= 40 and not data.ID is empty %}
 <form action='DeleteDef.php' method='POST' onsubmit=''>

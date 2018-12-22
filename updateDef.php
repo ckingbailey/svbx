@@ -7,72 +7,181 @@ if ($_SESSION['role'] <= 10) {
     exit;
 }
 
-$get = !empty($_GET) ? filter_input_array(INPUT_GET, FILTER_SANITIZE_NUMBER_INT) : null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // TODO: this should reject early if no ID
+    // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
+    error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
+    $class = 'SVBX\%sDeficiency';
+    list($id, $defClass) = array_values(filter_input_array(INPUT_POST, [
+        'id' => FILTER_SANITIZE_NUMBER_INT,
+        'class' => FILTER_SANITIZE_SPECIAL_CHARS
+    ]));
+    list($class, $updatedByField) = [
+        sprintf($class, $defClass),
+        $defClass === 'bart' ? 'userid' : 'username'
+    ];
+    error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
+    try {
+        if (empty($id)) throw new Exception('No ID found for update request');
+        $ref = new ReflectionClass($class);
+        $def = $ref->newInstanceArgs([ $id, $_POST ]);
+        $def->set('updated_by', $_SESSION[$updatedByField]);
+
+        if ($def->update()) {
+            // if UPDATE succesful, prepare, upload, and INSERT photo
+            // TODO: make all this one transcaction handled by the Deficiency object
+            // TODO: create classes for Comment and Attachment
+            if ($_FILES['CDL_pics']['size']
+                && $_FILES['CDL_pics']['name']
+                && $_FILES['CDL_pics']['tmp_name']
+                && $_FILES['CDL_pics']['type'])
+            {
+                $CDL_pics = $_FILES['CDL_pics'];
+            } else $CDL_pics = null;
+
+            if ($CDL_pics) {
+                $link = new MysqliDb(DB_CREDENTIALS);
+                $table = 'CDL_pics';
+                $fields = [
+                    'defID' => $def->get('ID'),
+                    'pathToFile' => null
+                ];
+                
+                // TODO: this can fail silently. Why? Get better error handling here
+                $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+                $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
+                if ($fields['pathToFile']) {
+                    if (!$link->insert($table, $fields))
+                        $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
+                }
+            }
+            
+            // if comment submitted commit it to a separate table
+            if (strlen($_POST['cdlCommText'])) {
+                $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                    ? $link
+                    : new MysqliDb(DB_CREDENTIALS);
+                $table = 'cdlComments';
+                $fields = [
+                    'defID' => $def->get('ID'),
+                    'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                    'userID' => $_SESSION['userID']
+                ];
+                
+                if ($fields['cdlCommText'])
+                    if (!$link->insert($table, $fields))
+                        $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
+            }
+            header("Location: /viewDef.php?defID={$def->get('ID')}");
+            exit;
+        }
+        throw new Exception('Update record failed');
+    } catch (Exception $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+    } catch (\Error $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+    } finally {
+        if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+        $qs = http_build_query($def->get());
+        header("Location: {$_SERVER['PHP_SELF']}/$qs");
+        exit;
+    }
+}
+
+// TODO: this should fail early if no ID or if invalid class
+try {
+    if (empty($_GET['id'])) throw new Exception('No id received for update request form');
+    if (empty($_GET)) throw new Exception('No data received for update request form');
+    $class = 'SVBX\%sDeficiency';
+    list($id, $defClass) = array_values(filter_input_array(INPUT_GET, [
+        'id' => FILTER_SANITIZE_NUMBER_INT,
+        'class' => FILTER_SANITIZE_SPECIAL_CHARS
+    ]));
+    unset($_GET['id']);
+    unset($_GET['class']);
+    $class = sprintf($class, strtoupper($defClass));
+} catch (Exception $e) {
+    error_log($e);
+    header($e->getMessage, true, 400);
+} catch (Error $e) {
+    error_log($e);
+    exit;
+}
 
 list(
-    $class,
-    $id,
+    $title,
+    $idField,
     $commentTable,
     $commentTextField,
     $attachmentsTable,
     $pathField,
     $templatePath
-) = (!empty($get['defID'])
+) = ($class === 'SVBX\Deficiency')
     ? [
-        'SVBX\Deficiency',
-        $get['defID'],
+        'Update deficiency no. ',
+        'defID',
         'cdlComments',
         'cdlCommText',
         'CDL_pics',
         'pathToFile',
         'defForm.html.twig'
-        ]
-        : (!empty($get['bartDefID'])
+    ]
+    : (($class === 'SVBX\BARTDeficiency')
         ? [
-            'SVBX\BARTDeficiency',
-            $get['bartDefID'],
+            'Update BART deficiency no. ',
+            'bartdlID',
             'bartdlComments',
             'bdCommText',
             'bartdlAttachments',
             'bdaFilepath',
             'bartForm.html.twig'
           ]
-        : array_fill(0, 7, null)));
+        : array_fill(0, 8, null));
+
+error_log(__FILE__ . '(' . __LINE__ . ') template path is ' . $templatePath);
 
 $context = [
     'session' => $_SESSION,
-    'title' => "Update deficiency no. $id",
-    'pageHeading' => "Update Deficiency No. $id",
-    'formAction' => 'updateDefCommit.php'
+    'title' => $title . $id,
+    'pageHeading' => ucwords($title) . $id,
+    'formAction' => $_SERVER['PHP_SELF']
 ];
 
 if (!empty($_SESSION['errorMsg']))
     unset($_SESSION['errorMsg']);
 
 try {
-    $context['options'] = SVBX\Deficiency::getLookUpOptions();
+    $context['options'] = $class::getLookUpOptions();
+    error_log(__FILE__ . '(' . __LINE__ . ') lookup options: ' . print_r($context['options'], true));
 
     // TODO: show special contractor options
-    $def = new $class($id);
+    error_log(__FILE__ . '(' . __LINE__ . ') class equals ' . $class);
+    $ref = new ReflectionClass($class);
+    $def = $ref->newInstanceArgs([ $id ]);
+    if (!empty($_GET)) {
+        error_log(__FILE__ . '(' . __LINE__ . ') remaining GET data: ' . print_r($_GET, true));
+        $def->set($_GET);
+    }
     $context['data'] = $def->get();
+    error_log(__FILE__ . '(' . __LINE__ . ') def data: ' . print_r($context['data'], true));
     
     $link = new MySqliDB(DB_CREDENTIALS);
     // query for comments associated with this Def
     $link->join('users_enc u', "$commentTable.userID = u.userID");
     $link->orderBy("$commentTable.date_created", 'DESC');
-    $link->where(($class === 'SVBX\Deficiency' ? 'defID' : 'bartdlID'), $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
+    $link->where($idField, $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
     $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
 
     // query for photos linked to this Def
     // keep BART | Project, photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
-    if (!empty($get['defID'])) {
-        $link->where('defID', $id);
+    if (!empty($id)) {
+        $link->where($idField, $id);
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
         $context['data']['photos'] = array_chunk($photos, 3);
-    }
-    if (!empty($get['bartDefID'])) {
-        $link->where('bartdlID', $id);
+        $link->where($idField, $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
 
@@ -80,12 +189,14 @@ try {
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
-
     $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);
 } catch (Exception $e) {
+    echo "Unable to retrieve record";
+    error_log($e);
+} catch (Error $e) {
     echo "Unable to retrieve record";
     error_log($e);
 } finally {
