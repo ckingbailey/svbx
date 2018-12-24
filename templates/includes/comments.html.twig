@@ -1,0 +1,13 @@
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#comments' role='button' aria-expanded='' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<section id='comments' class='collapse'>
+    {% for comment in data.comments %}
+    <div class='row mb-3'>
+        <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
+            <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
+            <p>{{ comment.commentText | raw }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</section>

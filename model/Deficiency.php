@@ -172,7 +172,6 @@ class Deficiency
         ]
     ];
     
-    // TODO: check for incoming defID in DB and validate persisted data against incoming data
     public function __construct($id = null, array $data = []) {
         if (!empty($id) && !empty($data)) { // This is a known Def
             $this->props['ID'] = $id;
@@ -185,6 +184,7 @@ class Deficiency
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $link->where($this->fields['ID'], $id);
                 if ($data = $link->getOne($this->table, array_values($this->fields))) {
+                    error_log(print_r($data, true));
                     $this->props['ID'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -200,17 +200,6 @@ class Deficiency
             // no id or props = no good
             throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
         }
-
-        //---------------------------------------------------------------------------------//
-        // // TODO: check for defID before checking creation deets <-- this only pertains to update
-        // // check creation details in db before setting them in obj
-        // // if (empty($this->data['createdBy']) || empty($this->data['dateCreated'])) {
-        //     // $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
-        //     // $link->where('defID', $this->data['defID']);
-        //     // $creationStamp = $link->get('deficiency', ['createdBy', 'dateCreated']);
-        // if (empty($this->data['createdBy'])) $this->data['createdBy'] = $_SESSION['userID'];
-        // if (empty($this->data['dateCreated'])) $this->data['dateCreated'] = date('Y-m-d H:i:s');
-        // // }
     }
 
     public function set($props, $val = null) {
@@ -223,9 +212,7 @@ class Deficiency
             foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
-                if (is_string($key)
-                    && array_key_exists($key, $this->props)
-                    && $key !== $this->timestampField)
+                if (is_string($key) && array_key_exists($key, $this->props))
                 {
                     $this->props[$key] = empty(self::$foreignKeys[$key])
                         ? trim($value)
@@ -388,7 +375,7 @@ class Deficiency
     }
 
     public function get($props = null) {
-        if ($props === null) { // return all props
+        if ($props === null) {
             return $this->props;
         } elseif (is_array($props)) {
             return array_reduce($this->props, function($acc, $prop) {
@@ -403,7 +390,7 @@ class Deficiency
     }
 
     public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
-        if ($props === null) { // join and return all props
+        if ($props === null) {
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
                 

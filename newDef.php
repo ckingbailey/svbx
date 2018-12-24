@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'pathToFile' => null
             ];
             
-            // TODO: this can fail silently. Why? Get better error handling here
             $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
             $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
             if ($fields['pathToFile']) {

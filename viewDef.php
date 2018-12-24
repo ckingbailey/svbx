@@ -73,6 +73,7 @@ try {
     // keep BART and Project photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
     if (!empty($get['defID'])) {
+        $link->where('defID', $id);
         $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
         $context['data']['photos'] = array_chunk($photos, 3);
     } elseif (!empty($get['bartDefID'])) {
