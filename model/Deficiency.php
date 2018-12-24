@@ -421,6 +421,14 @@ class Deficiency
                     $lookupFields[] = $displayName . ' as ' . $childField;
                 }
 
+                foreach ([ 'created_by', 'updated_by' ] as $field) {
+                    if (is_numeric($this->props[$field])) {
+                        $alias = 'users_enc_' . $field;
+                        $link->join("users_enc AS $alias", "{$this->table}.$field = $alias.userid");
+                        $lookupFields[] = "CONCAT($alias.firstname, ' ', $alias.lastname) AS $field";
+                    }
+                }
+
                 if (!$readable = $link->getOne($this->table, $lookupFields))
                     throw new \Exception('There was a problem fetching from the lookup fields: ' . $link->getLastQuery());
                 
