@@ -269,20 +269,9 @@
         </div>
     </div>
 </div>
-<h5 class='grey-bg pad'>Comments</h5>
-<div class='row item-margin-bottom'>
-    <div class='col-md-8 offset-md-2'>
-        <label for='comment'>Add comment</label>
-        <textarea name='comment' id='bdCommText' class='form-control'></textarea>
-    </div>
-</div>
-{% for comment in data.comments %}
-<div class='thin-grey-border pad mb-3'>
-    <h6 class='d-flex flex-row justify-content-between text-secondary'>
-        <span>{{ comment.user }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-    <p>{{ comment.commentText | raw }}</p>
-</div>
-{% endfor %}
+{% include 'includes/closureForm.html.twig' %}
+{% include 'includes/commentForm.html.twig' %}
+{% include 'includes/modHistory.html.twig' %}
 <div class='center-content'>
     <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
 </div>

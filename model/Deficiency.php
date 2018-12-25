@@ -184,7 +184,6 @@ class Deficiency
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $link->where($this->fields['ID'], $id);
                 if ($data = $link->getOne($this->table, array_values($this->fields))) {
-                    error_log(print_r($data, true));
                     $this->props['ID'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");

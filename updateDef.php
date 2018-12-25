@@ -154,18 +154,14 @@ if (!empty($_SESSION['errorMsg']))
 
 try {
     $context['options'] = $class::getLookUpOptions();
-    error_log(__FILE__ . '(' . __LINE__ . ') lookup options: ' . print_r($context['options'], true));
 
     // TODO: show special contractor options
-    error_log(__FILE__ . '(' . __LINE__ . ') class equals ' . $class);
     $ref = new ReflectionClass($class);
     $def = $ref->newInstanceArgs([ $id ]);
     if (!empty($_GET)) {
-        error_log(__FILE__ . '(' . __LINE__ . ') remaining GET data: ' . print_r($_GET, true));
         $def->set($_GET);
     }
     $context['data'] = $def->get();
-    error_log(__FILE__ . '(' . __LINE__ . ') def data: ' . print_r($context['data'], true));
     
     $link = new MySqliDB(DB_CREDENTIALS);
     // query for comments associated with this Def
