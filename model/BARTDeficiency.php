@@ -114,7 +114,17 @@ class BARTDeficiency extends Deficiency {
         ],
         'status' => [
             'table' => 'status',
-            'fields' => [ 'statusID', 'statusName' ]
+            'fields' => ['statusID', 'statusName'],
+            'where' => [
+                [
+                    'field' => 'statusName',
+                    'value' => 'open'
+                ],
+                [
+                    'field' => 'statusName',
+                    'value' => 'closed'
+                ]
+            ]
         ],
         'agree_vta' => [
             'table' => 'agreeDisagree',

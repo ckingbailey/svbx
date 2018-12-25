@@ -97,7 +97,10 @@
                     </div>
                     <div class='col-md-6'>
                         <select name='priority_vta' id='priority_vta' class='form-control' required="required">
-                            {{ form.renderOptions(options.priority_vta, data.priority_vta) }}
+                            {% for priority in [null, 1, 2, 3] %}
+                            {% set selected = priority | number_format == data.priority_vta ? ' selected' : '' %}
+                            <option value='{{ priority | number_format }}'{{ selected }}>{{ priority }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -237,7 +240,10 @@
                     </div>
                     <div class='col-md-6'>
                         <select name='level_bart' id='level_bart' class='form-control'>
-                            {{ form.renderOptions(options.level_bart, data.level_bart) }}
+                            {% for level in [null, 'PROGRAM', 'PROJECT'] %}
+                            {% set selected = level == data.level_bart ? ' selected' : '' %}
+                            <option{{ selected }}>{{ level }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>

@@ -1,0 +1,11 @@
+{% extends 'includes/comments.html.twig' %}
+
+{% block comments %}
+<div class='row mb-3'>
+    <div class='col-sm-8 offset-sm-2 thin-grey-border pad'>
+        <label for='cdlCommText'>Add comment</label>
+        <textarea name='cdlCommText' id='cdlCommText' class='form-control' maxlength='1000'></textarea>
+    </div>
+</div>
+{{ parent() }}
+{% endblock %}

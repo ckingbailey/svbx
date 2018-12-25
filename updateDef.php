@@ -181,6 +181,8 @@ try {
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
 
+    error_log(print_r($context['data'], true));
+
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
