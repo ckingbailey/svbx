@@ -28,7 +28,7 @@
 {% block content %}
 <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
     {% block formControls %}
-    <input type='hidden' name='id' value='{{ data.ID }}'>
+    <input type='hidden' name='id' value='{{ data.id }}'>
     <h4 class='pad grey-bg'>Required Information</h4>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
@@ -206,7 +206,7 @@
         {% for row in data.photos %}
         <div class='row item-margin-bottom'>
             {% for photo in row %}
-            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.id }}'></div>
             {% endfor %}
         </div>
         {% endfor %}
@@ -218,11 +218,11 @@
     </div>
     {% endblock %}
 </form>
-{% if session.role >= 40 and not data.ID is empty %}
+{% if session.role >= 40 and not data.id is empty %}
 <form action='DeleteDef.php' method='POST' onsubmit=''>
     <div class='row'>
         <div class='col-12 center-content'>
-            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.ID }}'
+            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.id }}'
                 onclick='return confirm("ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.")'>delete</button>
         </div>
     </div>

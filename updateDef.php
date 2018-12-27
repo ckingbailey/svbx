@@ -22,10 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
-        if (empty($id)) throw new Exception('No ID found for update request');
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
         $def->set('updated_by', $_SESSION[$updatedByField]);
+        if (empty($id)) throw new Exception('No ID found for update request');
 
         if ($def->update()) {
             // if UPDATE succesful, prepare, upload, and INSERT photo
@@ -75,17 +75,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: /viewDef.php?defID={$def->get('id')}");
             exit;
         }
+        $qs = '';
         throw new Exception('Update record failed');
     } catch (Exception $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+        $qs = '?' . http_build_query($def->get());
+        $location = $_SERVER['PHP_SELF'];
     } catch (\Error $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
+        $qs = '?' . http_build_query($def->get());
+        $location = $_SERVER['PHP_SELF'];
     } finally {
         if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-        $qs = http_build_query($def->get());
-        header("Location: {$_SERVER['PHP_SELF']}/$qs");
+        header("Location: $location{$qs}");
         exit;
     }
 }
