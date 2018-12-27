@@ -5,15 +5,11 @@ use MysqliDb;
 
 class BARTDeficiency extends Deficiency {
     protected $timestampField = 'form_modified';
-    protected $creationFields = [
-        'created_by',
-        'date_created'
-    ];
 
     protected $table = 'BARTDL';
 
     protected $props = [
-        'ID' => null,
+        'id' => null,
         'created_by' => null,
         'dateCreated' => null,
         'updated_by' => null,
@@ -51,7 +47,7 @@ class BARTDeficiency extends Deficiency {
     ];
 
     protected $fields = [
-        'ID' => 'ID',
+        'id' => 'id',
         'created_by' => 'created_by',
         'dateCreated' => 'date_created',
         'updated_by' => 'updated_by',
@@ -137,6 +133,16 @@ class BARTDeficiency extends Deficiency {
         'repo' => [
             'table' => 'repo',
             'fields' => [ 'repoID', 'repoName' ]
+        ],
+        'created_by' => [
+            'table' => 'users_enc',
+            'alias' => 'cb',
+            'fields' => [ 'userid', 'CONCAT(cb.firstname, " ", cb.lastname)' ]
+        ],
+        'updated_by' => [
+            'table' => 'users_enc',
+            'alias' => 'ub',
+            'fields' => [ 'userid', 'CONCAT(ub.firstname, " ", ub.lastname)' ]
         ]
     ];
 }

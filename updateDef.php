@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]));
     list($class, $updatedByField) = [
         sprintf($class, $defClass),
-        $defClass === 'bart' ? 'userid' : 'username'
+        $defClass === 'bart' ? 'userID' : 'username'
     ];
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $table = 'CDL_pics';
                 $fields = [
-                    'defID' => $def->get('ID'),
+                    'defID' => $def->get('id'),
                     'pathToFile' => null
                 ];
                 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     : new MysqliDb(DB_CREDENTIALS);
                 $table = 'cdlComments';
                 $fields = [
-                    'defID' => $def->get('ID'),
+                    'defID' => $def->get('id'),
                     'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
                     'userID' => $_SESSION['userID']
                 ];
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!$link->insert($table, $fields))
                         $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
             }
-            header("Location: /viewDef.php?defID={$def->get('ID')}");
+            header("Location: /viewDef.php?defID={$def->get('id')}");
             exit;
         }
         throw new Exception('Update record failed');
@@ -104,7 +104,8 @@ try {
     $class = sprintf($class, strtoupper($defClass));
 } catch (Exception $e) {
     error_log($e);
-    header($e->getMessage, true, 400);
+    header($e->getMessage(), true, 400);
+    exit;
 } catch (Error $e) {
     error_log($e);
     exit;
@@ -140,8 +141,6 @@ list(
           ]
         : array_fill(0, 8, null));
 
-error_log(__FILE__ . '(' . __LINE__ . ') template path is ' . $templatePath);
-
 $context = [
     'session' => $_SESSION,
     'title' => $title . $id,
@@ -161,7 +160,7 @@ try {
     if (!empty($_GET)) {
         $def->set($_GET);
     }
-    $context['data'] = $def->get();
+    $context['data'] = $def->getReadable($class::MOD_HISTORY);
     
     $link = new MySqliDB(DB_CREDENTIALS);
     // query for comments associated with this Def
@@ -180,8 +179,6 @@ try {
         $link->where($idField, $id);
         $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
     }
-
-    error_log(print_r($context['data'], true));
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');

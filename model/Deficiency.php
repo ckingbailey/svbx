@@ -21,7 +21,7 @@ class Deficiency
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
     protected $props = [
-        'ID' => null,
+        'id' => null,
         'safetyCert' => null,
         'systemAffected' => null,
         'location' => null,
@@ -61,7 +61,7 @@ class Deficiency
     protected $picssTable = 'cdlPics';
 
     protected $fields = [
-        'ID' =>  'defID',
+        'id' =>  'defID',
         'safetyCert' => 'safetyCert',
         'systemAffected' => 'systemAffected',
         'location' => 'location',
@@ -169,12 +169,24 @@ class Deficiency
         'repo' => [
             'table' => 'repo',
             'fields' => ['repoID', 'repoName']
+        ],
+        'created_by' => [
+            'table' => 'users_enc',
+            'alias' => 'cb',
+            'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
+            'concat' => true
+        ],
+        'updated_by' => [
+            'table' => 'users_enc',
+            'alias' => 'ub',
+            'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
+            'concat' => true
         ]
     ];
     
     public function __construct($id = null, array $data = []) {
         if (!empty($id) && !empty($data)) { // This is a known Def
-            $this->props['ID'] = $id;
+            $this->props['id'] = $id;
 
             $this->set($data);
             // TODO: check for associated Objects => 'attachments' and 'comments'
@@ -182,9 +194,9 @@ class Deficiency
         } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $link->where($this->fields['ID'], $id);
+                $link->where($this->fields['id'], $id);
                 if ($data = $link->getOne($this->table, array_values($this->fields))) {
-                    $this->props['ID'] = $id;
+                    $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
             } catch (\Exception $e) {
@@ -202,6 +214,9 @@ class Deficiency
     }
 
     public function set($props, $val = null) {
+        $numericProps = array_filter(static::$foreignKeys, function($key) {
+            return array_search($key, static::MOD_HISTORY) === false;
+        }, ARRAY_FILTER_USE_KEY);
         if (is_string($props)
             && array_key_exists($props, $this->props)
             && $props !== $this->timestampField)
@@ -213,7 +228,7 @@ class Deficiency
                 // set new vals for any string keys
                 if (is_string($key) && array_key_exists($key, $this->props))
                 {
-                    $this->props[$key] = empty(self::$foreignKeys[$key])
+                    $this->props[$key] = empty($numericProps[$key])
                         ? trim($value)
                         : intval($value);
                 } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
@@ -225,7 +240,7 @@ class Deficiency
 
     private function getInsertableFieldNames() {
         $fields = array_values($this->fields);
-        unset($fields[array_search($this->fields['ID'], $fields)]);
+        unset($fields[array_search($this->fields['id'], $fields)]);
         return $fields;
     }
 
@@ -296,20 +311,20 @@ class Deficiency
         $this->validate('insert');
 
         $insertableData = $this->getNonNullProps();
-        unset($insertableData['ID']);
+        unset($insertableData['id']);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $cleanData)) {
-                $this->set('ID', $newID);
+                $this->set('id', $newID);
             }
             $link->disconnect();
         } catch (\Exception $e) {
             throw $e;
         } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $this->get('ID');
+            return $this->get('id');
         }
     }
     
@@ -322,16 +337,16 @@ class Deficiency
         // TODO: sanitize should be a method that mutates the object's own props
         // TODO: need an array of updatable keys
         $updatableData = $this->getNonNullProps();
-        unset($updatableData['ID']);
+        unset($updatableData['id']);
         $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            $link->where($this->fields['ID'], $this->props['ID']);
+            $link->where($this->fields['id'], $this->props['id']);
             if (!$success = $link->update($this->table, $cleanData)) {
-                throw new \Exception("There was a problem updating the Deficiency {$this->props['ID']}");
+                throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
-            $this->__construct($this->props['ID']);
+            $this->__construct($this->props['id']);
         } catch (\Exception $e) {
             throw $e;
         } finally  {
@@ -346,8 +361,11 @@ class Deficiency
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $options = [];
+            $foreignKeys = array_filter(static::$foreignKeys, function($key) {
+                return array_search($key, static::MOD_HISTORY) === false;
+            }, ARRAY_FILTER_USE_KEY);
             
-            foreach (static::$foreignKeys as $childField => $lookup) {
+            foreach ($foreignKeys as $childField => $lookup) {
                 $table = $lookup['table'];
                 $fields = $lookup['fields'];
                 $fields[0] .= ' AS id';
@@ -377,66 +395,72 @@ class Deficiency
         if ($props === null) {
             return $this->props;
         } elseif (is_array($props)) {
-            return array_reduce($this->props, function($acc, $prop) {
-                if (array_key_exists($prop, $this->props)) {
-                    $acc[$prop] = $this->props[$prop];
-                }
-                return $acc;
-            }, []);
+            return array_filter($this->props, function($key) use ($props) {
+                return array_search($key, $props) !== false;
+            }, ARRAY_FILTER_USE_KEY);
+            // return array_reduce($this->props, function($acc, $prop) {
+            //     if (array_key_exists($prop, $this->props)) {
+            //         $acc[$prop] = $this->props[$prop];
+            //     }
+            //     return $acc;
+            // }, []);
         } elseif (is_string($props)) {
             return $this->props[$props];
         }
     }
 
     public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
-        if ($props === null) {
-            try {
-                $link = new MysqliDb(DB_CREDENTIALS);
-                
-                if (empty($this->props['ID'])) throw new \Exception('No ID found for Deficiency');
-                $link->where($this->fields['ID'], $this->props['ID']);
-                
-                $lookupFields = [];
-                
-                foreach (static::$foreignKeys as $childField => $lookup) {
-                    $lookupTable = $lookup['table'];
-                    $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
-                    $lookupKey = $lookup['fields'][0];
-                    $displayName = sprintf("%s.%s",
-                        ($alias ?: $lookupTable),
-                        $lookup['fields'][1]
-                    );
+        // TODO: test for presence of $props in foreignKeys
+        $foreignKeys = $props ?
+            array_filter(static::$foreignKeys, function($key) use ($props) {
+                return array_search($key, $props) !== false;
+            }, ARRAY_FILTER_USE_KEY)
+            : static::$foreignKeys; 
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            
+            if (empty($this->props['id'])) throw new \Exception('No ID found for Deficiency');
+            $link->where($this->fields['id'], $this->props['id']);
+            
+            $lookupFields = [];
+            
+            foreach ($foreignKeys as $childField => $lookup) {
+                $lookupTable = $lookup['table'];
+                $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
+                $lookupKey = $lookup['fields'][0];
+                $selectField = !empty($lookup['concat']) && $lookup['concat'] === true
+                    ? sprintf('CONCAT(%s)',
+                        implode(array_map(function($field) use ($alias, $lookupTable) {
+                            return empty(trim($field))
+                                ? "'$field'"
+                                : ($alias ?: $lookupTable) . '.' . $field;
+                        }, array_slice($lookup['fields'], 1)), ','))
+                    : sprintf("%s.%s",
+                    ($alias ?: $lookupTable),
+                    $lookup['fields'][1]
+                );
 
-                    $join = $lookupTable . ($alias ? " as {$alias}" : '');
-                    $joinOn = sprintf("%s.%s = %s.%s",
-                        $this->table,
-                        $childField,
-                        ($alias ?: $lookupTable),
-                        $lookupKey
-                    );
+                $join = $lookupTable . ($alias ? " AS {$alias}" : '');
+                $joinOn = sprintf("%s.%s = %s.%s",
+                    $this->table,
+                    $childField,
+                    ($alias ?: $lookupTable),
+                    $lookupKey
+                );
 
-                    $link->join($join, $joinOn, 'LEFT');
+                $link->join($join, $joinOn, 'LEFT');
 
-                    $lookupFields[] = $displayName . ' as ' . $childField;
-                }
-
-                foreach ([ 'created_by', 'updated_by' ] as $field) {
-                    if (is_numeric($this->props[$field])) {
-                        $alias = 'users_enc_' . $field;
-                        $link->join("users_enc AS $alias", "{$this->table}.$field = $alias.userid");
-                        $lookupFields[] = "CONCAT($alias.firstname, ' ', $alias.lastname) AS $field";
-                    }
-                }
-
-                if (!$readable = $link->getOne($this->table, $lookupFields))
-                    throw new \Exception('There was a problem fetching from the lookup fields: ' . $link->getLastQuery());
-                
-                return $readable + $this->get();
-            } catch (\Exception $e) {
-                throw $e;
-            } finally {
-                if (is_a($link, 'MysqliDb')) $link->disconnect();
+                $lookupFields[] = $selectField . ' AS ' . $childField;
             }
+
+            if (!$readable = $link->getOne($this->table, $lookupFields))
+                throw new \Exception('There was a problem fetching on the lookup fields: ' . $link->getLastQuery());
+            
+            return $readable + $this->get();
+        } catch (\Exception $e) {
+            throw $e;
+        } finally {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
         }
     }
     
