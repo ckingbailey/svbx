@@ -195,7 +195,9 @@
     </div>
     {% include 'includes/closureForm.html.twig' %}
     {% include 'includes/commentForm.html.twig' %}
-    {% include 'includes/modHistory.html.twig' %}
+    {% if not data.lastUpdated is empty %}
+        {% include 'includes/modHistory.html.twig' %}
+    {% endif %}
     {% if not data.photos is empty %}
     <h5 class='grey-bg pad'>
         <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
