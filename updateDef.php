@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!$link->insert($table, $fields))
                         $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
             }
-            header("Location: /viewDef.php?defID={$def->get('id')}");
+            header("Location: /def.php?defID={$def->get('id')}");
             exit;
         }
         $qs = '';

@@ -35,7 +35,7 @@ $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?bartDefID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
     'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
@@ -45,7 +45,7 @@ $bartTableHeadings = [
 ];
 
 $projectTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?defID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
@@ -251,7 +251,7 @@ $projectFilters = [
 ];
 
 list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
     : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);

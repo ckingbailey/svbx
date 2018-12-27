@@ -103,7 +103,7 @@ try {
     $defID = intval($stmt->insert_id);
     $stmt->close();
 
-    $location = "viewDef.php?bartDefID=$defID";
+    $location = "def.php?bartDefID=$defID";
 
     // insert comment if one was submitted
     if ($bdCommText) {
