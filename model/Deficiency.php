@@ -292,7 +292,7 @@ class Deficiency
             if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
             if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
             if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(self::DATE_CREATED));
+            if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(static::DATE_FORMAT));
         }
     }
 
