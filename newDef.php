@@ -11,9 +11,10 @@ if ($_SESSION['role'] <= 10) {
     exit;
 }
 
+// if POST data rec'd, try to INSERT new Def in db
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $def = new Deficiency($_POST['defID'], $_POST);
+        $def = new Deficiency($_POST['id'], $_POST);
 
         $def->set('created_by', $_SESSION['username']);
         $def->insert();
@@ -33,11 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $link = new MysqliDb(DB_CREDENTIALS);
             $table = 'CDL_pics';
             $fields = [
-                'defID' => $def->get('ID'),
+                'defID' => $def->get('id'),
                 'pathToFile' => null
             ];
             
-            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']); // TODO: if defID is missing, throw error
             $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
             if ($fields['pathToFile']) {
                 if (!$link->insert($table, $fields))
@@ -52,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : new MysqliDb(DB_CREDENTIALS);
             $table = 'cdlComments';
             $fields = [
-                'defID' => $def->get('ID'),
+                'defID' => $def->get('id'),
                 'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
                 'userID' => $_SESSION['userID']
             ];
@@ -62,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
 
-        header("location: /viewDef.php?defID={$def->get('ID')}");
+        header("location: /viewDef.php?defID={$def->get('id')}");
     } catch (\Exception $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
