@@ -238,18 +238,20 @@ class Deficiency
         }
     }
 
-    private function getInsertableFieldNames() {
-        $fields = array_values($this->fields);
-        unset($fields[array_search($this->fields['id'], $fields)]);
-        return $fields;
-    }
-
-    public function getNonNullProps() {
-        return array_reduce($this->getInsertableFieldNames(), function ($acc, $prop) {
-            if ($this->props[$prop] !== null) $acc[$prop] = $this->props[$prop];
+    private function propsToFields($props = null) {
+        $props = $props ?: array_keys($this->props);
+        return array_reduce($props, function($acc, $prop) {
+            if ($this->props[$prop] !== null) $acc[$this->fields[$prop]] = $this->props[$prop];
             return $acc;
         }, []);
     }
+
+    // public function getNonNullProps($props = null) {
+    //     return array_reduce($this->getInsertableFieldNames(), function ($acc, $prop) {
+    //         if ($this->props[$prop] !== null) $acc[$prop] = $this->props[$prop];
+    //         return $acc;
+    //     }, []);
+    // }
 
     public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
         // TODO: intval props that ought to be int
@@ -310,16 +312,16 @@ class Deficiency
 
         $this->validate('insert');
 
-        $insertableData = $this->getNonNullProps();
-        unset($insertableData['id']);
+        $insertableData = $this->propsToFields();
+        unset($insertableData[$this->fields['id']]);
+        unset($insertableData[$this->fields['lastUpdated']]);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $cleanData)) {
                 $this->set('id', $newID);
-            }
-            $link->disconnect();
+            } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
         } catch (\Exception $e) {
             throw $e;
         } finally {
@@ -336,7 +338,7 @@ class Deficiency
 
         // TODO: sanitize should be a method that mutates the object's own props
         // TODO: need an array of updatable keys
-        $updatableData = $this->getNonNullProps();
+        $updatableData = $this->propsToFields();
         unset($updatableData['id']);
         $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
 
