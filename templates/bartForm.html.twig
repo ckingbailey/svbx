@@ -277,7 +277,9 @@
 </div>
 {% include 'includes/closureForm.html.twig' %}
 {% include 'includes/commentForm.html.twig' %}
-{% include 'includes/modHistory.html.twig' %}
+{% if not data.lastUpdated is empty %}
+    {% include 'includes/modHistory.html.twig' %}
+{% endif %}
 <div class='center-content'>
     <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
 </div>
