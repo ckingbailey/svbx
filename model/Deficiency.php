@@ -57,8 +57,13 @@ class Deficiency
     ];
 
     protected $table = 'CDL';
-    protected $commentsTable = 'cdlComments';
-    protected $picssTable = 'cdlPics';
+    public $commentsTable = [
+        'table' => 'cdlComments',
+        'field' => 'cdlCommText',
+        'defID' => 'defID',
+        'commID' => 'cdlCommID'
+    ];
+    protected $picsTable = 'cdlPics';
 
     protected $fields = [
         'id' =>  'defID',
@@ -241,17 +246,11 @@ class Deficiency
     private function propsToFields($props = null) {
         $props = $props ?: array_keys($this->props);
         return array_reduce($props, function($acc, $prop) {
-            if ($this->props[$prop] !== null) $acc[$this->fields[$prop]] = $this->props[$prop];
+            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null)
+                $acc[$this->fields[$prop]] = $this->props[$prop];
             return $acc;
         }, []);
     }
-
-    // public function getNonNullProps($props = null) {
-    //     return array_reduce($this->getInsertableFieldNames(), function ($acc, $prop) {
-    //         if ($this->props[$prop] !== null) $acc[$prop] = $this->props[$prop];
-    //         return $acc;
-    //     }, []);
-    // }
 
     public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
         // TODO: intval props that ought to be int
@@ -316,17 +315,19 @@ class Deficiency
         unset($insertableData[$this->fields['id']]);
         unset($insertableData[$this->fields['lastUpdated']]);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        error_log(__FILE__ . '(' . __LINE__ . ') data ready for insert ' . print_r($cleanData, true));
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $cleanData)) {
                 $this->set('id', $newID);
             } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $this->id;
         } catch (\Exception $e) {
             throw $e;
         } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $this->get('id');
         }
     }
     

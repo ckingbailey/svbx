@@ -7,6 +7,12 @@ class BARTDeficiency extends Deficiency {
     protected $timestampField = 'form_modified';
 
     protected $table = 'BARTDL';
+    public $commentsTable = [
+        'table' => 'bartdlComments',
+        'field' => 'bdCommText',
+        'defID' => 'bartdlID',
+        'commID' => 'bdCommID'
+    ];
 
     protected $props = [
         'id' => null,

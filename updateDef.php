@@ -11,15 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: this should reject early if no ID
     // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
     error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
-    $class = 'SVBX\%sDeficiency';
-    list($id, $defClass) = array_values(filter_input_array(INPUT_POST, [
-        'id' => FILTER_SANITIZE_NUMBER_INT,
-        'class' => FILTER_SANITIZE_SPECIAL_CHARS
-    ]));
-    list($class, $updatedByField) = [
-        sprintf($class, $defClass),
-        $defClass === 'bart' ? 'userID' : 'username'
-    ];
+    $id = intval($id);
+    $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
+    $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '' );
+    $updatedByField = $_POST['class'] === 'bart' ? 'userid' : 'username';
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
         $ref = new ReflectionClass($class);
@@ -27,56 +22,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $def->set('updated_by', $_SESSION[$updatedByField]);
         if (empty($id)) throw new Exception('No ID found for update request');
 
-        if ($def->update()) {
-            // if UPDATE succesful, prepare, upload, and INSERT photo
-            // TODO: make all this one transcaction handled by the Deficiency object
-            // TODO: create classes for Comment and Attachment
-            if ($_FILES['CDL_pics']['size']
-                && $_FILES['CDL_pics']['name']
-                && $_FILES['CDL_pics']['tmp_name']
-                && $_FILES['CDL_pics']['type'])
-            {
-                $CDL_pics = $_FILES['CDL_pics'];
-            } else $CDL_pics = null;
+        $def->update();
+        // if UPDATE succesful, prepare, upload, and INSERT photo
+        // TODO: make all this one transcaction handled by the Deficiency object
+        // TODO: create classes for Comment and Attachment
+        if ($_FILES['CDL_pics']['size']
+            && $_FILES['CDL_pics']['name']
+            && $_FILES['CDL_pics']['tmp_name']
+            && $_FILES['CDL_pics']['type'])
+        {
+            $CDL_pics = $_FILES['CDL_pics'];
+        } else $CDL_pics = null;
 
-            if ($CDL_pics) {
-                $link = new MysqliDb(DB_CREDENTIALS);
-                $table = 'CDL_pics';
-                $fields = [
-                    'defID' => $def->get('id'),
-                    'pathToFile' => null
-                ];
-                
-                // TODO: this can fail silently. Why? Get better error handling here
-                $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
-                $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
-                if ($fields['pathToFile']) {
-                    if (!$link->insert($table, $fields))
-                        $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
-                }
-            }
+        if ($CDL_pics) {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $table = 'CDL_pics';
+            $fields = [
+                'defID' => $def->get('id'),
+                'pathToFile' => null
+            ];
             
-            // if comment submitted commit it to a separate table
-            if (strlen($_POST['cdlCommText'])) {
-                $link = (!empty($link) && is_a($link, 'MysqliDb'))
-                    ? $link
-                    : new MysqliDb(DB_CREDENTIALS);
-                $table = 'cdlComments';
-                $fields = [
-                    'defID' => $def->get('id'),
-                    'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
-                    'userID' => $_SESSION['userID']
-                ];
-                
-                if ($fields['cdlCommText'])
-                    if (!$link->insert($table, $fields))
-                        $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
+            // TODO: this can fail silently. Why? Get better error handling here
+            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+            $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
+            if ($fields['pathToFile']) {
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
             }
-            header("Location: /def.php?defID={$def->get('id')}");
-            exit;
         }
-        $qs = '';
-        throw new Exception('Update record failed');
+        
+        // if comment submitted commit it to a separate table
+        if (strlen($_POST['comment'])) {
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            list($table, $commentField, $defID) = [
+                $this->commentsTable['table'],
+                $this->commentsTable['field'],
+                $this->commentsTable['defID']
+            ];
+            $fields = [
+                $defID => $def->get('id'),
+                $commentField => trim(filter_var($_POST['comment'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                'userID' => $_SESSION['userID']
+            ];
+            
+            if ($fields['comment'])
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
+        }
+        $location = '/def.php';
+        $qs .= "id={$def->get('id')}";
+    } catch (\ReflectionException $e) {
+        error_log($e);
+        header("No Class found for the deficiency type $class", true, 400);
     } catch (Exception $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();

@@ -5,7 +5,9 @@ require 'session.php';
 
 use SVBX\Deficiency;
 
-if ($_SESSION['role'] <= 10) {
+if ($_SESSION['role'] <= 10
+    || (empty($_SESSION['bdPermit'])
+    && ($_POST['class'] === 'bart' || $_GET['class' === 'bart']))) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
@@ -14,14 +16,19 @@ if ($_SESSION['role'] <= 10) {
 // if POST data rec'd, try to INSERT new Def in db
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
+    $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
+    $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '');
+    $createdByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
 
-        $def->set('created_by', $_SESSION['username']);
+        $def->set('created_by', $_SESSION[$createdByField]);
+        error_log(__FILE__ . '(' . __LINE__ . ') def instantiated: ' . $def);
         $def->insert();
+        // error_log(__FILE__ . '(' . __LINE__ . ') new def ID: ' . $def->insert());
 
         // if INSERT succesful, prepare, upload, and INSERT photo
         // TODO: make all this one transcaction handled by the Deficiency object
@@ -51,22 +58,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // if comment submitted commit it to a separate table
-        if (strlen($_POST['cdlCommText'])) {
+        if (strlen($_POST['comment'])) {
             $link = (!empty($link) && is_a($link, 'MysqliDb'))
                 ? $link
                 : new MysqliDb(DB_CREDENTIALS);
-            $table = 'cdlComments';
+            list($table, $commentField, $defID) = [
+                $def->commentsTable['table'],
+                $def->commentsTable['field'],
+                $def->commentsTable['defID']
+            ];
             $fields = [
-                'defID' => $def->get('id'),
-                'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                $defID => $def->get('id'),
+                $commentField => trim(filter_var($_POST['comment'], FILTER_SANITIZE_SPECIAL_CHARS)),
                 'userID' => $_SESSION['userID']
             ];
             
-            if ($fields['cdlCommText'])
+            if ($fields[$commentField])
                 if (!$link->insert($table, $fields))
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
-
+        $location = '/def.php';
+        $qs .= "defID={$def->get('id')}";
         header("location: /def.php?defID={$def->get('id')}");
     } catch (\ReflectionException $e) {
         error_log($e);
@@ -74,8 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (\Exception $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
-        $qs = '?' . http_build_query($def->get());
-        header("location: /newDef.php$qs");
+        $location = '/newDef.php';
+        $qs .= http_build_query($def->get());
+        header("Location: $location{$qs}");
     } catch (\Error $e) {
         error_log($e);
     } finally {
@@ -87,16 +100,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $class = sprintf('SVBX\%sDeficiency', $_GET['class']);
     $template = $_GET['class'] === 'bart' ? 'bartForm.html.twig' : 'defForm.html.twig';
-    
+    $pageHeading = '';
+
     if (!empty($_GET['id'])) {
         try {
             $defID = intval($_GET['id']);
             $ref = new ReflectionClass($class);
             $def = $ref->newInstanceArgs([$defID]);
             $def->set($_GET);
+            $pageHeading = "Clone Deficiency No. {$data['id']}";
         } catch (\ReflectionException $e) {
             error_log($e);
             header("No Class found for the deficiency type $class", true, 400);
+        } catch (\Exception $e) {
+            error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
+        }
+    } elseif (!empty($_GET['descriptive_title_vta'])) {
+        try {
+            $ref = new ReflectionClass($class);
+            $def = $ref->newInstanceArgs([null, $_GET]);
+        } catch (\ReflectionException $e) {
+            error_log($e);
+            header("No Class found for the deficiency type $class", true, 400);
+            exit;
         } catch (\Exception $e) {
             error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
         }
@@ -110,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $context = [
         'session' => $_SESSION,
         'title' => 'Add new deficiency',
-        'pageHeading' => "Add New Deficiency",
+        'pageHeading' => $pageHeading ?: "Add New Deficiency",
         'formAction' => $_SERVER['PHP_SELF']
     ];    
 
@@ -124,7 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $def->set($class::MOD_HISTORY); // clear modification history
             $data = $def->get();
             $context['data'] = $data;
-            $context['pageHeading'] = "Clone Deficiency No. {$data['id']}";
         }
 
         $twig->display($template, $context);
