@@ -18,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
-    $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '');
     $createdByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
@@ -78,8 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
         $location = '/def.php';
-        $qs .= "defID={$def->get('id')}";
-        header("location: /def.php?defID={$def->get('id')}");
+        $qs = '?' . ($class === 'SVBX\Deficiency'
+            ? 'defID' : 'bartDefID')
+            . "={$def->get('id')}";
+        header("location: /def.php{$qs}");
     } catch (\ReflectionException $e) {
         error_log($e);
         header("No Class found for the deficiency type $class", true, 400);

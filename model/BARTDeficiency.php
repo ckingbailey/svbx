@@ -143,12 +143,14 @@ class BARTDeficiency extends Deficiency {
         'created_by' => [
             'table' => 'users_enc',
             'alias' => 'cb',
-            'fields' => [ 'userid', 'CONCAT(cb.firstname, " ", cb.lastname)' ]
+            'fields' => [ 'userid', 'firstname', ' ', 'lastname' ],
+            'concat' => true
         ],
         'updated_by' => [
             'table' => 'users_enc',
             'alias' => 'ub',
-            'fields' => [ 'userid', 'CONCAT(ub.firstname, " ", ub.lastname)' ]
+            'fields' => [ 'userid', 'firstname', ' ', 'lastname' ],
+            'concat' => true
         ]
     ];
 }

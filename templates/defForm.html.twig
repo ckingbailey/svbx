@@ -3,9 +3,11 @@
 {% macro renderOptions(options, curVal) %}
     <option></option>
     {% for option in options %}
-        {% set selected = option.id  == curVal ? " selected" : "" %}
-        <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
-        {% set selected = "" %}
+        {% if not option.name is same as ('') %}
+            {% set selected = option.id  == curVal ? " selected" : "" %}
+            <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
+            {% set selected = "" %}
+        {% endif %}
     {% endfor %}
 {% endmacro %}
 
