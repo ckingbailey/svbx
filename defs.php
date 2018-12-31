@@ -41,7 +41,7 @@ $bartTableHeadings = [
     'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
     'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
     'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3', 'collapse' => 'xs' ],
-    'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
+    'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateDef.php?class=bart&id=' ]
 ];
 
 $projectTableHeadings = [
