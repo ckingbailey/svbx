@@ -246,8 +246,10 @@ class Deficiency
     private function propsToFields($props = null) {
         $props = $props ?: array_keys($this->props);
         return array_reduce($props, function($acc, $prop) {
-            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null)
-                $acc[$this->fields[$prop]] = $this->props[$prop];
+            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null) {
+                $val = $this->props[$prop] !== '' ? $this->props[$prop] : null;
+                $acc[$this->fields[$prop]] = $val;
+            }
             return $acc;
         }, []);
     }
@@ -342,6 +344,7 @@ class Deficiency
         $updatableData = $this->propsToFields();
         unset($updatableData['id']);
         $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        error_log('def data ready for update: ' . PHP_EOL . print_r($cleanData, true));
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);

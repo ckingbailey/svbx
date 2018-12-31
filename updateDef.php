@@ -11,16 +11,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: this should reject early if no ID
     // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
     error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
-    $id = intval($id);
+    $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
     $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '' );
-    $updatedByField = $_POST['class'] === 'bart' ? 'userid' : 'username';
+    $updatedByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
+    error_log(__FILE__ . '(' . __LINE__ . ") \$updatedByField = $updatedByField");
     error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
         $def->set('updated_by', $_SESSION[$updatedByField]);
+        error_log(__FILE__ . '(' . __LINE__ . ") SESSION[$updatedByField] = {$_SESSION[$updatedByField]}" . PHP_EOL
+            . "\$def->'updated_by' = {$def->get('updated_by')}");
         if (empty($id)) throw new Exception('No ID found for update request');
+        error_log(__FILE__ . '(' . __LINE__ . ') def instantiated: ' . PHP_EOL . $def);
 
         $def->update();
         // if UPDATE succesful, prepare, upload, and INSERT photo
@@ -72,19 +76,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
         $location = '/def.php';
-        $qs .= "id={$def->get('id')}";
+        $qs = '?'
+            . ($class === 'SVBX\Deficiency'
+                ? 'defID' : 'bartDefID')
+            . "={$def->get('id')}";
     } catch (\ReflectionException $e) {
         error_log($e);
         header("No Class found for the deficiency type $class", true, 400);
     } catch (Exception $e) {
         error_log($e);
-        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
-        $qs = '?' . http_build_query($def->get());
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to update deficiency: ' . $e->getMessage();
+        $qs = '?'
+            . ($_POST['class'] === 'bart'
+                ? 'class=bart&' : '')
+            . http_build_query($def->get());
         $location = $_SERVER['PHP_SELF'];
     } catch (\Error $e) {
         error_log($e);
-        $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
-        $qs = '?' . http_build_query($def->get());
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to update deficiency: ' . $e->getMessage();
+        $qs = '?'
+            . ($_POST['class'] === 'bart'
+                ? 'class=bart&' : '')
+            . http_build_query($def->get());
         $location = $_SERVER['PHP_SELF'];
     } finally {
         if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();

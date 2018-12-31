@@ -122,10 +122,12 @@
             <div class='col-md-6'><p>Level</p></div><div class='col-md-6'>{{ page.input_like(data.level_bart) }}</div>
         </div>
         <div class='row item-margin-bottom'>
-            <div class='col-md-6'><p>Date open</p></div><div class='col-md-6'>{{ page.input_like(data.dateOpen_bart) }}</div>
+            {% set dateOpen = not data.dateOpen_bart[:4] is same as('0000') ? data.dateOpen_bart : '' %}
+            <div class='col-md-6'><p>Date open</p></div><div class='col-md-6'>{{ page.input_like(dateOpen) }}</div>
         </div>
         <div class='row item-margin-bottom'>
-            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(data.dateClose_bart) }}</div>
+            {% set dateClose = not data.dateClose_bart[:4] is same as('0000') ? data.dateClose_bart : '' %}
+            <div class='col-md-6'><p>Date closed</p></div><div class='col-md-6'>{{ page.input_like(dateClose) }}</div>
         </div>
     </div>
 </div>
