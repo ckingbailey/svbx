@@ -231,7 +231,7 @@ class Deficiency
             foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
-                if (is_string($key) && array_key_exists($key, $this->props))
+                if (is_string($key) && array_key_exists($key, $this->props)) // TODO: need to check for field -> prop mapping here
                 {
                     $this->props[$key] = empty($numericProps[$key])
                         ? trim($value)

@@ -54,6 +54,8 @@ $context = [
 
 try {
     $def = new $class($id);
+    error_log('def instantiated for id: ' . $id);
+    error_log('def data for instantiated def: ' . PHP_EOL . print_r($def->getReadable(), true));
     $context['data'] = $def->getReadable();
     
     if (strcasecmp($context['data']['status'], "open") === 0) {
