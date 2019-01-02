@@ -99,8 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $class = sprintf('SVBX\%sDeficiency', $_GET['class']);
-    $template = $_GET['class'] === 'bart' ? 'bartForm.html.twig' : 'defForm.html.twig';
+    $getClass = !empty($_GET['class']) ? $_GET['class'] : '';
+    $class = sprintf('SVBX\%sDeficiency', $getClass);
+    $template = $getClass === 'bart' ? 'bartForm.html.twig' : 'defForm.html.twig';
     $pageHeading = '';
 
     if (!empty($_GET['id'])) {
@@ -109,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $ref = new ReflectionClass($class);
             $def = $ref->newInstanceArgs([$defID]);
             $def->set($_GET);
-            $pageHeading = "Clone Deficiency No. {$data['id']}";
+            $pageHeading = "Clone Deficiency No. {$_GET['id']}";
         } catch (\ReflectionException $e) {
             error_log($e);
             header("No Class found for the deficiency type $class", true, 400);

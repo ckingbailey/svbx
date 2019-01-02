@@ -201,6 +201,7 @@ class Deficiency
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $link->where($this->fields['id'], $id);
                 if ($data = $link->getOne($this->table, array_values($this->fields))) {
+                    error_log(__FILE__ . '(' . __LINE__ . ') def fetched from db: ' . PHP_EOL . print_r($data, true));
                     $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -222,18 +223,23 @@ class Deficiency
         $numericProps = array_filter(static::$foreignKeys, function($key) {
             return array_search($key, static::MOD_HISTORY) === false;
         }, ARRAY_FILTER_USE_KEY);
+        error_log(__FILE__ . '(' . __LINE__ . ') numeric props:' . PHP_EOL . print_r($numericProps, true));
         if (is_string($props)
-            && array_key_exists($props, $this->props)
+            && key_exists($props, $this->props)
             && $props !== $this->timestampField)
         {
             $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
+            error_log(__FILE__ . '(' . __LINE__ . ") props to iterate" . PHP_EOL . print_r($props, true));
             foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
-                if (is_string($key) && array_key_exists($key, $this->props)) // TODO: need to check for field -> prop mapping here
-                {
-                    $this->props[$key] = empty($numericProps[$key])
+                if (is_string($key)
+                    && ($propsKey = key_exists($key, $this->props)
+                        ? $key
+                        : array_search($key, $this->fields))
+                ) {
+                    $this->props[$propsKey] = empty($numericProps[$propsKey])
                         ? trim($value)
                         : intval($value);
                 } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
