@@ -1,9 +1,7 @@
 const { src, dest, series } = require('gulp')
 const fs = require('fs')
 const merge = require('merge-stream')
-// TODO: require { package.json }.dependencies, iterate over its keys, copying contents of various **/dist/ folders to assets/
 const { dependencies } = require('./package.json')
-// TODO: gulp-merge may be the plugin needed for sending multiple srcs to multiples dests
 
 const css = () => {
     const destPath = (process.env.NODE_ENV === 'prod' ? 'public_html/' : '')

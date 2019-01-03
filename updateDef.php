@@ -2,384 +2,222 @@
 require 'vendor/autoload.php';
 require 'session.php';
 
-use SVBX\Deficiency;
-
 if ($_SESSION['role'] <= 10) {
     header("This is not for you", true, 403);
     exit;
 }
 
-$get = !empty($_GET) ? filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS) : null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // TODO: this should reject early if no ID
+    // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
+    $id = intval($_POST['id']);
+    $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
+    $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '' );
+    $updatedByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
+    try {
+        $ref = new ReflectionClass($class);
+        $def = $ref->newInstanceArgs([ $id, $_POST ]);
+        $def->set('updated_by', $_SESSION[$updatedByField]);
+        if (empty($id)) throw new Exception('No ID found for update request');
 
-// project def params
-$projectFields = [
-    'defID as ID',
-    'safetyCert',
-    'systemAffected',
-    'location',
-    'specLoc',
-    'status',
-    'closureRequested',
-    'severity',
-    'dueDate',
-    'groupToResolve',
-    'requiredBy',
-    'contractID',
-    'identifiedBy',
-    'defType',
-    'description',
-    'spec',
-    'actionOwner',
-    'oldID',
-    'evidenceType',
-    'repo',
-    'evidenceLink',
-    'evidenceID',
-    'closureComments',
-    'c.dateCreated',
-    "CONCAT(cre.firstname, ' ', cre.lastName) as created_by",
-    'c.lastUpdated',
-    "CONCAT(upd.firstname, ' ', upd.lastName) as updated_by",
-    'dateClosed',
-    "CONCAT(close.firstname, ' ', close.lastName) as closureRequestedBy"
-];
+        $def->update();
+        // if UPDATE succesful, prepare, upload, and INSERT photo
+        // TODO: make all this one transcaction handled by the Deficiency object
+        // TODO: create classes for Comment and Attachment
+        if ($_FILES['CDL_pics']['size']
+            && $_FILES['CDL_pics']['name']
+            && $_FILES['CDL_pics']['tmp_name']
+            && $_FILES['CDL_pics']['type'])
+        {
+            $CDL_pics = $_FILES['CDL_pics'];
+        } else $CDL_pics = null;
 
-$projectJoins = [
-    'users_enc cre' => 'c.created_by = cre.username',
-    'users_enc upd' => 'c.updated_by = upd.username',
-    'users_enc close' => 'c.closureRequestedBy = close.username'
-];
+        if ($CDL_pics) {
+            require 'uploadImg.php';
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $table = 'CDL_pics';
+            $fields = [
+                'defID' => $def->get('id'),
+                'pathToFile' => null
+            ];
+            
+            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+            $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
+            if ($fields['pathToFile']) {
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
+            }
+        }
 
-$projectFilters = [
-    "status" => [
-        'table' => 'status s',
-        'fields' => ['statusID', 'statusName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 'c.status = s.statusID',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 's.statusID',
-        'where' => [
-            'field' => 'statusID',
-            'value' => '3',
-            'comparison' => '<>'
-        ]
-    ],
-    "safetyCert" => [
-        'table' => 'yesNo y',
-        'fields' => ['yesNoID', 'yesNoName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 'c.safetyCert = y.yesNoID',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'y.yesNoID'
-    ],
-    "severity" => [
-        'table' => 'severity s',
-        'fields' => ['severityID', 'severityName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 's.severityID = c.severity',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 's.severityID'
-    ],
-    "systemAffected" => [
-        'table' => 'system s',
-        'fields' => ['systemID', 'systemName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 's.systemID = c.systemAffected',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 's.systemID'
-    ],
-    "groupToResolve" => [
-        'table' => 'system s',
-        'fields' => ['systemID', 'systemName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 's.systemID = c.groupToResolve',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 's.systemID'
-    ],
-    "location" => [
-        'table' => 'location l',
-        'fields' => ['locationID', 'locationName'],
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 'l.locationID = c.location',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'l.locationID'
-    ],
-    "specLoc" => [
-        'table' => 'CDL',
-        'fields' => 'specLoc',
-        'groupBy' => 'specLoc'
-    ],
-    "identifiedBy" => [
-        'table' => 'CDL',
-        'fields' => 'identifiedBy',
-        'groupBy' => 'identifiedBy'
-    ],
-    'requiredBy' => [
-        'table' => 'requiredBy r',
-        'fields' => 'reqByID, r.requiredBy',
-        'join' => [
-            'joinTable' => 'CDL c',
-            'joinOn' => 'r.reqByID = c.requiredBy',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'reqByID'
-    ]
-];
+        if ($_FILES['attachment']['size']
+            && $_FILES['attachment']['name']
+            && $_FILES['attachment']['tmp_name']
+            && $_FILES['attachment']['type'])
+        {
+            $attachment = $_FILES['attachment'];
+        } else $attachment = null;
 
-$projectTableName = 'CDL';
-$projectTableAlias = 'c';
-$projectIdField = 'defID';
-$projectCommentsTable = 'cdlComments';
-$projectComments = 'cdlCommText';
-$projectAttachmentsTable = 'CDL_pics';
-$projectPathField = 'pathToFile';
-$projectTemplate = 'defForm.html.twig';
+        if ($attachment) {
+            require('uploadAttachment.php');
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            uploadAttachment($link, 'attachment', 'uploads/bartdlUploads', $def->get('id'));
+        }
 
-// bart def params
-$bartFields = [
-    'ID',
-    'creator.partyName as creator',
-    'nextStepName as next_step',
-    'bic.partyName as bic',
-    'statusName as status',
-    'descriptive_title_vta',
-    'root_prob_vta',
-    'resolution_vta',
-    'priority_vta',
-    'agreeDisagreeName as agree_vta',
-    'yesNoName as safety_cert_vta',
-    'resolution_disputed',
-    'structural',
-    'id_bart',
-    'description_bart',
-    'cat1_bart',
-    'cat2_bart',
-    'cat3_bart',
-    'level_bart',
-    'dateOpen_bart',
-    'dateClose_bart',
-    'date_created',
-    "CONCAT(cre.firstname, ' ', cre.lastname)",
-    'Form_Modified',
-    "CONCAT(upd.firstname, ' ', upd.lastname)"
-];
+        // if comment submitted commit it to a separate table
+        if (strlen($_POST['comment'])) {
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            list($table, $commentField, $defID) = [
+                $def->commentsTable['table'],
+                $def->commentsTable['field'],
+                $def->commentsTable['defID']
+            ];
+            $fields = [
+                $defID => $def->get('id'),
+                $commentField => trim(filter_var($_POST['comment'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                'userID' => $_SESSION['userID']
+            ];
+            
+            if ($fields[$commentField])
+                if (!$link->insert($table, $fields))
+                    $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
+        }
+        $location = '/def.php';
+        $qs = '?'
+            . ($class === 'SVBX\Deficiency'
+                ? 'defID' : 'bartDefID')
+            . "={$def->get('id')}";
+    } catch (\ReflectionException $e) {
+        error_log($e);
+        header("No Class found for the deficiency type $class", true, 400);
+    } catch (Exception $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to update deficiency: ' . $e->getMessage();
+        $qs = '?'
+            . ($_POST['class'] === 'bart'
+                ? 'class=bart&' : '')
+            . http_build_query($def->get());
+        $location = $_SERVER['PHP_SELF'];
+    } catch (\Error $e) {
+        error_log($e);
+        $_SESSION['errorMsg'] = 'Something went wrong in trying to update deficiency: ' . $e->getMessage();
+        $qs = '?'
+            . ($_POST['class'] === 'bart'
+                ? 'class=bart&' : '')
+            . http_build_query($def->get());
+        $location = $_SERVER['PHP_SELF'];
+    } finally {
+        if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+        header("Location: $location{$qs}");
+        exit;
+    }
+}
 
-$bartJoins = [
-    'yesNo' => 'b.safety_cert_vta = yesNo.yesNoID',
-    'users_enc upd' => 'b.updated_by = upd.userID',
-    'bdNextStep' => 'b.next_step = bdNextStep.bdNextStepID',
-    'bdParties creator' => 'b.creator = creator.partyID',
-    'bdParties bic' => 'b.bic = bic.partyID',
-    'status' => 'b.status = status.statusID',
-    'agreeDisagree' => 'b.agree_vta = agreeDisagree.agreeDisagreeID',
-    'users_enc cre' => 'b.created_by = cre.userID'
-];
-
-$bartFilters = [
-    'status' => [
-        'table' => 'status s',
-        'fields' => ['statusID', 'statusName'],
-        'join' => [
-            'joinTable' => 'BARTDL b',
-            'joinOn' => 's.statusID = b.status',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 's.statusID',
-        'where' => [
-            'field' => 's.statusID',
-            'value' => '3',
-            'comparison' => '<>'
-        ]
-    ],
-    'next_step' => [
-        'table' => 'bdNextStep n',
-        'fields' => ['bdNextStepID', 'nextStepName'],
-        'join' => [
-            'joinTable' => 'BARTDL b',
-            'joinOn' => 'b.next_step = n.bdNextStepID',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'n.bdNextStepID',
-        'where' => [
-            'field' => 'n.bdNextStepID',
-            'value' => '0',
-            'comparison' => '<>'
-        ]
-    ],
-    'bic' => [
-        'table' => 'bdParties p',
-        'fields' => ['partyID', 'partyName'],
-        'join' => [
-            'joinTable' => 'BARTDL b',
-            'joinOn' => 'p.partyID = b.creator',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'p.partyID',
-        'where' => [
-            'field' => 'p.partyID',
-            'value' => '0',
-            'comparison' => '<>'
-        ]
-    ],
-    'safety_cert_vta' => [
-        'table' => 'yesNo y',
-        'fields' => ['yesNoID', 'yesNoName'],
-        'join' => [
-            'joinTable' => 'BARTDL b',
-            'joinOn' => 'y.yesNoID = b.safety_cert_vta',
-            'joinType' => 'INNER'
-        ],
-        'groupBy' => 'y.yesNoID'
-    ],
-    'resolution_disputed' => [
-        'table' => 'BARTDL',
-        'fields' => ['resolution_disputed', '(CASE WHEN resolution_disputed = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
-        'groupBy' => 'resolution_disputed'
-    ],
-    'structural' => [
-        'table' => 'BARTDL',
-        'fields' => ['structural', '(CASE WHEN structural = 1 THEN "yes" ELSE "no" END) AS yesNoName'], // res_disp and structural use CASES to map 0 + 1 to 'no' + 'yes' b/c they don't line up nicely with our bool table, yesNo
-        'groupBy' => 'structural'
-    ]
-];
-
-$bartTableName = 'bartDL';
-$bartTableAlias = 'b';
-$bartIdField = 'ID';
-$bartCommentTable = 'bartdlComments';
-$bartComments = 'bdCommText';
-$bartAttachmentsTable = 'bartdlAttachments';
-$bartPathField = 'bdaFilepath';
-$bartTemplate = 'bartForm.html.twig';
+// TODO: this should fail early if no ID or if invalid class
+try {
+    if (empty($_GET['id'])) throw new Exception('No id received for update request form');
+    if (empty($_GET)) throw new Exception('No data received for update request form');
+    $class = 'SVBX\%sDeficiency';
+    list($id, $defClass) = array_values(filter_input_array(INPUT_GET, [
+        'id' => FILTER_SANITIZE_NUMBER_INT,
+        'class' => FILTER_SANITIZE_SPECIAL_CHARS
+    ]));
+    unset($_GET['id']);
+    unset($_GET['class']);
+    $class = sprintf($class, strtoupper($defClass));
+} catch (Exception $e) {
+    error_log($e);
+    header($e->getMessage(), true, 400);
+    exit;
+} catch (Error $e) {
+    error_log($e);
+    exit;
+}
 
 list(
-    $id,
+    $title,
     $idField,
-    $tableName,
-    $tableAlias,
-    $fields,
-    $joins,
     $commentTable,
     $commentTextField,
     $attachmentsTable,
-    $pathField,
+    $attachmentFields,
     $templatePath
-) = (!empty($get['defID'])
+) = ($class === 'SVBX\Deficiency')
     ? [
-        $get['defID'],
-        $projectIdField,
-        $projectTableName,
-        $projectTableAlias,
-        $projectFields,
-        $projectJoins,
-        $projectCommentsTable,
-        $projectComments,
-        $projectAttachmentsTable,
-        $projectPathField,
-        $projectTemplate
-        ]
-        : (!empty($get['bartDefID'])
+        'Update deficiency no. ',
+        'defID',
+        'cdlComments',
+        'cdlCommText',
+        'CDL_pics',
+        'pathToFile as filepath',
+        'defForm.html.twig'
+    ]
+    : (($class === 'SVBX\BARTDeficiency')
         ? [
-            $get['bartDefID'],
-            $bartIdField,
-            $bartTableName,
-            $bartTableAlias,
-            $bartFields,
-            $bartJoins,
-            $bartCommentTable,
-            $bartComments,
-            $bartAttachmentsTable,
-            $bartPathField,
-            $bartTemplate
+            'Update BART deficiency no. ',
+            'bartdlID',
+            'bartdlComments',
+            'bdCommText',
+            'bartdlAttachments',
+            ['bdaFilepath as filepath', 'filename'],
+            'bartForm.html.twig'
           ]
-        : array_fill(0, 11, null)));
+        : array_fill(0, 8, null));
 
 $context = [
     'session' => $_SESSION,
-    'title' => "Update deficiency no. $id",
-    'pageHeading' => "Update Deficiency No. $id",
-    'formAction' => 'updateDefCommit.php'
+    'title' => $title . $id,
+    'pageHeading' => ucwords($title) . $id,
+    'formAction' => $_SERVER['PHP_SELF']
 ];
 
 if (!empty($_SESSION['errorMsg']))
     unset($_SESSION['errorMsg']);
 
 try {
-    $context['options'] = Deficiency::getLookUpOptions();
-
-    $link = new MySqliDB(DB_CREDENTIALS);
+    $context['options'] = $class::getLookUpOptions();
 
     // TODO: show special contractor options
-    // $defStatus = $elements['status']['value'];
-    // // special options for Contractor level when Def is Open
-    // if ($role === 15 && $defStatus === 1) {
-    //     $elements['status']['query'] = [ 1 => 'Open', 4 => 'Request closure' ];    
-    // }
-
-    foreach ($joins as $joinTable => $onCondition) {
-        $link->join($joinTable, $onCondition, 'LEFT');
-    }    
-
-    $link->where($idField, $id);
-
-    $context['data'] = $link->getOne("$tableName $tableAlias", $fields);
-
+    $ref = new ReflectionClass($class);
+    $def = $ref->newInstanceArgs([ $id ]);
+    if (!empty($_GET)) {
+        $def->set($_GET);
+    }
+    $context['data'] = $def->getReadable($class::MOD_HISTORY);
+    
+    $link = new MySqliDB(DB_CREDENTIALS);
     // query for comments associated with this Def
     $link->join('users_enc u', "$commentTable.userID = u.userID");
     $link->orderBy("$commentTable.date_created", 'DESC');
-    $link->where(($idField === 'defID' ? 'defID' : 'bartdlID'), $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
+    $link->where($idField, $id); // this is necessary because the name of the BART id field is different on the bartDef table and the comment table
     $context['data']['comments'] = $link->get($commentTable, null, [ "$commentTextField as commentText", 'date_created', "CONCAT(firstname, ' ', lastname) as userFullName" ]);
 
     // query for photos linked to this Def
     // keep BART | Project, photos | attachments separate for now
     // to leave room for giving photos or attachments to either of those data types in the future
-    if ($tableName === 'CDL') {
+    if (!empty($id)) {
         $link->where($idField, $id);
-        $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $photos = $link->get($attachmentsTable, null, $attachmentFields);
         $context['data']['photos'] = array_chunk($photos, 3);
-    }
-    if ($tableName === 'BARTLDL') {
-        $link->where('bartdlID', $id);
-        $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $link->where($idField, $id);
+        $context['data']['attachments'] = $link->get($attachmentsTable, null, $attachmentFields);
     }
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
     $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
-
-    // add extra Twig filters
-    $html_sanitize_decode = new Twig_Filter('html_sanitize_decode', function($str) {
-        $decoded = html_entity_decode($str, ENT_QUOTES);
-        return filter_var($decoded, FILTER_SANITIZE_SPECIAL_CHARS);
-    });    
-    $filter_stripslashes = new Twig_Filter('unescape', function($str) {
-        return stripcslashes($str);
-    });    
-    $filter_decode = new Twig_Filter('safe', function($str) {
-        return html_entity_decode($str, ENT_QUOTES);
-    });
-    $twig->addFilter($filter_decode);    
-    $twig->addFilter($html_sanitize_decode);
-    $twig->addFilter($filter_stripslashes);
-
     $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {
     echo "Unable to render template";
     error_log($e);
 } catch (Exception $e) {
+    echo "Unable to retrieve record";
+    error_log($e);
+} catch (Error $e) {
     echo "Unable to retrieve record";
     error_log($e);
 } finally {
