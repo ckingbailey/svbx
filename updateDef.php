@@ -10,21 +10,15 @@ if ($_SESSION['role'] <= 10) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: this should reject early if no ID
     // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
-    error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
     $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '' );
     $updatedByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
-    error_log(__FILE__ . '(' . __LINE__ . ") \$updatedByField = $updatedByField");
-    error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
         $def->set('updated_by', $_SESSION[$updatedByField]);
-        error_log(__FILE__ . '(' . __LINE__ . ") SESSION[$updatedByField] = {$_SESSION[$updatedByField]}" . PHP_EOL
-            . "\$def->'updated_by' = {$def->get('updated_by')}");
         if (empty($id)) throw new Exception('No ID found for update request');
-        error_log(__FILE__ . '(' . __LINE__ . ') def instantiated: ' . PHP_EOL . $def);
 
         $def->update();
         // if UPDATE succesful, prepare, upload, and INSERT photo
@@ -46,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'pathToFile' => null
             ];
             
-            // TODO: this can fail silently. Why? Get better error handling here
             $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
             $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
             if ($fields['pathToFile']) {
@@ -54,16 +47,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['errorMsg'] = "There was a problem adding new picture: {$link->getLastError()}";
             }
         }
-        
+
+        if ($_FILES['attachment']['size']
+            && $_FILES['attachment']['name']
+            && $_FILES['attachment']['tmp_name']
+            && $_FILES['attachment']['type'])
+        {
+            $attachment = $_FILES['attachment'];
+        } else $attachment = null;
+
+        if ($attachment) {
+            require('uploadAttachment.php');
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            uploadAttachment($link, 'attachment', 'uploads/bartdlUploads', $def->get('id'));
+        }
+
         // if comment submitted commit it to a separate table
         if (strlen($_POST['comment'])) {
             $link = (!empty($link) && is_a($link, 'MysqliDb'))
                 ? $link
                 : new MysqliDb(DB_CREDENTIALS);
             list($table, $commentField, $defID) = [
-                $this->commentsTable['table'],
-                $this->commentsTable['field'],
-                $this->commentsTable['defID']
+                $def->commentsTable['table'],
+                $def->commentsTable['field'],
+                $def->commentsTable['defID']
             ];
             $fields = [
                 $defID => $def->get('id'),

@@ -61,7 +61,7 @@
                         <label for='status' class='required'>Status</label>
                     </div>
                     <div class='col-md-6'>
-                        <select name='status' id='status' class='form-control' required="required">
+                        <select name='status' id='status' class='form-control' required="required" onchange="return onSelectStatusClosed(event)">
                             {{ form.renderOptions(options.status, data.status) }}
                         </select>
                     </div>

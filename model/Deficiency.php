@@ -5,6 +5,14 @@ use MysqliDb;
 
 class Deficiency
 {
+    protected $table = 'CDL';
+    public $commentsTable = [
+        'table' => 'cdlComments',
+        'field' => 'cdlCommText',
+        'defID' => 'defID',
+        'commID' => 'cdlCommID'
+    ];
+    protected $picsTable = 'cdlPics';
     const DATE_FORMAT = 'Y-m-d';
     const MOD_HISTORY = [
         'created_by',
@@ -56,14 +64,40 @@ class Deficiency
         'newPic' => null
     ];
 
-    protected $table = 'CDL';
-    public $commentsTable = [
-        'table' => 'cdlComments',
-        'field' => 'cdlCommText',
-        'defID' => 'defID',
-        'commID' => 'cdlCommID'
+    protected $filters = [
+        'id' => 'intval',
+        'safetyCert' => 'intval',
+        'systemAffected' => 'intval',
+        'location' => 'intval',
+        'specLoc' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'status' => 'intval',
+        'severity' => 'intval',
+        'dueDate' => 'date',
+        'groupToResolve' => 'intval',
+        'requiredBy' => 'intval',
+        'contractID' => 'intval',
+        'identifiedBy' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'defType' => 'intval',
+        'description' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'spec' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'actionOwner' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'evidenceType' => 'intval',
+        'repo' => 'intval',
+        'evidenceID' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'evidenceLink' => FILTER_SANITIZE_ENCODED,
+        'oldID' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'closureComments' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'created_by' => null,
+        'updated_by' => null,
+        'dateCreated' => 'date',
+        'dateClosed' => 'date',
+        'closureRequested' => 'intval',
+        'closureRequestedBy' => null,
+        'comments' => [],
+        'newComment' => null,
+        'pics' => [],
+        'newPic' => null
     ];
-    protected $picsTable = 'cdlPics';
 
     protected $fields = [
         'id' =>  'defID',
@@ -201,7 +235,6 @@ class Deficiency
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $link->where($this->fields['id'], $id);
                 if ($data = $link->getOne($this->table, array_values($this->fields))) {
-                    error_log(__FILE__ . '(' . __LINE__ . ') def fetched from db: ' . PHP_EOL . print_r($data, true));
                     $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -223,14 +256,12 @@ class Deficiency
         $numericProps = array_filter(static::$foreignKeys, function($key) {
             return array_search($key, static::MOD_HISTORY) === false;
         }, ARRAY_FILTER_USE_KEY);
-        error_log(__FILE__ . '(' . __LINE__ . ') numeric props:' . PHP_EOL . print_r($numericProps, true));
         if (is_string($props)
             && key_exists($props, $this->props)
             && $props !== $this->timestampField)
         {
             $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
-            error_log(__FILE__ . '(' . __LINE__ . ") props to iterate" . PHP_EOL . print_r($props, true));
             foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
@@ -323,7 +354,6 @@ class Deficiency
         unset($insertableData[$this->fields['id']]);
         unset($insertableData[$this->fields['lastUpdated']]);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
-        error_log(__FILE__ . '(' . __LINE__ . ') data ready for insert ' . print_r($cleanData, true));
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
@@ -350,7 +380,6 @@ class Deficiency
         $updatableData = $this->propsToFields();
         unset($updatableData['id']);
         $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
-        error_log('def data ready for update: ' . PHP_EOL . print_r($cleanData, true));
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);

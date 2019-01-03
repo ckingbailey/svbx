@@ -13,6 +13,16 @@ class BARTDeficiency extends Deficiency {
         'defID' => 'bartdlID',
         'commID' => 'bdCommID'
     ];
+    public $attachmentsTable = [
+        'idField' => 'bdAttachID',
+        'table' => 'bartdlAttachments',
+        'pathField' => 'bdaFilepath',
+        'defIDField' => 'bartdlID',
+        'uploaded_by',
+        'filesize',
+        'fileExt',
+        'filename'
+    ];
 
     protected $props = [
         'id' => null,

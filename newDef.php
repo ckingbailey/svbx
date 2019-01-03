@@ -15,19 +15,15 @@ if ($_SESSION['role'] <= 10
 
 // if POST data rec'd, try to INSERT new Def in db
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    error_log(__FILE__ . '(' . __LINE__ . ') POST data received ' . print_r($_POST, true));
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
     $createdByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
-    error_log(__FILE__ . '(' . __LINE__ . ') filtered ID: ' . $id . PHP_EOL . 'class name: ' . $class);
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
 
         $def->set('created_by', $_SESSION[$createdByField]);
-        error_log(__FILE__ . '(' . __LINE__ . ') def instantiated: ' . $def);
         $def->insert();
-        // error_log(__FILE__ . '(' . __LINE__ . ') new def ID: ' . $def->insert());
 
         // if INSERT succesful, prepare, upload, and INSERT photo
         // TODO: make all this one transcaction handled by the Deficiency object
@@ -56,6 +52,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
+        if ($_FILES['attachment']['size']
+            && $_FILES['attachment']['name']
+            && $_FILES['attachment']['tmp_name']
+            && $_FILES['attachment']['type'])
+        {
+            $attachment = $_FILES['attachment'];
+        } else $attachment = null;
+
+        if ($attachment) {
+            require('uploadAttachment.php');
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            uploadAttachment($link, 'attachment', 'uploads/bartdlUploads', $def->get('id'));
+        }
+
         // if comment submitted commit it to a separate table
         if (strlen($_POST['comment'])) {
             $link = (!empty($link) && is_a($link, 'MysqliDb'))
