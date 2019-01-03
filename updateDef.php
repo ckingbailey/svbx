@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else $CDL_pics = null;
 
         if ($CDL_pics) {
+            require 'uploadImg.php';
             $link = new MysqliDb(DB_CREDENTIALS);
             $table = 'CDL_pics';
             $fields = [
@@ -80,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'userID' => $_SESSION['userID']
             ];
             
-            if ($fields['comment'])
+            if ($fields[$commentField])
                 if (!$link->insert($table, $fields))
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
@@ -142,7 +143,7 @@ list(
     $commentTable,
     $commentTextField,
     $attachmentsTable,
-    $pathField,
+    $attachmentFields,
     $templatePath
 ) = ($class === 'SVBX\Deficiency')
     ? [
@@ -151,7 +152,7 @@ list(
         'cdlComments',
         'cdlCommText',
         'CDL_pics',
-        'pathToFile',
+        'pathToFile as filepath',
         'defForm.html.twig'
     ]
     : (($class === 'SVBX\BARTDeficiency')
@@ -161,7 +162,7 @@ list(
             'bartdlComments',
             'bdCommText',
             'bartdlAttachments',
-            'bdaFilepath',
+            ['bdaFilepath as filepath', 'filename'],
             'bartForm.html.twig'
           ]
         : array_fill(0, 8, null));
@@ -199,10 +200,10 @@ try {
     // to leave room for giving photos or attachments to either of those data types in the future
     if (!empty($id)) {
         $link->where($idField, $id);
-        $photos = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $photos = $link->get($attachmentsTable, null, $attachmentFields);
         $context['data']['photos'] = array_chunk($photos, 3);
         $link->where($idField, $id);
-        $context['data']['attachments'] = $link->get($attachmentsTable, null, "$pathField as filepath");
+        $context['data']['attachments'] = $link->get($attachmentsTable, null, $attachmentFields);
     }
 
     // instantiate Twig

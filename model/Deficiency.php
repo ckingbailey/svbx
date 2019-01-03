@@ -361,7 +361,7 @@ class Deficiency
                 $this->set('id', $newID);
             } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $this->id;
+            return $this->props['id'];
         } catch (\Exception $e) {
             throw $e;
         } finally {

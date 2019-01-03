@@ -1,6 +1,5 @@
 <?php
 require 'vendor/autoload.php';
-require 'uploadImg.php';
 require 'session.php';
 
 use SVBX\Deficiency;
@@ -37,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else $CDL_pics = null;
 
         if ($CDL_pics) {
+            require 'uploadImg.php';
             $link = new MysqliDb(DB_CREDENTIALS);
             $table = 'CDL_pics';
             $fields = [
