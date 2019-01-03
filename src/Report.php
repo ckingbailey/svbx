@@ -84,7 +84,7 @@ class Report {
 
         if (!empty($this->groupBy)) $link->groupBy($this->groupBy);
 
-        $result = $link // TODO: what happens if I pass null to any Joshcam metho?
+        $result = $link
             ->get($this->table, null, $this->fields);
         $this->lastQuery = $link->getLastQuery();
         $link->disconnect();

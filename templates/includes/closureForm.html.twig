@@ -1,0 +1,48 @@
+{% import 'defForm.html.twig' as form %}
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#closureInfo' role='button' aria-expanded='false' aria-controls='closureInfo' class='collapsed'>Closure Information<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<div id='closureInfo' class='collapse item-margin-bottom'>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='evidenceType'>Evidence Type</label></div>
+                <div class='col-md-6'>
+                    <select name='evidenceType' id='evidenceType' class='form-control'>
+                        {{ form.renderOptions(options.evidenceType, data.evidenceType) }}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='repo'>Document Repository</label></div>
+                <div class='col-md-6'>
+                    <select name='repo' id='repo' class='form-control'>
+                        {{ form.renderOptions(options.repo, data.repo) }}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='evidenceID'>Document Number</label></div>
+                <div class='col-md-6'><input type='text' name='evidenceID' id='evidenceID' class='form-control' value='{{ data.evidenceID | raw }}'></div>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'><label for='evidenceLink'>Document Link</label></div>
+                <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink | raw }}'></div>
+            </div>
+        </div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-6 offset-md-3'>
+            <label for='closureComments'>Closure Comments</label>
+            <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'>{{ data.closureComments | raw }}</textarea>
+        </div>
+    </div>
+</div>

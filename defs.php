@@ -35,17 +35,17 @@ $template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?bartDefID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
     'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
     'resolution_vta' => [ 'value' => 'Resolution', 'cellWd' => '', 'collapse' => 'xs', 'classList' => 'def-table__crop-content' ],
     'next_step'=> [ 'value' => 'Next step', 'cellWd' => '3', 'collapse' => 'xs' ],
-    'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateBartDef.php?bartDefID=' ]
+    'edit'=> [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'href' => '/updateDef.php?class=bart&id=' ]
 ];
 
 $projectTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/viewDef.php?defID=' ],
+    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
@@ -251,7 +251,7 @@ $projectFilters = [
 ];
 
 list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newBartDef.php', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
     : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
@@ -362,7 +362,6 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
-    error_log($link->getLastQuery());
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'

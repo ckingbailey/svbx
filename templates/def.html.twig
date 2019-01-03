@@ -45,7 +45,7 @@
     <div class='col-md-3'><p>Resolution required prior to</p></div>
     <div class='col-md-3'>{{ page.input_like(data.requiredBy) }}</div>
     <div class='col-md-3'><p>Contract</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.contract) }}</div>
+    <div class='col-md-3'>{{ page.input_like(data.contractID) }}</div>
 </div>
 <div class='row item-margin-bottom'>
     <div class='col-md-3'><p>Identified By</p></div>
@@ -68,59 +68,11 @@
     <div class='col-md-2'><p>Old Id</p></div>
     <div class='col-md-2'>{{ page.input_like(data.oldID) }}</div>
 </div>
-<div class='row item-margin-bottom'>
-    <div class='col-md-6 offset-md-3'>
-        <p>More information</p>
-        {{ page.input_like(data.moreInfo) }}
-    </div>
-</div>
-<h5 class='grey-bg pad'>Closure Information</h5>
-<div class='row item-margin-bottom'>
-    <div class='col-md-3'><p>Evidence Type</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.evidenceType) }}</div>
-    <div class='col-md-3'><p>Evidence Repository</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.repo) }}</div>
-</div>
-<div class='row item-margin-bottom'>
-    <div class='col-md-3'><p>Document No.</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.evidenceID) }}</div>
-    <div class='col-md-3'><p>Document link</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.evidenceLink) }}</div>
-</div>
-<div class='row item-margin-bottom'>
-    <div class='col-md-6 offset-md-3'>
-        <p>Closure comments</p>
-        {{ page.input_like(data.closureComments) }}
-    </div>
-</div>
+{% include 'includes/closureInfo.html.twig' %}
 {% if not data.comments is empty %}
-<h5 class='grey-bg pad'>
-    <a data-toggle='collapse' href='#comments' role='button' aria-expanded='' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
-</h5>
-<section id='comments' class='collapse'>
-    {% for comment in data.comments %}
-    <div class='row mb-3'>
-        <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
-            <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-            <p>{{ comment.commentText | raw }}</p>
-        </div>
-    </div>
-    {% endfor %}
-</section>
+    {% include 'includes/comments.html.twig' %}
 {% endif %}
-<h5 class='grey-bg pad'>
-    <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
-</h5>
-<section id='modHistory' class='collapse'>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ (data.dateCreated | round) ? (data.dateCreated | date("n-j-Y")) : "—" }}</p></div>
-        <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
-        <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
-    </div>
-</section>
+{% include 'includes/modHistory.html.twig' %}
 {% if not data.photos is empty %}
 <h5 class='grey-bg pad'>
     <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
@@ -129,7 +81,7 @@
     {% for row in data.photos %}
     <div class='row item-margin-bottom'>
         {% for photo in row %}
-        <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+        <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.id }}'></div>
         {% endfor %}
     </div>
     {% endfor %}
@@ -138,8 +90,8 @@
 {% if session.role > 10 %}
 <div class='row item-margin-botom'>
     <div class='col-12 center-content'>
-        <a href='updateDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Update</a>
-        <a href='newDef.php?defID={{ data.ID }}' class='btn btn-primary btn-lg'>Clone</a>
+        <a href='updateDef.php?id={{ data.id }}' class='btn btn-primary btn-lg'>Update</a>
+        <a href='newDef.php?id={{ data.id }}' class='btn btn-primary btn-lg'>Clone</a>
     </div>
 </div>
 {% endif %}

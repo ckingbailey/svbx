@@ -1,0 +1,23 @@
+{% import 'def.html.twig' as page %}
+
+<h5 class='grey-bg pad'>Closure Information</h5>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Evidence Type</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceType) }}</div>
+    <div class='col-md-3'><p>Evidence Repository</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.repo) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Document No.</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceID) }}</div>
+    <div class='col-md-3'><p>Document link</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.evidenceLink) }}</div>
+</div>
+{% if data.closureComments %}
+<div class='row item-margin-bottom'>
+    <div class='col-md-6 offset-md-3'>
+        <p>Closure comments</p>
+        {{ page.input_like(data.closureComments) }}
+    </div>
+</div>
+{% endif %}

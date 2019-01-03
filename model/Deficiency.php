@@ -5,6 +5,14 @@ use MysqliDb;
 
 class Deficiency
 {
+    protected $table = 'CDL';
+    public $commentsTable = [
+        'table' => 'cdlComments',
+        'field' => 'cdlCommText',
+        'defID' => 'defID',
+        'commID' => 'cdlCommID'
+    ];
+    protected $picsTable = 'cdlPics';
     const DATE_FORMAT = 'Y-m-d';
     const MOD_HISTORY = [
         'created_by',
@@ -13,84 +21,116 @@ class Deficiency
         'lastUpdated',
         'dateClosed'
     ];
-    const CLOSURE_INFO = [
-        'evidenceType',
-        'repo',
-        'evidenceID',
-        'dateClosed'
+    protected $timestampField = 'lastUpdated';
+    protected $creationFields = [
+        'created_by',
+        'dateCreated'
     ];
     // NOTE: prop names do not nec. have to match db col names
     //  (but it could help)
-    private $ID = null;
-    private $safetyCert = null;
-    private $systemAffected = null;
-    private $location = null;
-    private $specLoc = null;
-    private $status = null;
-    private $severity = null;
-    private $dueDate = null;
-    private $groupToResolve = null;
-    private $requiredBy = null;
-    private $contractID = null;
-    private $identifiedBy = null;
-    private $defType = null;
-    private $description = null;
-    private $spec = null;
-    private $actionOwner = null;
-    private $evidenceType = null;
-    private $repo = null;
-    private $evidenceID = null;
-    private $evidenceLink = null;
-    private $oldID = null;
-    private $closureComments = null;
-    private $created_by = null; // validate: userID
-    private $updated_by = null; // validate: userID
-    private $dateCreated = null; // validate: date (before lastUpdated; dateClosed?)
-    private $lastUpdated = null;
-    private $dateClosed = null; // validate against status || set
-    private $closureRequested = null; // validate against status??
-    private $closureRequestedBy = null; // validate: userID
-    private $comments = [];
-    private $newComment = null;
-    private $pics = [];
-    private $newPic = null;
-
-    private $table = 'CDL';
-    private $commentsTable = 'cdlComments';
-    private $picssTable = 'cdlPics';
-
-    private $fields = [
-        'safetyCert',
-        'systemAffected',
-        'location',
-        'specLoc',
-        'status',
-        'severity',
-        'dueDate',
-        'groupToResolve',
-        'requiredBy',
-        'contractID',
-        'identifiedBy',
-        'defType',
-        'description',
-        'spec',
-        'actionOwner',
-        'evidenceType',
-        'repo',
-        'evidenceID',
-        'evidenceLink',
-        'oldID',
-        'closureComments',
-        'created_by',
-        'updated_by',
-        'dateCreated',
-        'lastUpdated',
-        'dateClosed',
-        'closureRequested',
-        'closureRequestedBy'
+    protected $props = [
+        'id' => null,
+        'safetyCert' => null,
+        'systemAffected' => null,
+        'location' => null,
+        'specLoc' => null,
+        'status' => null,
+        'severity' => null,
+        'dueDate' => null,
+        'groupToResolve' => null,
+        'requiredBy' => null,
+        'contractID' => null,
+        'identifiedBy' => null,
+        'defType' => null,
+        'description' => null,
+        'spec' => null,
+        'actionOwner' => null,
+        'evidenceType' => null,
+        'repo' => null,
+        'evidenceID' => null,
+        'evidenceLink' => null,
+        'oldID' => null,
+        'closureComments' => null,
+        'created_by' => null, // validate: userID
+        'updated_by' => null, // validate: userID
+        'dateCreated' => null, // validate: date (before lastUpdated, dateClosed?)
+        'lastUpdated' => null,
+        'dateClosed' => null, // validate against status || set
+        'closureRequested' => null, // validate against status??
+        'closureRequestedBy' => null, // validate: userID
+        'comments' => [],
+        'newComment' => null,
+        'pics' => [],
+        'newPic' => null
     ];
 
-    private $requiredFields = [
+    protected $filters = [
+        'id' => 'intval',
+        'safetyCert' => 'intval',
+        'systemAffected' => 'intval',
+        'location' => 'intval',
+        'specLoc' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'status' => 'intval',
+        'severity' => 'intval',
+        'dueDate' => 'date',
+        'groupToResolve' => 'intval',
+        'requiredBy' => 'intval',
+        'contractID' => 'intval',
+        'identifiedBy' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'defType' => 'intval',
+        'description' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'spec' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'actionOwner' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'evidenceType' => 'intval',
+        'repo' => 'intval',
+        'evidenceID' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'evidenceLink' => FILTER_SANITIZE_ENCODED,
+        'oldID' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'closureComments' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'created_by' => null,
+        'updated_by' => null,
+        'dateCreated' => 'date',
+        'dateClosed' => 'date',
+        'closureRequested' => 'intval',
+        'closureRequestedBy' => null,
+        'comments' => [],
+        'newComment' => null,
+        'pics' => [],
+        'newPic' => null
+    ];
+
+    protected $fields = [
+        'id' =>  'defID',
+        'safetyCert' => 'safetyCert',
+        'systemAffected' => 'systemAffected',
+        'location' => 'location',
+        'specLoc' => 'specLoc',
+        'status' => 'status',
+        'severity' => 'severity',
+        'dueDate' => 'dueDate',
+        'groupToResolve' => 'groupToResolve',
+        'requiredBy' => 'requiredBy',
+        'contractID' => 'contractID',
+        'identifiedBy' => 'identifiedBy',
+        'defType' => 'defType',
+        'description' => 'description',
+        'spec' => 'spec',
+        'actionOwner' => 'actionOwner',
+        'evidenceType' => 'evidenceType',
+        'repo' => 'repo',
+        'evidenceID' => 'evidenceID',
+        'evidenceLink' => 'evidenceLink',
+        'oldID' => 'oldID',
+        'closureComments' => 'closureComments',
+        'created_by' => 'created_by',
+        'updated_by' => 'updated_by',
+        'dateCreated' => 'dateCreated',
+        'dateClosed' => 'dateClosed',
+        'closureRequested' => 'closureRequested',
+        'closureRequestedBy' => 'closureRequestedBy'
+    ];
+
+    protected $requiredFields = [
         'safetyCert',
         'systemAffected',
         'location',
@@ -106,14 +146,14 @@ class Deficiency
         'description'
     ];
 
-    private $associatedObjects = [
+    protected $associatedObjects = [
         'comments', // these are not strictly 'props' but are actually associated Objects
         'newComment', // these are not strictly 'props' but are actually associated Objects
         'pics', // these are not strictly 'props' but are actually associated Objects
         'newPic' // these are not strictly 'props' but are actually associated Objects
     ];
     
-    static private $foreignKeys = [
+    protected static $foreignKeys = [
         'safetyCert' => [
             'table' => 'yesNo',
             'fields' => ['yesNoID', 'yesNoName']
@@ -168,13 +208,24 @@ class Deficiency
         'repo' => [
             'table' => 'repo',
             'fields' => ['repoID', 'repoName']
+        ],
+        'created_by' => [
+            'table' => 'users_enc',
+            'alias' => 'cb',
+            'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
+            'concat' => true
+        ],
+        'updated_by' => [
+            'table' => 'users_enc',
+            'alias' => 'ub',
+            'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
+            'concat' => true
         ]
     ];
     
-    // TODO: check for incoming defID in DB and validate persisted data against incoming data
     public function __construct($id = null, array $data = []) {
         if (!empty($id) && !empty($data)) { // This is a known Def
-            $this->ID = $id;
+            $this->props['id'] = $id;
 
             $this->set($data);
             // TODO: check for associated Objects => 'attachments' and 'comments'
@@ -182,15 +233,15 @@ class Deficiency
         } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $link->where('defID', $id);
-                if ($data = $link->getOne('CDL', $this->fields)) {
-                    $this->ID = $id;
+                $link->where($this->fields['id'], $id);
+                if ($data = $link->getOne($this->table, array_values($this->fields))) {
+                    $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
             } catch (\Exception $e) {
                 throw $e;
             } finally {
-                if (is_a($link, 'MysqliDb')) $link->disconnect();
+                if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
             }
             // TODO: query for associated Objects => 'attachments' and 'comments'
         } elseif (!empty($data)) {
@@ -199,115 +250,163 @@ class Deficiency
             // no id or props = no good
             throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
         }
-
-        //---------------------------------------------------------------------------------//
-        // // TODO: check for defID before checking creation deets <-- this only pertains to update
-        // // check creation details in db before setting them in obj
-        // // if (empty($this->data['createdBy']) || empty($this->data['dateCreated'])) {
-        //     // $link = new MysqliDb(DB_HOST, DB_USER, DB_PWD, DB_NAME);
-        //     // $link->where('defID', $this->data['defID']);
-        //     // $creationStamp = $link->get('deficiency', ['createdBy', 'dateCreated']);
-        // if (empty($this->data['createdBy'])) $this->data['createdBy'] = $_SESSION['userID'];
-        // if (empty($this->data['dateCreated'])) $this->data['dateCreated'] = date('Y-m-d H:i:s');
-        // // }
     }
 
     public function set($props, $val = null) {
-        if (is_string($props) && property_exists(__CLASS__, $props)) {
-            // if a date key is passed by itself, set to current date
-            if (strpos(strtolower($props), 'date') !== false) {
-                $val = trim($val) ?: time();
-                $this->$props = date(self::DATE_FORMAT, $val);
-            } else $this->$props = trim($val);
+        $numericProps = array_filter(static::$foreignKeys, function($key) {
+            return array_search($key, static::MOD_HISTORY) === false;
+        }, ARRAY_FILTER_USE_KEY);
+        if (is_string($props)
+            && key_exists($props, $this->props)
+            && $props !== $this->timestampField)
+        {
+            $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
-            foreach ($props as $key => $val) {
+            foreach ($props as $key => $value) {
                 // nullify any indexed props
                 // set new vals for any string keys
-                if (is_string($key) && property_exists(__CLASS__, $key)) {
-                    $this->$key = empty(self::$foreignKeys[$key])
-                        ? trim($val)
-                        : intval($val);
-                } elseif (is_numeric($key) && property_exists(__CLASS__, $val)) {
-                    $this->$val = null;
+                if (is_string($key)
+                    && ($propsKey = key_exists($key, $this->props)
+                        ? $key
+                        : array_search($key, $this->fields))
+                ) {
+                    $this->props[$propsKey] = empty($numericProps[$propsKey])
+                        ? trim($value)
+                        : intval($value);
+                } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
+                    $this->props[$value] = null;
                 }
             }
         }
     }
 
-    public function getNonNullProps() {
-        return array_reduce($this->fields, function ($acc, $prop) {
-            if ($this->$prop !== null) $acc[$prop] = $this->$prop;
+    private function propsToFields($props = null) {
+        $props = $props ?: array_keys($this->props);
+        return array_reduce($props, function($acc, $prop) {
+            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null) {
+                $val = $this->props[$prop] !== '' ? $this->props[$prop] : null;
+                $acc[$this->fields[$prop]] = $val;
+            }
             return $acc;
         }, []);
     }
 
     public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
-        // TODO: intval props that ought to int
+        // TODO: intval props that ought to be int
     }
 
-    public function validate($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        // TODO: validate dates, required info, closure info where appropriate
+    // TODO: validate types of props (string, int, date)
+    public function validateCreationInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if ($action === 'insert') {
+            if (empty($this->props['created_by'])) throw new \Exception('Missing value @ `created_by`');
+            if (empty($this->props['dateCreated'])) $this->set('dateCreated', date(self::DATE_FORMAT));
+        }
+    }
+
+    public function validateModInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if ($action !== 'insert' && $action !== 'update')
+            throw new \Exception("Invalid action, $action, passed to validateModInfo");
+        if (empty($this->props['updated_by'])) {
+            if ($action === 'update' || ($action === 'insert'
+                && $this->props['updated_by'] !== $this->props['created_by']
+                && !$this->props['updated_by'] = $this->props['created_by']))
+            {
+                throw new \Exception('Missing value @ `updated_by`');
+            }
+        }
+    }
+
+    public function validateRequiredInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        // TODO: map each required field to type, validate or coerce types
+        foreach ($this->requiredFields as $field) {
+            if (($action === 'insert' && empty($this->props[$field]))
+                || ($action === 'update' && $this->props[$field] === ''))
+            {
+                throw new \Exception("Missing required info @ `$field`");
+            }
+        }
+    }
+
+    public function validateClosureInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        if (intval($this->props['status']) === 2) { // TODO: numerical props should already be (int) by this point
+            if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
+            if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
+            if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
+            if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(static::DATE_FORMAT));
+        }
+    }
+
+    public function validate($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
+        $this->validateCreationInfo($action);
+        $this->validateModInfo($action);
+        $this->validateRequiredInfo($action);
+        $this->validateClosureInfo();
     }
 
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
-        $newID = false;
-        $this->lastUpdated = null; // lastUpdated gets timestamp by mysql
+        $newID = null;
+        $this->set($this->timestampField, null);
 
-        // validate creation info
-        if (empty($this->created_by)) throw new \Exception('Missing value @ `created_by`');
-        if (empty($this->dateCreated)) $this->set('dateCreated');
-        
-        // validate mod info
-        if (empty($this->updated_by) || !$this->updated_by === $this->created_by) {
-            if (!$this->updated_by = $this->created_by)
-                throw new \Exception('Missing value @ `updated_by`');
-        }
-        
-        // validate required info
-        foreach ($this->requiredFields as $field) {
-            if (empty($this->$field)) throw new \Exception("Missing required info @ `$field`");
-        }
-        
-        // validate / set closure info if appropriate
-        if (intval($this->status) === 2) { // TODO: numerical props should already be (int) by this point
-            if (empty($this->repo)) throw new \Exception('Missing closure info @ `repo`');
-            if (empty($this->evidenceID)) throw new \Exception('Missing closure info @ `evidenceID`');
-            if (empty($this->evidenceType)) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($this->dateClosed)) $this->set('dateClosed');
-        }
-        
-        $insertableData = $this->getNonNullProps();
+        $this->validate('insert');
+
+        $insertableData = $this->propsToFields();
+        unset($insertableData[$this->fields['id']]);
+        unset($insertableData[$this->fields['lastUpdated']]);
         $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $cleanData)) {
-                $this->ID = $newID;
-            }
-            $link->disconnect();
+                $this->set('id', $newID);
+            } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $this->props['id'];
         } catch (\Exception $e) {
             throw $e;
-        }
-        finally {
+        } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-            return $newID;
         }
     }
     
     public function update() {
-        // TODO: strip fields that never get updated, e.g., dateCreated
-        return false;
+        $this->set($this->timestampField, null);
+        $this->set($this->creationFields, null);
+
+        $this->validate('update');
+
+        // TODO: sanitize should be a method that mutates the object's own props
+        // TODO: need an array of updatable keys
+        $updatableData = $this->propsToFields();
+        unset($updatableData['id']);
+        $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
+
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            $link->where($this->fields['id'], $this->props['id']);
+            if (!$success = $link->update($this->table, $cleanData)) {
+                throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
+            }
+            $this->__construct($this->props['id']);
+        } catch (\Exception $e) {
+            throw $e;
+        } finally  {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+            return $success;
+        }
     }
     
     // TODO: this could check for which value should be selected (the value that is on data for the corresponding field)
     // in that case it would have to take a Defificency object as argument
-    static function getLookUpOptions() {
+    public static function getLookUpOptions() {
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $options = [];
+            $foreignKeys = array_filter(static::$foreignKeys, function($key) {
+                return array_search($key, static::MOD_HISTORY) === false;
+            }, ARRAY_FILTER_USE_KEY);
             
-            foreach (self::$foreignKeys as $childField => $lookup) {
+            foreach ($foreignKeys as $childField => $lookup) {
                 $table = $lookup['table'];
                 $fields = $lookup['fields'];
                 $fields[0] .= ' AS id';
@@ -323,7 +422,6 @@ class Deficiency
                 }
                 
                 $options[$childField] = $link->get($table, null, $fields);
-                // $options[$childField] = [$table => [ $fields ]];
             }
             
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
@@ -335,88 +433,75 @@ class Deficiency
     }
 
     public function get($props = null) {
-        if ($props === null) { // return all props
-            return [
-                'ID' => $this->ID,
-                'safetyCert' => $this->safetyCert,
-                'systemAffected' => $this->systemAffected,
-                'location' => $this->location,
-                'specLoc' => $this->specLoc,
-                'status' => $this->status,
-                'severity' => $this->severity,
-                'dueDate' => $this->dueDate,
-                'groupToResolve' => $this->groupToResolve,
-                'requiredBy' => $this->requiredBy,
-                'contractID' => $this->contractID,
-                'identifiedBy' => $this->identifiedBy,
-                'defType' => $this->defType,
-                'description' => $this->description,
-                'spec' => $this->spec,
-                'actionOwner' => $this->actionOwner,
-                'evidenceType' => $this->evidenceType,
-                'repo' => $this->repo,
-                'evidenceID' => $this->evidenceID,
-                'evidenceLink' => $this->evidenceLink,
-                'oldID' => $this->oldID,
-                'closureComments' => $this->closureComments,
-                'created_by' => $this->created_by,
-                'updated_by' => $this->updated_by,
-                'dateCreated' => $this->dateCreated,
-                'lastUpdated' => $this->lastUpdated,
-                'dateClosed' => $this->dateClosed,
-                'closureRequested' => $this->closureRequested,
-                'closureRequestedBy' => $this->closureRequestedBy,
-                'comments' => $this->comments,
-                'newComment' => $this->newComment,
-                'pics' => $this->pics,
-                'newPic' => $this->newPic
-            ];
+        if ($props === null) {
+            return $this->props;
+        } elseif (is_array($props)) {
+            return array_filter($this->props, function($key) use ($props) {
+                return array_search($key, $props) !== false;
+            }, ARRAY_FILTER_USE_KEY);
+            // return array_reduce($this->props, function($acc, $prop) {
+            //     if (array_key_exists($prop, $this->props)) {
+            //         $acc[$prop] = $this->props[$prop];
+            //     }
+            //     return $acc;
+            // }, []);
+        } elseif (is_string($props)) {
+            return $this->props[$props];
         }
-        return $this->$props;
     }
 
-    public function getReadable($props = null) {
-        if ($props === null) { // join and return all props
-            try {
-                $link = new MysqliDb(DB_CREDENTIALS);
-                
-                if (empty($this->ID)) throw new \Exception('No ID found for Deficiency');
-                $link->where('defID', $this->ID);
-                
-                $props = $this->get();
-                $lookupFields = [];
-                
-                foreach (self::$foreignKeys as $childField => $lookup) {
-                    $lookupTable = $lookup['table'];
-                    $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
-                    $lookupKey = $lookup['fields'][0];
-                    $displayName = sprintf("%s.%s",
-                        ($alias ?: $lookupTable),
-                        $lookup['fields'][1]
-                    );
+    public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
+        // TODO: test for presence of $props in foreignKeys
+        $foreignKeys = $props ?
+            array_filter(static::$foreignKeys, function($key) use ($props) {
+                return array_search($key, $props) !== false;
+            }, ARRAY_FILTER_USE_KEY)
+            : static::$foreignKeys; 
+        try {
+            $link = new MysqliDb(DB_CREDENTIALS);
+            
+            if (empty($this->props['id'])) throw new \Exception('No ID found for Deficiency');
+            $link->where($this->fields['id'], $this->props['id']);
+            
+            $lookupFields = [];
+            
+            foreach ($foreignKeys as $childField => $lookup) {
+                $lookupTable = $lookup['table'];
+                $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
+                $lookupKey = $lookup['fields'][0];
+                $selectField = !empty($lookup['concat']) && $lookup['concat'] === true
+                    ? sprintf('CONCAT(%s)',
+                        implode(array_map(function($field) use ($alias, $lookupTable) {
+                            return empty(trim($field))
+                                ? "'$field'"
+                                : ($alias ?: $lookupTable) . '.' . $field;
+                        }, array_slice($lookup['fields'], 1)), ','))
+                    : sprintf("%s.%s",
+                    ($alias ?: $lookupTable),
+                    $lookup['fields'][1]
+                );
 
-                    $join = $lookupTable . ($alias ? " as {$alias}" : '');
-                    $joinOn = sprintf("%s.%s = %s.%s",
-                        $this->table,
-                        $childField,
-                        ($alias ?: $lookupTable),
-                        $lookupKey
-                    );
+                $join = $lookupTable . ($alias ? " AS {$alias}" : '');
+                $joinOn = sprintf("%s.%s = %s.%s",
+                    $this->table,
+                    $childField,
+                    ($alias ?: $lookupTable),
+                    $lookupKey
+                );
 
-                    $link->join($join, $joinOn, 'LEFT');
+                $link->join($join, $joinOn, 'LEFT');
 
-                    $lookupFields[] = $displayName . ' as ' . $childField;
-                }
-
-                if (!$readable = $link->getOne($this->table, $lookupFields))
-                    throw new \Exception('There was a problem fetching from the lookup fields: ' . $link->getLastQuery());
-                
-                return $readable + $props;
-            } catch (\Exception $e) {
-                throw $e;
-            } finally {
-                if (is_a($link, 'MysqliDb')) $link->disconnect();
+                $lookupFields[] = $selectField . ' AS ' . $childField;
             }
+
+            if (!$readable = $link->getOne($this->table, $lookupFields))
+                throw new \Exception('There was a problem fetching on the lookup fields: ' . $link->getLastQuery());
+            
+            return $readable + $this->get();
+        } catch (\Exception $e) {
+            throw $e;
+        } finally {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
         }
     }
     

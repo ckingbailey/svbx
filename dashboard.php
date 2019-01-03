@@ -2,7 +2,6 @@
 use SVBX\Report;
 
 require 'vendor/autoload.php';
-// include('SQLFunctions.php');
 require 'WeeklyDelta.php';
 require 'session.php';
 
@@ -11,9 +10,6 @@ $context = [
   'title' => 'Home',
   'pageHeading' => 'Database Information'
 ];
-
-// $title = "SVBX - Home";
-//$table = pages;
 
 $link = new MysqliDb(DB_CREDENTIALS);
 

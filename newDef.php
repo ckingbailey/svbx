@@ -1,21 +1,27 @@
 <?php
 require 'vendor/autoload.php';
-require 'uploadImg.php';
 require 'session.php';
 
 use SVBX\Deficiency;
 
-if ($_SESSION['role'] <= 10) {
+if ($_SESSION['role'] <= 10
+    || (empty($_SESSION['bdPermit'])
+    && ($_POST['class'] === 'bart' || $_GET['class' === 'bart']))) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
 }
 
+// if POST data rec'd, try to INSERT new Def in db
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = intval($_POST['id']);
+    $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
+    $createdByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
     try {
-        $def = new Deficiency($_POST['defID'], $_POST);
+        $ref = new ReflectionClass($class);
+        $def = $ref->newInstanceArgs([ $id, $_POST ]);
 
-        $def->set('created_by', $_SESSION['username']);
+        $def->set('created_by', $_SESSION[$createdByField]);
         $def->insert();
 
         // if INSERT succesful, prepare, upload, and INSERT photo
@@ -30,15 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else $CDL_pics = null;
 
         if ($CDL_pics) {
+            require 'uploadImg.php';
             $link = new MysqliDb(DB_CREDENTIALS);
             $table = 'CDL_pics';
             $fields = [
-                'defID' => $def->get('ID'),
+                'defID' => $def->get('id'),
                 'pathToFile' => null
             ];
             
-            // TODO: this can fail silently. Why? Get better error handling here
-            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']);
+            $fields['pathToFile'] = saveImgToServer($CDL_pics, $fields['defID']); // TODO: if defID is missing, throw error
             $fields['pathToFile'] = filter_var($fields['pathToFile'], FILTER_SANITIZE_SPECIAL_CHARS);
             if ($fields['pathToFile']) {
                 if (!$link->insert($table, $fields))
@@ -46,36 +52,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // if comment submitted commit it to a separate table
-        if (strlen($_POST['cdlCommText'])) {
+        if ($_FILES['attachment']['size']
+            && $_FILES['attachment']['name']
+            && $_FILES['attachment']['tmp_name']
+            && $_FILES['attachment']['type'])
+        {
+            $attachment = $_FILES['attachment'];
+        } else $attachment = null;
+
+        if ($attachment) {
+            require('uploadAttachment.php');
             $link = (!empty($link) && is_a($link, 'MysqliDb'))
                 ? $link
                 : new MysqliDb(DB_CREDENTIALS);
-            $table = 'cdlComments';
+            uploadAttachment($link, 'attachment', 'uploads/bartdlUploads', $def->get('id'));
+        }
+
+        // if comment submitted commit it to a separate table
+        if (strlen($_POST['comment'])) {
+            $link = (!empty($link) && is_a($link, 'MysqliDb'))
+                ? $link
+                : new MysqliDb(DB_CREDENTIALS);
+            list($table, $commentField, $defID) = [
+                $def->commentsTable['table'],
+                $def->commentsTable['field'],
+                $def->commentsTable['defID']
+            ];
             $fields = [
-                'defID' => $def->get('ID'),
-                'cdlCommText' => trim(filter_var($_POST['cdlCommText'], FILTER_SANITIZE_SPECIAL_CHARS)),
+                $defID => $def->get('id'),
+                $commentField => trim(filter_var($_POST['comment'], FILTER_SANITIZE_SPECIAL_CHARS)),
                 'userID' => $_SESSION['userID']
             ];
             
-            if ($fields['cdlCommText'])
+            if ($fields[$commentField])
                 if (!$link->insert($table, $fields))
                     $_SESSION['errorMsg'] = "There was a problem adding new comment: {$link->getLastError()}";
         }
-
-        header("location: /viewDef.php?defID={$def->get('ID')}");
+        $location = '/def.php';
+        $qs = '?' . ($class === 'SVBX\Deficiency'
+            ? 'defID' : 'bartDefID')
+            . "={$def->get('id')}";
+        header("location: /def.php{$qs}");
+    } catch (\ReflectionException $e) {
+        error_log($e);
+        header("No Class found for the deficiency type $class", true, 400);
     } catch (\Exception $e) {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
-        $props = $def->get();
-        $qs = array_reduce(array_keys($props), function ($acc, $key) use ($props) {
-            if ($key === 'newPic' || $key === 'comments' || $key === 'pics') return $acc;
-            $val = $props[$key];
-            if ($key === 'ID') $key = 'defID';
-            $joiner = empty($acc) ? '?' : '&';
-            return $acc .= ("$joiner" . "$key=$val");
-        }, '');
-        header("location: /newDef.php$qs");
+        $location = '/newDef.php';
+        $qs .= http_build_query($def->get());
+        header("Location: $location{$qs}");
     } catch (\Error $e) {
         error_log($e);
     } finally {
@@ -84,49 +110,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET'
-    && !empty($_GET)
-    && !empty($_GET['defID'])
-    && is_numeric($_GET['defID']))
-{
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $getClass = !empty($_GET['class']) ? $_GET['class'] : '';
+    $class = sprintf('SVBX\%sDeficiency', $getClass);
+    $template = $getClass === 'bart' ? 'bartForm.html.twig' : 'defForm.html.twig';
+    $pageHeading = '';
+
+    if (!empty($_GET['id'])) {
+        try {
+            $defID = intval($_GET['id']);
+            $ref = new ReflectionClass($class);
+            $def = $ref->newInstanceArgs([$defID]);
+            $def->set($_GET);
+            $pageHeading = "Clone Deficiency No. {$_GET['id']}";
+        } catch (\ReflectionException $e) {
+            error_log($e);
+            header("No Class found for the deficiency type $class", true, 400);
+        } catch (\Exception $e) {
+            error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
+        }
+    } elseif (!empty($_GET['descriptive_title_vta'])) {
+        try {
+            $ref = new ReflectionClass($class);
+            $def = $ref->newInstanceArgs([null, $_GET]);
+        } catch (\ReflectionException $e) {
+            error_log($e);
+            header("No Class found for the deficiency type $class", true, 400);
+            exit;
+        } catch (\Exception $e) {
+            error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
+        }
+    }
+
+    // instantiate Twig
+    $loader = new Twig_Loader_Filesystem('./templates');
+    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
+    if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
+
+    $context = [
+        'session' => $_SESSION,
+        'title' => 'Add new deficiency',
+        'pageHeading' => $pageHeading ?: "Add New Deficiency",
+        'formAction' => $_SERVER['PHP_SELF']
+    ];    
+
+    if (!empty($_SESSION['errorMsg']))
+        unset($_SESSION['errorMsg']);
+
     try {
-        $defID = intval($_GET['defID']);
-        $def = new Deficiency($defID);
-        $def->set($_GET);
-    } catch (\Exception $e) {
-        error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
+        $context['options'] = $class::getLookupOptions();
+
+        if (!empty($def) && is_a($def, $class)) {
+            $def->set($class::MOD_HISTORY); // clear modification history
+            $data = $def->get();
+            $context['data'] = $data;
+        }
+
+        $twig->display($template, $context);
+    } catch (Exception $e) {
+        error_log($e);
+    } finally {
+        if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
+        exit;
     }
-}
-
-// instantiate Twig
-$loader = new Twig_Loader_Filesystem('./templates');
-$twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
-if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
-
-$context = [
-    'session' => $_SESSION,
-    'title' => 'Create deficiency record',
-    'pageHeading' => "Add New Deficiency",
-    'formAction' => $_SERVER['PHP_SELF']
-];    
-
-if (!empty($_SESSION['errorMsg']))
-    unset($_SESSION['errorMsg']);
-
-try {
-    $context['options'] = Deficiency::getLookupOptions();
-
-    if (!empty($def) && is_a($def, 'SVBX\Deficiency')) {
-        $def->set(Deficiency::MOD_HISTORY); // clear modification history
-        $data = $def->get();
-        $context['data'] = $data;
-        $context['pageHeading'] = "Clone Deficiency No. {$data['ID']}";
-    }
-
-    $twig->display('defForm.html.twig', $context);
-} catch (Exception $e) {
-    error_log($e);
-} finally {
-    if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
-    exit;
-}
+} else header("What do you think you're doing?", true, 400);
+exit;

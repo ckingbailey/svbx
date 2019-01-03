@@ -3,9 +3,11 @@
 {% macro renderOptions(options, curVal) %}
     <option></option>
     {% for option in options %}
-        {% set selected = option.id is same as(curVal) ? " selected" : "" %}
-        <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
-        {% set selected = "" %}
+        {% if not option.name is same as ('') %}
+            {% set selected = option.id  == curVal ? " selected" : "" %}
+            <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
+            {% set selected = "" %}
+        {% endif %}
     {% endfor %}
 {% endmacro %}
 
@@ -13,7 +15,7 @@
 
 {# TODO: can this template extend def.html.twig? #}
 {% block pageHeader %}
-    {% set color = (data.status | lower) is same as('closed') ? ' bg-green' : ' bg-red' %}
+    {% set color = data.status is same as(2) ? ' bg-green' : ' bg-red' %}
     <header class='container page-header'>
         <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
         {% if data.closureRequested %}
@@ -27,7 +29,8 @@
 
 {% block content %}
 <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
-    <input type='hidden' name='defID' value='{{ data.ID }}'>
+    {% block formControls %}
+    <input type='hidden' name='id' value='{{ data.id }}'>
     <h4 class='pad grey-bg'>Required Information</h4>
     <div class='row item-margin-bottom'>
         <div class='col-md-6'>
@@ -192,86 +195,10 @@
         </div>
         <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
     </div>
-    <h5 class='grey-bg pad'>
-        <a data-toggle='collapse' href='#closureInfo' role='button' aria-expanded='false' aria-controls='closureInfo' class='collapsed'>Closure Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-    </h5>
-    <div id='closureInfo' class='collapse item-margin-bottom'>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='evidenceType'>Evidence Type</label></div>
-                    <div class='col-md-6'>
-                        <select name='evidenceType' id='evidenceType' class='form-control'>
-                            {{ form.renderOptions(options.evidenceType, data.evidenceType) }}
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='repo'>Document Repository</label></div>
-                    <div class='col-md-6'>
-                        <select name='repo' id='repo' class='form-control'>
-                            {{ form.renderOptions(options.repo, data.repo) }}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='evidenceID'>Document Number</label></div>
-                    <div class='col-md-6'><input type='text' name='evidenceID' id='evidenceID' class='form-control' value='{{ data.evidenceID | raw }}'></div>
-                </div>
-            </div>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='evidenceLink'>Document Link</label></div>
-                    <div class='col-md-6'><input type='text' name='evidenceLink' id='evidenceLink' class='form-control' value='{{ data.evidenceLink | raw }}'></div>
-                </div>
-            </div>
-        </div>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-6 offset-md-3'>
-                <label for='closureComments'>Closure Comments</label>
-                <textarea name='closureComments' id='closureComments' class='form-control' maxlength='1000'>{{ data.closureComments | raw }}</textarea>
-            </div>
-        </div>
-    </div>
-    <h5 class='grey-bg pad'>
-        <a data-toggle='collapse' href='#comments' role='button' aria-expanded='false' aria-controls='comments' class='collapsed'>Comments<i class='typcn typcn-arrow-sorted-down'></i></a>
-    </h5>
-    <div id='comments' class='collapse item-margin-bottom'>
-        <div class='row mb-3'>
-            <div class='col-sm-8 offset-sm-2 thin-grey-border pad'>
-                <label for='cdlCommText'>Add comment</label>
-                <textarea name='cdlCommText' id='cdlCommText' class='form-control' maxlength='1000'></textarea>
-            </div>
-        </div>
-        {% for comment in data.comments %}
-        <div class='row mb-3'>
-            <div class="col-sm-8 offset-sm-2 thin-grey-border pad">
-                <h6 class='d-flex flex-row justify-content-between text-secondary'><span>{{ comment.userFullName }}</span><span>{{ comment.date_created | date('n-j-Y • G:i') }}</span></h6>
-                <p>{{ comment.commentText | raw }}</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+    {% include 'includes/closureForm.html.twig' %}
+    {% include 'includes/commentForm.html.twig' %}
     {% if not data.lastUpdated is empty %}
-    <h5 class='grey-bg pad'>
-        <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
-    </h5>
-    <section id='modHistory' class='collapse'>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ data.dateCreated | date("n-j-Y") }}</p></div>
-            <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
-        </div>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
-            <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
-        </div>
-    </section>
+        {% include 'includes/modHistory.html.twig' %}
     {% endif %}
     {% if not data.photos is empty %}
     <h5 class='grey-bg pad'>
@@ -281,7 +208,7 @@
         {% for row in data.photos %}
         <div class='row item-margin-bottom'>
             {% for photo in row %}
-            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.ID }}'></div>
+            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.id }}'></div>
             {% endfor %}
         </div>
         {% endfor %}
@@ -291,12 +218,13 @@
         <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
         <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
     </div>
+    {% endblock %}
 </form>
-{% if session.role >= 40 and not data.ID is empty %}
+{% if session.role >= 40 and not data.id is empty %}
 <form action='DeleteDef.php' method='POST' onsubmit=''>
     <div class='row'>
         <div class='col-12 center-content'>
-            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.ID }}'
+            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.id }}'
                 onclick='return confirm("ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.")'>delete</button>
         </div>
     </div>
@@ -305,28 +233,8 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="/js/on_select_closed.js"></script>
 <script>
-    function onSelectStatusClosed(ev) {
-        const form = document.forms['defForm']
-        const selectedStatus = form['status'].selectedOptions[0].innerText.toLowerCase()
-        const requiredFields = [ 'repo', 'evidenceType', 'evidenceID' ]
-
-        if (selectedStatus === 'closed') {
-            requiredFields.forEach(field => {
-                document.querySelector(`label[for="${field}"]`).classList.add('required')
-                form[field].setAttribute('required', '')
-                $('#closureInfo').collapse('show')
-            })
-        }
-
-        if (selectedStatus === 'open') {
-            requiredFields.forEach(field => {
-                document.querySelector(`label[for="${field}"]`).classList.remove('required')
-                form[field].removeAttribute('required')
-            })
-        }
-    }
-
     onSelectStatusClosed();
 </script>
 {% endblock %}

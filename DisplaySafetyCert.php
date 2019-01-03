@@ -1,9 +1,5 @@
 <?php
-//include('session.php');
-//include('SQLFunctions.php');
 $title = "View Safety Certificate";
-//$link = f_sqlConnect();
-//$CDL = file_get_contents("CDList.sql");
 $Role = $_SESSION['role'];
 include('filestart.php');
 ?>
@@ -16,7 +12,6 @@ include('filestart.php');
     </div>
     <div class="container main-content">
 <?php
-    //if($result = mysqli_query($link,$CDL)) {
         echo "<p style='color:black'>Click System certificate Item Number to see full details</p>
             <table width='100%' class='deftable'>
                 <tr class='svbxtr'>
@@ -46,7 +41,6 @@ include('filestart.php');
                                 <th class='svbxth'>Delete</th>
                             </tr>";
                     }
-            //while($row = mysqli_fetch_array($result)) {
                 echo "  <tr class='svbxtr'>
                         <td class='svbxtd' style='text-align:center'><a href='ViewSC.php?DefID={$row[0]}' class='class1'>{$row[0]}</a></td>
                         <td class='col_2  col_3  col_4 svbxtd'>{$row[1]}</td>
@@ -72,18 +66,7 @@ include('filestart.php');
                             <input type='hidden' name='q' value='".$row[0]."' /><input type='Submit' value='delete'></form></td>
                             </tr>";
                         }
-            //}
                 echo "
                 </table>
                 </div>";
-    //}
-//mysqli_free_result($result);
-
-    //if(mysqli_error( $link )) {
-        //echo '<br>Error: ' .mysqli_error($link);
-    //}
-
-//mysqli_close($link);
-
 include 'fileend.php';
-?>

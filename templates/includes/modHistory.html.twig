@@ -1,0 +1,14 @@
+{% set emptyDateCreated = (data.dateCreated is empty or (data.dateCreated[:4] is same as('0000'))) ? '—' : '' %}
+<h5 class='grey-bg pad'>
+    <a data-toggle='collapse' href='#modHistory' role='button' aria-expanded='' aria-controls='modHistory' class='collapsed'>Modification History<i class='typcn typcn-arrow-sorted-down'></i></a>
+</h5>
+<section id='modHistory' class='collapse'>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-3'><p>Date Created</p></div><div class='col-md-3'><p>{{ emptyDateCreated ?: data.dateCreated | date("n-j-Y") }}</p></div>
+        <div class='col-md-3'><p>Created by</p></div><div class='col-md-3'><p>{{ data.created_by }}</p></div>
+    </div>
+    <div class='row item-margin-bottom'>
+        <div class='col-md-3'><p>Last Updated</p></div><div class='col-md-3'><p>{{ data.lastUpdated | date("n-j-Y G:i")}}</p></div>
+        <div class='col-md-3'><p>Updated by</p></div><div class='col-md-3'><p>{{ data.updated_by }}</p></div>
+    </div>
+</section>
