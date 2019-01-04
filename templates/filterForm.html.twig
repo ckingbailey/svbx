@@ -15,7 +15,7 @@
 {% endif %}
 
 <div class="row item-margin-bottom">
-    <form method="GET" action="{{formAction}}" class="col-12">
+    <form id="filterForm" method="GET" action="{{formAction}}" class="col-12">
         <div class="row">
             <h5 class="col-12">
                 <a data-toggle="collapse" href="#filterDefs" role="button" aria-expanded="{{ariaExpanded}}" aria-controls="filterDefs" class="{{collapsed}}">
@@ -27,8 +27,8 @@
         <div id="filterDefs" class="collapse{{show}}">
             {% block filterFields %}
                 <div id="container_buttons_submit-reset" class="col-12 col-sm-2 flex-row justify-center align-end pl-1 pr-1 pt-3">
-                    <button name="search" value="search" type="submit" class="btn btn-primary item-margin-right">Search</button>
-                    <button type="button" class="btn btn-primary item-margin-right" onclick="return {{resetScript|default('resetSearch')}}(event)">Reset</button>
+                    <button type="submit" class="btn btn-primary item-margin-right">Search</button>
+                    <button type="button" class="btn btn-primary item-margin-right" onclick="return {{resetScript.function | default('resetSearch')}}(event)">Reset</button>
                 </div>
             {% endblock %}
         </div>

@@ -358,7 +358,7 @@ try {
     }
 
     $link->where('status', '3', '<>');
-    if ($orderBy) {
+    if (!empty($orderBy)) {
         foreach ($orderBy as $field) {
             $link->orderBy($field, 'ASC');
         }
