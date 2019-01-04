@@ -8,10 +8,12 @@ $view = !empty(($_GET['view']))
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
-if(!empty($_GET['search'])) {
-    $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
-    $get = array_filter($get); // filter to remove falsey values -- is this necessary?
+if(!empty($_GET)) {
+    $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
+    $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
+    $orderBy = !empty($get['sort']) ? explode('|', $get['sort']) : '';
+    unset($get['sort']);
 } else {
     $get = null;
 }
@@ -30,8 +32,6 @@ $filter_decode = new Twig_Filter('safe', function($str) {
     return html_entity_decode($str);
 });
 $twig->addFilter($filter_decode);    
-
-$template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
@@ -358,6 +358,11 @@ try {
     }
 
     $link->where('status', '3', '<>');
+    if ($orderBy) {
+        foreach ($orderBy as $field) {
+            $link->orderBy($field, 'ASC');
+        }
+    }
     $link->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template
@@ -370,7 +375,7 @@ try {
 
     $context['count'] = $link->count;
 
-    $template->display($context);
+    $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
 } catch (Exception $e) {
