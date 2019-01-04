@@ -1,12 +1,23 @@
+{% if not sortOptions is empty %}
 <div class="item-margin-bottom form-inline">
     <label labelfor="sort" class="mr-sm-2">Sort by</label>
-    <select name="sort" class="form-control">
+    <select name="sort_1" class="form-control mr-sm-2">
         <option value=""></option>
-        <option value="dueDate">Due date</option>
-        <option value="groupToResolve">Group to resolve</option>
-        <option value="systemAffected">System affected</option>
-        <option value="severity">Severity</option>
-        <option value="location">Location</option>
-        <option value="requiredBy">Required by</option>
+        {% for value, text in sortOptions %}
+        <option value="{{value}}" id="{{value}}">{{text}}</option>
+        {% endfor %}
+    </select>
+    <select name="sort_2" class="form-control mr-sm-2">
+        <option value=""></option>
+        {% for value, text in sortOptions %}
+        <option value="{{value}}" id="{{value}}">{{text}}</option>
+        {% endfor %}
+    </select>
+    <select name="sort_3" class="form-control">
+        <option value=""></option>
+        {% for value, text in sortOptions %}
+        <option value="{{value}}" id="{{value}}">{{text}}</option>
+        {% endfor %}
     </select>
 </div>
+{% endif %}

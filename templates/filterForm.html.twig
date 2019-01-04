@@ -25,7 +25,7 @@
         <div id="filterDefs" class="collapse{{show}} item-margin-bottom">
             {% block filterFields %}{% endblock %}
         </div>
-        {% include "includes/sortControls.html.twig" %}
+        {% include "includes/sortControls.html.twig" with sortOptions %}
         <div id="container_buttons_submit-reset" class="">
             <button type="submit" class="btn btn-primary item-margin-right">{{formBtnText | default('Search')}}</button>
             <button type="button" class="btn btn-primary item-margin-right" id="reset">Reset</button>

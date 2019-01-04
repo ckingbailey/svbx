@@ -12,8 +12,10 @@ if(!empty($_GET)) {
     $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
-    $orderBy = !empty($get['sort']) ? explode('|', $get['sort']) : '';
-    unset($get['sort']);
+    $orderBy = array_filter($get, function($key) {
+        return strpos($key, 'sort_') === 0;
+    }, ARRAY_FILTER_USE_KEY);
+    unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else {
     $get = null;
 }
@@ -228,11 +230,6 @@ $projectFilters = [
         ],
         'groupBy' => 'l.locationID'
     ],
-    // "specLoc" => [
-    //     'table' => 'CDL',
-    //     'fields' => 'specLoc',
-    //     'groupBy' => 'specLoc'
-    // ],
     "identifiedBy" => [
         'table' => 'CDL',
         'fields' => 'identifiedBy',
@@ -250,9 +247,18 @@ $projectFilters = [
     ]
 ];
 
-list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+$projectSort = [
+    'location' => 'Location',
+    'severity' => 'Severity',
+    'systemAffected' => 'System affected',
+    'groupToResolve' => 'Group to resolve',
+    'requiredBy' => 'Required prior to',
+    'dueDate' => 'Due date'
+];
+
+list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
@@ -315,6 +321,7 @@ $context = [
     'values' => $get,
     'collapse' => empty($get),
     'view' => $view,
+    'sortOptions' => $sortOptions,
     // table vars
     'tableName' => $table,
     'tableProps' => [
@@ -367,6 +374,7 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    error_log($link->getLastQuery());
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
