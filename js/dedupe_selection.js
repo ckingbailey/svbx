@@ -3,8 +3,6 @@ function dedupeSelection(target, group, options) {
     group.forEach(selectEl => {
         if (selectEl !== target && target.value !== '') {
             Object.keys(options).forEach(optionVal => {
-                console.log('!selectEl.children.optionVal, ', !selectEl.children[optionVal], 'selectEl.value !== target.value, ', selectEl.value !== target.value)
-                console.log('cur el: ',  selectEl, ', el val: ', selectEl.value, ', target val: ', target.value, ' cur opt: ', optionVal)
                 if (!selectEl.children[optionVal]
                     && selectEl.value !== target.value
                 ) {

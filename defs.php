@@ -322,6 +322,7 @@ $context = [
     'collapse' => empty($get),
     'view' => $view,
     'sortOptions' => $sortOptions,
+    'curSort' => $orderBy,
     // table vars
     'tableName' => $table,
     'tableProps' => [

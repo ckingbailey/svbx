@@ -1,23 +1,26 @@
+{% macro sortOptions(options, curSort) %}
+{% set selected = '' %}
+<option></option>
+{% for value, text in options %}
+{% set selected = value is same as(curSort) ? ' selected' : '' %}
+<option value="{{value}}" id="{{value}}"{{selected}}>{{text}}</option>
+{% set selected = '' %}
+{% endfor %}
+{% endmacro %}
+
+{% import _self as sort %}
+
 {% if not sortOptions is empty %}
 <div class="item-margin-bottom form-inline">
     <label labelfor="sort" class="mr-sm-2">Sort by</label>
     <select name="sort_1" class="form-control mr-sm-2">
-        <option value=""></option>
-        {% for value, text in sortOptions %}
-        <option value="{{value}}" id="{{value}}">{{text}}</option>
-        {% endfor %}
+        {{ sort.sortOptions(sortOptions, curSort.sort_1) }}
     </select>
     <select name="sort_2" class="form-control mr-sm-2">
-        <option value=""></option>
-        {% for value, text in sortOptions %}
-        <option value="{{value}}" id="{{value}}">{{text}}</option>
-        {% endfor %}
+        {{ sort.sortOptions(sortOptions, curSort.sort_2) }}
     </select>
     <select name="sort_3" class="form-control">
-        <option value=""></option>
-        {% for value, text in sortOptions %}
-        <option value="{{value}}" id="{{value}}">{{text}}</option>
-        {% endfor %}
+        {{ sort.sortOptions(sortOptions, curSort.sort_3) }}
     </select>
 </div>
 {% endif %}

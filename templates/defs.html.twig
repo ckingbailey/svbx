@@ -38,7 +38,7 @@
             {{resetScript.function | default("resetSearch") | raw}}(ev)
         })
         document.querySelectorAll('select[name^="sort_"]').forEach((select, i, collection) => {
-            console.log(collection, ', ', select)
+            dedupeSelection(select, collection, {{sortOptions | json_encode() | raw}})
             select.addEventListener('change', ev => {
                 dedupeSelection(ev.target, collection, {{sortOptions | json_encode() | raw}})
             })
