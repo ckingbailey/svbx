@@ -14,23 +14,21 @@
     {% set show, collapsed, ariaExpanded = '', 'collapsed', 'false' %}
 {% endif %}
 
-<div class="row item-margin-bottom">
-    <form method="GET" action="{{formAction}}" class="col-12">
-        <div class="row">
-            <h5 class="col-12">
-                <a data-toggle="collapse" href="#filterDefs" role="button" aria-expanded="{{ariaExpanded}}" aria-controls="filterDefs" class="{{collapsed}}">
-                    Filter deficiencies
-                    <i class="typcn typcn-arrow-sorted-down"></i>
-                </a>
-            </h5>
+<div class="item-margin-bottom">
+    <form id="filterForm" method="GET" action="{{formAction}}" class="col-12">
+        <h5>
+            <a data-toggle="collapse" href="#filterDefs" role="button" aria-expanded="{{ariaExpanded}}" aria-controls="filterDefs" class="{{collapsed}}">
+                Filter deficiencies
+                <i class="typcn typcn-arrow-sorted-down"></i>
+            </a>
+        </h5>
+        <div id="filterDefs" class="collapse{{show}} item-margin-bottom">
+            {% block filterFields %}{% endblock %}
         </div>
-        <div id="filterDefs" class="collapse{{show}}">
-            {% block filterFields %}
-                <div id="container_buttons_submit-reset" class="col-12 col-sm-2 flex-row justify-center align-end pl-1 pr-1 pt-3">
-                    <button name="search" value="search" type="submit" class="btn btn-primary item-margin-right">Search</button>
-                    <button type="button" class="btn btn-primary item-margin-right" onclick="return {{resetScript|default('resetSearch')}}(event)">Reset</button>
-                </div>
-            {% endblock %}
+        {% include "includes/sortControls.html.twig" with sortOptions %}
+        <div id="container_buttons_submit-reset" class="">
+            <button type="submit" class="btn btn-primary item-margin-right">{{formBtnText | default('Search')}}</button>
+            <button type="button" class="btn btn-primary item-margin-right" id="reset">Reset</button>
         </div>
     </form>
 </div>

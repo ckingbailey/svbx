@@ -5,13 +5,20 @@ require_once 'session.php';
 // check which view to show
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_SPECIAL_CHARS) : '';
+$orderBy = null;
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
-if(!empty($_GET['search'])) {
-    $get = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
-    $get = array_filter($get); // filter to remove falsey values -- is this necessary?
+if(!empty($_GET)) {
+    $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
+    $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
+    $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
+        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false)
+            $acc[$key] = $get[$key];
+        return $acc;
+    }, []);
+    unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else {
     $get = null;
 }
@@ -30,8 +37,6 @@ $filter_decode = new Twig_Filter('safe', function($str) {
     return html_entity_decode($str);
 });
 $twig->addFilter($filter_decode);    
-
-$template = $twig->load('defs.html.twig');
 
 // set view-dependent variables
 $bartTableHeadings = [
@@ -228,11 +233,6 @@ $projectFilters = [
         ],
         'groupBy' => 'l.locationID'
     ],
-    // "specLoc" => [
-    //     'table' => 'CDL',
-    //     'fields' => 'specLoc',
-    //     'groupBy' => 'specLoc'
-    // ],
     "identifiedBy" => [
         'table' => 'CDL',
         'fields' => 'identifiedBy',
@@ -250,9 +250,18 @@ $projectFilters = [
     ]
 ];
 
-list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters ];
+$projectSort = [
+    'location' => 'Location',
+    'severity' => 'Severity',
+    'systemAffected' => 'System affected',
+    'groupToResolve' => 'Group to resolve',
+    'requiredBy' => 'Required prior to',
+    'dueDate' => 'Due date'
+];
+
+list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
@@ -315,6 +324,8 @@ $context = [
     'values' => $get,
     'collapse' => empty($get),
     'view' => $view,
+    'sortOptions' => $sortOptions,
+    'curSort' => $orderBy,
     // table vars
     'tableName' => $table,
     'tableProps' => [
@@ -358,10 +369,16 @@ try {
     }
 
     $link->where('status', '3', '<>');
+    if (!empty($orderBy)) {
+        foreach ($orderBy as $field) {
+            $link->orderBy($field, 'ASC');
+        }
+    }
     $link->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    error_log($link->getLastQuery());
     $context['data'] = $data;
     $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
     array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
@@ -370,7 +387,7 @@ try {
 
     $context['count'] = $link->count;
 
-    $template->display($context);
+    $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
     echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
 } catch (Exception $e) {
