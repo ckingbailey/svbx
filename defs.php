@@ -5,6 +5,7 @@ require_once 'session.php';
 // check which view to show
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_SPECIAL_CHARS) : '';
+$orderBy = null;
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
@@ -12,9 +13,11 @@ if(!empty($_GET)) {
     $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
-    $orderBy = array_filter($get, function($key) {
-        return strpos($key, 'sort_') === 0;
-    }, ARRAY_FILTER_USE_KEY);
+    $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
+        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false)
+            $acc[$key] = $get[$key];
+        return $acc;
+    }, []);
     unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else {
     $get = null;

@@ -1,5 +1,4 @@
 function dedupeSelection(target, group, options) {
-    console.log(target.value)
     group.forEach(selectEl => {
         if (selectEl !== target && target.value !== '') {
             Object.keys(options).forEach(optionVal => {
