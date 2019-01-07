@@ -1,4 +1,5 @@
 function resetSearch(ev) {
-    ev.target.form.reset();
-    ev.target.form.submit();
+    for (let el of ev.target.form.elements) el.value = ''
+    unnameEmptyFormControls(ev)
+    ev.target.form.submit()
 };
