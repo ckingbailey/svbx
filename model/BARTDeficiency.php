@@ -4,7 +4,7 @@ namespace SVBX;
 use MysqliDb;
 
 class BARTDeficiency extends Deficiency {
-    protected $timestampField = 'form_modified';
+    const TIMESTAMP_FIELD = 'form_modified';
 
     protected $table = 'BARTDL';
     public $commentsTable = [
