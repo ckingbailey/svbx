@@ -84,7 +84,7 @@ class Deficiency
         'evidenceType' => 'intval',
         'repo' => 'intval',
         'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'evidenceLink' => 'FILTER_SANITIZE_ENCODED',
+        'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'created_by' => null,

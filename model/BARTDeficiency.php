@@ -92,7 +92,7 @@ class BARTDeficiency extends Deficiency {
         'repo' => 'intval',
         'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'evidenceType' => 'intval',
-        'evidenceLink' => 'FILTER_SANITIZE_ENCODED',
+        'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'closureComment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'attachments' => null,
         'newAttachment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
