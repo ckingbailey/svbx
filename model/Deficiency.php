@@ -358,6 +358,8 @@ class Deficiency
         $this->validateModInfo($action);
         $this->validateRequiredInfo($action);
         $this->validateClosureInfo();
+        if (filter_var($this->props['evidenceLink'], FILTER_VALIDATE_URL) === false)
+            throw new \Exception('Evidence link must be valid URL');
     }
 
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
