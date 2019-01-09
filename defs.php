@@ -4,7 +4,7 @@ require_once 'session.php';
 
 // check which view to show
 $view = !empty(($_GET['view']))
-    ? filter_var($_GET['view'], FILTER_SANITIZE_SPECIAL_CHARS) : '';
+    ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED) : '';
 $orderBy = null;
 
 // check for search params
