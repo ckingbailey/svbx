@@ -305,9 +305,9 @@ class Deficiency
                 $acc[$key] = $this->filters[$key]($props[$key]) ?: null;
             }
             else $acc[$key] = $props[$key];
-            // stripcslashes here should be temporary
+            // trim & stripcslashes here should be temporary
             // may be removed once all tainted Defs are cleaned of '\r\n'
-            $acc[$key] = stripcslashes($acc[$key]);
+            $acc[$key] = trim(stripcslashes($acc[$key]));
             return $acc;
         }, []);
     }
