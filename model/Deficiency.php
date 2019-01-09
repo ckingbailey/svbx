@@ -286,9 +286,7 @@ class Deficiency
         return array_reduce($props, function($acc, $prop) {
             if (!empty($this->fields[$prop]) && $this->props[$prop] !== null) {
                 $val = $this->props[$prop] !== '' ? $this->props[$prop] : null;
-                 // stripcslashes here should be temporary
-                 // may be removed once all tainted Defs are cleaned of '\r\n'
-                $acc[$this->fields[$prop]] = stripcslashes($val);
+                $acc[$this->fields[$prop]] = $val;
             }
             return $acc;
         }, []);
@@ -299,9 +297,17 @@ class Deficiency
         return array_reduce(array_keys($props), function($acc, $key) use ($props) {
             if (strpos($this->filters[$key], 'FILTER') === 0)
                 $acc[$key] = filter_var($props[$key], constant($this->filters[$key]));
-            elseif (!empty($this->filters[$key]))
-                $acc[$key] = $this->filters[$key]($props[$key]);
+            elseif (!empty($this->filters[$key])) {
+                // this if condition should be temporary
+                // use only until all '0000-00-00' dates are properly set to NULL
+                if ($this->filters[$key] === 'date' && $props[$key] === '0000-00-00')
+                    $props[$key] = null;
+                $acc[$key] = $this->filters[$key]($props[$key]) ?: null;
+            }
             else $acc[$key] = $props[$key];
+            // stripcslashes here should be temporary
+            // may be removed once all tainted Defs are cleaned of '\r\n'
+            $acc[$key] = stripcslashes($acc[$key]);
             return $acc;
         }, []);
     }
@@ -361,10 +367,12 @@ class Deficiency
 
         $this->validate('insert');
 
-        $insertableData = $this->propsToFields();
-        unset($insertableData[$this->fields['id']]);
-        unset($insertableData[$this->fields['lastUpdated']]);
-        $insertableData = $this->sanitize($insertableData);
+        $insertableData = $this->sanitize();
+        unset(
+            $insertableData[$this->fields['id']],
+            $insertableData[$this->fields['lastUpdated']]
+        );
+        $insertableData = $this->propsToFields($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
