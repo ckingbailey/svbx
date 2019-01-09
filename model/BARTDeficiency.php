@@ -4,7 +4,7 @@ namespace SVBX;
 use MysqliDb;
 
 class BARTDeficiency extends Deficiency {
-    protected $timestampField = 'form_modified';
+    const TIMESTAMP_FIELD = 'form_modified';
 
     protected $table = 'BARTDL';
     public $commentsTable = [
@@ -60,6 +60,44 @@ class BARTDeficiency extends Deficiency {
         'newAttachment' => null,
         'comments' => [],
         'newComment' => null
+    ];
+
+    protected $filters = [
+        'id' => 'intval',
+        'created_by' => 'intval',
+        'dateCreated' => 'date',
+        'updated_by' => 'intval',
+        'lastUpdated' => 'date',
+        'creator' => 'intval',
+        'next_step' => 'intval',
+        'bic' => 'intval',
+        'status' => 'intval',
+        'descriptive_title_vta' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'root_prob_vta' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'resolution_vta' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'priority_vta' => 'intval',
+        'agree_vta' => 'intval',
+        'safety_cert_vta' => 'intval',
+        'resolution_disputed' => 'intval',
+        'structural' => 'intval',
+        'id_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'description_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'cat1_bart' => null,
+        'cat2_bart' => null,
+        'cat3_bart' => null,
+        'level_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'dateOpen_bart' => 'date',
+        'dateClose_bart' => 'date',
+        'dateClosed' => 'date',
+        'repo' => 'intval',
+        'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'evidenceType' => 'intval',
+        'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'closureComment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'attachments' => null,
+        'newAttachment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'comments' => null,
+        'newComment' => 'FILTER_SANITIZE_SPECIAL_CHARS'
     ];
 
     protected $fields = [

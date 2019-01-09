@@ -627,6 +627,7 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
 
 .fake-input {
     min-height: calc(2px + 6px + 8px + 1.5rem);
+    overflow-x: hidden;
 }
 
 /* Table CSS */

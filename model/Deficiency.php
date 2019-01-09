@@ -21,7 +21,7 @@ class Deficiency
         'lastUpdated',
         'dateClosed'
     ];
-    protected $timestampField = 'lastUpdated';
+    const TIMESTAMP_FIELD = 'lastUpdated';
     protected $creationFields = [
         'created_by',
         'dateCreated'
@@ -69,33 +69,33 @@ class Deficiency
         'safetyCert' => 'intval',
         'systemAffected' => 'intval',
         'location' => 'intval',
-        'specLoc' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'specLoc' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'status' => 'intval',
         'severity' => 'intval',
         'dueDate' => 'date',
         'groupToResolve' => 'intval',
         'requiredBy' => 'intval',
         'contractID' => 'intval',
-        'identifiedBy' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'identifiedBy' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'defType' => 'intval',
-        'description' => FILTER_SANITIZE_SPECIAL_CHARS,
-        'spec' => FILTER_SANITIZE_SPECIAL_CHARS,
-        'actionOwner' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'description' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'spec' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'actionOwner' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'evidenceType' => 'intval',
         'repo' => 'intval',
-        'evidenceID' => FILTER_SANITIZE_SPECIAL_CHARS,
-        'evidenceLink' => FILTER_SANITIZE_ENCODED,
-        'oldID' => FILTER_SANITIZE_SPECIAL_CHARS,
-        'closureComments' => FILTER_SANITIZE_SPECIAL_CHARS,
+        'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'created_by' => null,
         'updated_by' => null,
         'dateCreated' => 'date',
         'dateClosed' => 'date',
         'closureRequested' => 'intval',
         'closureRequestedBy' => null,
-        'comments' => [],
+        'comments' => null,
         'newComment' => null,
-        'pics' => [],
+        'pics' => null,
         'newPic' => null
     ];
 
@@ -233,8 +233,9 @@ class Deficiency
         } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $link->where($this->fields['id'], $id);
-                if ($data = $link->getOne($this->table, array_values($this->fields))) {
+                $fields = $this->fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
+                $link->where($fields['id'], $id);
+                if ($data = $link->getOne($this->table, array_values($fields))) {
                     $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -291,8 +292,24 @@ class Deficiency
         }, []);
     }
 
-    public function sanitize($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to sanitize
-        // TODO: intval props that ought to be int
+    public function sanitize($props = null) {
+        $props = $props ?: $this->props;
+        return array_reduce(array_keys($props), function($acc, $key) use ($props) {
+            if (strpos($this->filters[$key], 'FILTER') === 0)
+                $acc[$key] = filter_var($props[$key], constant($this->filters[$key]));
+            elseif (!empty($this->filters[$key])) {
+                // this if condition should be temporary
+                // use only until all '0000-00-00' dates are properly set to NULL
+                if ($this->filters[$key] === 'date' && $props[$key] === '0000-00-00')
+                    $props[$key] = null;
+                $acc[$key] = $this->filters[$key]($props[$key]) ?: null;
+            }
+            else $acc[$key] = $props[$key];
+            // trim & stripcslashes here should be temporary
+            // may be removed once all tainted Defs are cleaned of '\r\n'
+            $acc[$key] = trim(stripcslashes($acc[$key]));
+            return $acc;
+        }, []);
     }
 
     // TODO: validate types of props (string, int, date)
@@ -341,6 +358,8 @@ class Deficiency
         $this->validateModInfo($action);
         $this->validateRequiredInfo($action);
         $this->validateClosureInfo();
+        if (filter_var($this->props['evidenceLink'], FILTER_VALIDATE_URL) === false)
+            throw new \Exception('Evidence link must be valid URL');
     }
 
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
@@ -350,14 +369,16 @@ class Deficiency
 
         $this->validate('insert');
 
-        $insertableData = $this->propsToFields();
-        unset($insertableData[$this->fields['id']]);
-        unset($insertableData[$this->fields['lastUpdated']]);
-        $cleanData = filter_var_array($insertableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        $insertableData = $this->sanitize();
+        unset(
+            $insertableData[$this->fields['id']],
+            $insertableData[$this->fields['lastUpdated']]
+        );
+        $insertableData = $this->propsToFields($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            if ($newID = $link->insert($this->table, $cleanData)) {
+            if ($newID = $link->insert($this->table, $insertableData)) {
                 $this->set('id', $newID);
             } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
@@ -375,20 +396,20 @@ class Deficiency
 
         $this->validate('update');
 
-        // TODO: sanitize should be a method that mutates the object's own props
-        // TODO: need an array of updatable keys
         $updatableData = $this->propsToFields();
         unset($updatableData['id']);
-        $cleanData = filter_var_array($updatableData, FILTER_SANITIZE_SPECIAL_CHARS);
+        $updatableData = $this->sanitize($updatableData);
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where($this->fields['id'], $this->props['id']);
-            if (!$success = $link->update($this->table, $cleanData)) {
+            if (!$success = $link->update($this->table, $updatableData)) {
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
             $this->__construct($this->props['id']);
         } catch (\Exception $e) {
+            throw $e;
+        } catch (\Error $e) {
             throw $e;
         } finally  {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
