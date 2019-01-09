@@ -64,6 +64,41 @@ class Deficiency
         'newPic' => null
     ];
 
+    protected $filters = [
+        'id' => 'intval',
+        'safetyCert' => 'intval',
+        'systemAffected' => 'intval',
+        'location' => 'intval',
+        'specLoc' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'status' => 'intval',
+        'severity' => 'intval',
+        'dueDate' => 'date',
+        'groupToResolve' => 'intval',
+        'requiredBy' => 'intval',
+        'contractID' => 'intval',
+        'identifiedBy' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'defType' => 'intval',
+        'description' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'spec' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'actionOwner' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'evidenceType' => 'intval',
+        'repo' => 'intval',
+        'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'evidenceLink' => 'FILTER_SANITIZE_ENCODED',
+        'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'created_by' => null,
+        'updated_by' => null,
+        'dateCreated' => 'date',
+        'dateClosed' => 'date',
+        'closureRequested' => 'intval',
+        'closureRequestedBy' => null,
+        'comments' => null,
+        'newComment' => null,
+        'pics' => null,
+        'newPic' => null
+    ];
+
     protected $fields = [
         'id' =>  'defID',
         'safetyCert' => 'safetyCert',
@@ -259,6 +294,18 @@ class Deficiency
         }, []);
     }
 
+    public function sanitize($props = null) {
+        $props = $props ?: $this->props;
+        return array_reduce(array_keys($props), function($acc, $key) use ($props) {
+            if (strpos($this->filters[$key], 'FILTER') === 0)
+                $acc[$key] = filter_var($props[$key], constant($this->filters[$key]));
+            elseif (!empty($this->filters[$key]))
+                $acc[$key] = $this->filters[$key]($props[$key]);
+            else $acc[$key] = $props[$key];
+            return $acc;
+        }, []);
+    }
+
     // TODO: validate types of props (string, int, date)
     public function validateCreationInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
         if ($action === 'insert') {
@@ -317,6 +364,7 @@ class Deficiency
         $insertableData = $this->propsToFields();
         unset($insertableData[$this->fields['id']]);
         unset($insertableData[$this->fields['lastUpdated']]);
+        $insertableData = $this->sanitize($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
@@ -340,6 +388,7 @@ class Deficiency
 
         $updatableData = $this->propsToFields();
         unset($updatableData['id']);
+        $updatableData = $this->sanitize($updatableData);
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
