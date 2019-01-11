@@ -381,7 +381,10 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $insertableData)) {
                 $this->set('id', $newID);
-            } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            } else {
+                error_log($link->getLastQuery());
+                throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            }
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
             return $this->props['id'];
         } catch (\Exception $e) {
@@ -405,6 +408,7 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where($this->fields['id'], $this->props['id']);
             if (!$success = $link->update($this->table, $updatableData)) {
+                error_log($link->getLastQuery());
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
             $this->__construct($this->props['id']);
