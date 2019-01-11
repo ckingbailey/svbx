@@ -375,7 +375,7 @@ class Deficiency
             $insertableData[$this->fields['id']],
             $insertableData[$this->fields['lastUpdated']]
         );
-        $insertableData = $this->sanitize();
+        $insertableData = $this->sanitize($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
