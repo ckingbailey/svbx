@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to add your new deficiency: ' . $e->getMessage();
         $location = '/newDef.php';
-        $qs .= http_build_query($def->get());
+        $qs = '?' . http_build_query($def->get());
         header("Location: $location{$qs}");
     } catch (\Error $e) {
         error_log($e);

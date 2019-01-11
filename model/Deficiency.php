@@ -259,7 +259,7 @@ class Deficiency
         }, ARRAY_FILTER_USE_KEY);
         if (is_string($props)
             && key_exists($props, $this->props)
-            && $props !== $this->timestampField)
+            && $props !== static::TIMESTAMP_FIELD)
         {
             $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
@@ -366,22 +366,25 @@ class Deficiency
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
-        $this->set($this->timestampField, null);
+        $this->set(static::TIMESTAMP_FIELD, null);
 
         $this->validate('insert');
 
-        $insertableData = $this->sanitize();
+        $insertableData = $this->propsToFields($insertableData);
         unset(
             $insertableData[$this->fields['id']],
             $insertableData[$this->fields['lastUpdated']]
         );
-        $insertableData = $this->propsToFields($insertableData);
+        $insertableData = $this->sanitize($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             if ($newID = $link->insert($this->table, $insertableData)) {
                 $this->set('id', $newID);
-            } else throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            } else {
+                error_log($link->getLastQuery());
+                throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
+            }
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
             return $this->props['id'];
         } catch (\Exception $e) {
@@ -392,7 +395,7 @@ class Deficiency
     }
     
     public function update() {
-        $this->set($this->timestampField, null);
+        $this->set(static::TIMESTAMP_FIELD, null);
         $this->set($this->creationFields, null);
 
         $this->validate('update');
@@ -405,6 +408,7 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where($this->fields['id'], $this->props['id']);
             if (!$success = $link->update($this->table, $updatableData)) {
+                error_log($link->getLastQuery());
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
             $this->__construct($this->props['id']);
