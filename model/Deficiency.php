@@ -259,7 +259,7 @@ class Deficiency
         }, ARRAY_FILTER_USE_KEY);
         if (is_string($props)
             && key_exists($props, $this->props)
-            && $props !== $this->timestampField)
+            && $props !== static::TIMESTAMP_FIELD)
         {
             $this->props[$props] = trim($val);
         } elseif (is_array($props)) {
@@ -366,16 +366,16 @@ class Deficiency
     // TODO: add fn to handle relatedAsset, newComment, newAttachment
     public function insert() {
         $newID = null;
-        $this->set($this->timestampField, null);
+        $this->set(static::TIMESTAMP_FIELD, null);
 
         $this->validate('insert');
 
-        $insertableData = $this->sanitize();
+        $insertableData = $this->propsToFields($insertableData);
         unset(
             $insertableData[$this->fields['id']],
             $insertableData[$this->fields['lastUpdated']]
         );
-        $insertableData = $this->propsToFields($insertableData);
+        $insertableData = $this->sanitize();
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
@@ -392,7 +392,7 @@ class Deficiency
     }
     
     public function update() {
-        $this->set($this->timestampField, null);
+        $this->set(static::TIMESTAMP_FIELD, null);
         $this->set($this->creationFields, null);
 
         $this->validate('update');
