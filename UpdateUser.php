@@ -5,7 +5,7 @@
     $targetUserID = filter_input(INPUT_GET, "userID", FILTER_SANITIZE_NUMBER_INT);
     $userRole = $_SESSION['role'];
     $title = "SVBX - Update User";
-    $Loc = "SELECT Username, Role, firstname, lastname, Email, Company, inspector FROM $table WHERE UserID = $targetUserID";
+    $Loc = "SELECT Username, Role, firstname, lastname, Email, Company, inspector, bdPermit FROM $table WHERE UserID = $targetUserID";
     include('filestart.php');
 
     if($userRole < 30) {
@@ -20,7 +20,7 @@
         </header>
 <?php       if($stmt = $link->prepare($Loc)) {
             $stmt->execute();
-            $stmt->bind_result($username, $targetRole, $firstname, $lastname, $email, $company, $inspector);
+            $stmt->bind_result($username, $targetRole, $firstname, $lastname, $email, $company, $inspector, $bdPermit);
             while ($stmt->fetch()) {
                 echo "
                     <div class='container main-content'>";
@@ -142,25 +142,40 @@
                                 <div id='inspector-fieldset' class='row item-margin-bottom'>
                                     <h6 class='col-md-4'>Can create Inspector Daily Reports?</h6>
                                     <div id='inspector-options' class='col-md-8'>
-                                        <input type='radio' id='inspector-true' name='inspector' value='1' required ";
+                                        <input type='radio' id='inspector-yes' name='inspector' value='1' required ";
                                         echo ($inspector === 1 ? 'checked' : '');
                                 echo "
                                         />
                                         <label for='inspector-yes'>Yes</label>
-                                        <input type='radio' id='inspector-yes' name='inspector' value='0' required ";
+                                        <input type='radio' id='inspector-no' name='inspector' value='0' required ";
                                         echo ($inspector === 0 ? 'checked' : '');
                                 echo "
                                         />
                                         <label for='inspector-no'>No</label>
                                     </div>
                                 </div>
+                                <div class='row item-margin-bottom'>
+                                    <h6 class='col-md-4'>Can see BART deficiencies?</h6>
+                                    <div class='col-md-8'>
+                                        <input type='radio' id='bdPermit_yes' name='bdPermit' value='1' ";
+                                        echo ($bdPermit ? 'checked' : '');
+                                        error_log('bart permission: ' . $bdPermit);
+                                echo "
+                                        />
+                                        <label for='bdPermit_yes'>Yes</label>
+                                        <input type='radio' id='bdPermit_no' name='bdPermit' value='0' ";
+                                        echo ($bdPermit ? '' : 'checked');
+                                echo "
+                                        />
+                                        <label for='bdPermit_no'>No</label>
+                                    </div>
+                                </div>
+                                <div class='row item-margin-bottom'></div>
                                 <input type='submit' value='submit' class='btn btn-primary btn-lg'/>
                                 <input type='reset' value='reset' class='btn btn-primary btn-lg' />
                             </form>";
                         } else {
                             echo "<p style='text-align:center'>You do not have the authority to amend this user";
-                            //echo "<br />ARole: ".$userRole;
-                            //echo "<br />Role: ".$targetRole."</p>";
                         }
                         echo "</div>";
                     }
