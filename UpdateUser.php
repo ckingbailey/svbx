@@ -159,7 +159,6 @@
                                     <div class='col-md-8'>
                                         <input type='radio' id='bdPermit_yes' name='bdPermit' value='1' ";
                                         echo ($bdPermit ? 'checked' : '');
-                                        error_log('bart permission: ' . $bdPermit);
                                 echo "
                                         />
                                         <label for='bdPermit_yes'>Yes</label>

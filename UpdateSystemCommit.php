@@ -1,15 +1,15 @@
 <?php
 include('SQLFunctions.php');
-// include('Session.php');
 session_start();
 
 if(!empty($_POST)) {
     $SystemID = $_POST['SystemID'];
     $System = $_POST['SystemName'];
+    $lead = filter_var($_POST['lead'], FILTER_SANITIZE_NUMBER_INT);
     $UserID = $_SESSION['userID'];
     $link = f_sqlConnect();
     
-    $user = "SELECT Username FROM users_enc WHERE UserID = ".$UserID;
+    $user = "SELECT username FROM users_enc WHERE UserID = ".$UserID;
     if($result=mysqli_query($link,$user)) 
         {
           /*from the sql results, assign the username that returned to the $username variable*/    
@@ -20,7 +20,8 @@ if(!empty($_POST)) {
     
     $sql = "UPDATE system
             SET SystemName = '$System'
-                ,updatedBy = '$UserID'
+                , lead = '$lead'
+                , updatedBy = '$UserID'
                 ,lastUpdated = NOW()
             WHERE SystemID = $SystemID";
 
