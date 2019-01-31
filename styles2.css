@@ -638,6 +638,11 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     --breakpoint-md: 768px;
     --breakpoint-lg: 992px;
     --breakpoint-xl: 1200px; */
+.table-layout-fixed, .table-layout-fixed>thead, .table-layout-fixed>tbody,
+.table-layout-fixed th, .table-layout-fixed tr, .table-layout-fixed td {
+    table-layout: fixed;
+}
+        
 .table-cell__1, .table-cell_2, .table-cell_3, .table-cell_4,
 .table-cell_5, .table-cell_6, .table-cell_7, .table-cell_8,
 .table-cell_9, .table-cell_10, .table-cell_11, .table-cell_12,
@@ -651,11 +656,35 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     display:none;
 }
 
-.def-table__col-id {
-    width: 12%;
+.table-cell__1 {
+    width: 4.15%;
 }
 
-/* #Mobile (Landscape) */
+.table-cell__2 {
+    width: 8.3%;
+}
+
+.table-cell__3 {
+    width: 12.5%;
+}
+
+.table-cell__4 {
+    width: 16.5%;
+}
+
+.table-cell__6 {
+    width: 25%;
+}
+
+.table-cell__12 {
+    width: 50%;
+}
+
+/* .def-table__col-id {
+    width: 12%;
+} */
+
+/* sm breakpoint, e.g., mobile (landscape) */
 @media only screen and (min-width: 576px) {
     .table-cell__1 {
         width: 4.15%;
@@ -705,6 +734,10 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
 }
 
 @media print {
+    .def-table .text-white {
+        color: var(--dark)!important;
+    }
+
     .table-cell__1 {
         width: 4.15%;
     }
@@ -732,11 +765,6 @@ a[data-toggle="collapse"].collapsed>.typcn-arrow-sorted-down:before {
     .collapse-xs {
         display: table-cell;
     }
-}
-
-.table-layout-fixed, .table-layout-fixed>thead, .table-layout-fixed>tbody,
-.table-layout-fixed th, .table-layout-fixed tr, .table-layout-fixed td {
-    table-layout: fixed;
 }
 
 .def-table td:not(:first-child), .def-table th:not(:first-child) {
