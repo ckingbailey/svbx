@@ -31,11 +31,14 @@ elseif (!empty($_POST)) {
         'email' => $post['email'],
         'role' => $post['role'],
         'inspector' => $post['inspector'],
+        'bdPermit' => $post['bdPermit'],
         'updated_by' => $aUsername,
         'lastUpdated' => date('Y-m-d H:i:s')
     ];
     
-    $fields = array_filter($fields);
+    $fields = array_filter($fields, function($val) {
+        return $val !== null && $val !== false;
+    });
     
     try {
         if (!empty($message)) throw new Exception($message);
