@@ -45,6 +45,7 @@
         })
         document.getElementById('getCsvBtn').addEventListener('click', event => {
             const json = JSON.stringify({{ dataWithHeadings | json_encode | raw }})
+            console.log(JSON.parse(json))
             fetch('/api/def.php', {
                 method: 'POST',
                 body: json,
@@ -66,7 +67,11 @@
                     + '' + d.getSeconds()
                 download(text, `defs_summary_${timestamp}.csv`, 'text/csv')
             }).catch(err => {
-                if (err.status) console.err(`${err.status} ${res.statusText} ${res.url}`)
+                if (typeof err.then === 'function') {
+                    err.text().then(text => {
+                        console.error(text)
+                    })
+                }
                 else console.err(err)
             })
         })

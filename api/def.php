@@ -4,6 +4,7 @@ use SVBX\Export;
 require 'vendor/autoload.php';
 require 'session.php';
 
+// if it's not a POST you'll get a get 0 and return 'Method Not Allowed'
 if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
     header('Access-Control-Allow-Methods: POST', true, 405);
     exit;
@@ -35,12 +36,14 @@ try {
     
     $post = trim(file_get_contents('php://input'));
     $post = json_decode($post, true);
+    error_log(print_r(array_slice($post, 0, 2), true));
     // $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
 
     $postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
 
     if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match name of ID col
 
+    // compare POST keys to columns
     foreach ($postKeys as $key) {
         if (array_search(strtolower($key), $cols) === false) {
             header('Status: 400 Bad Request', true, 400);

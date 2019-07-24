@@ -63,6 +63,14 @@ $projectTableHeadings = [
     'edit' => [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'classList' => 'def-table__edit', 'href' => '/updateDef.php?id=' ]
 ];
 
+$projectCSVHeadings = array_column($projectTableHeadings, 'value')
+    + [
+        'type',
+        'comments'
+    ];
+
+$bartCSVHeadings = array_column($bartTableHeadings, 'value');
+
 $bartFields = [
     'ID',
     's.statusName as status',
@@ -82,7 +90,10 @@ $projectFields = [
     "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
+    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
+    "type.defTypeName AS defType",
+    "actionOwner",
+    "(SELECT COUNT(cdlCommID) FROM cdlComments comm WHERE comm.defID=ID) AS comments"
 ];
 
 $bartJoins = [
@@ -96,7 +107,8 @@ $projectJoins = [
     "severity s" => "c.severity = s.severityID",
     "status t" => "c.status = t.statusID",
     "system y" => "c.systemAffected = y.systemID",
-    "system g" => "c.groupToResolve = g.systemID"
+    "system g" => "c.groupToResolve = g.systemID",
+    'defType type' => 'c.defType = type.defTypeID'
 ];
 
 $bartFilters = [
@@ -259,9 +271,9 @@ $projectSort = [
     'dueDate' => 'Due date'
 ];
 
-list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
+list($table, $tableAlias, $addPath, $tableHeadings, $csvHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectCSVHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
@@ -378,11 +390,19 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
-    $context['data'] = $data;
-    $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
-    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
-    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
-    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
+    // slice off last 3 columns from each result for web display
+    $displayData = array_map(function($row) use ($data) {
+        return array_slice($row, 0, count($row) - 3);
+    }, $data);
+    // error_log(print_r(array_slice($displayData, 0, 3), true));
+    $context['data'] = $displayData;
+    // $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
+    $context['dataWithHeadings'] = [ $csvHeadings ];
+    // splice out 'Edit' for downloadable content
+    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1);
+    // rename 'ID' column because Excel is garbage
+    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
+    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
 
     $context['count'] = $link->count;
 
