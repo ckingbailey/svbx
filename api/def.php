@@ -1,10 +1,11 @@
 <?php
 use SVBX\Export;
+use League\Csv\Writer;
 
 require 'vendor/autoload.php';
 require 'session.php';
 
-// if it's not a POST you'll get a get 0 and return 'Method Not Allowed'
+// only if it's a POST will you get a 0 and bypass this statement
 if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
     header('Access-Control-Allow-Methods: POST', true, 405);
     exit;
@@ -51,9 +52,13 @@ try {
         }
     }
 
-    header('Content-Type: text/csv', true);
+    // header('Content-Type: text/csv', true);
 
-    echo Export::csv($post);
+    $csv = Writer::createFromFileObject(new SplTempFileObject());
+    $csv->setNewline("\r\n");
+    $csv->insertAll($post);
+    $csv->output("defs_summary_" . date('YmdHis') . ".csv");
+    // echo Export::csv($post);
 } catch (\Exception $e) {
     error_log($e);
     header('500 Internal server error', true, 500);

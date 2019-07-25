@@ -63,11 +63,13 @@ $projectTableHeadings = [
     'edit' => [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'classList' => 'def-table__edit', 'href' => '/updateDef.php?id=' ]
 ];
 
-$projectCSVHeadings = array_column($projectTableHeadings, 'value')
-    + [
-        'type',
-        'comments'
-    ];
+$projectTableHeadingVals = array_column($projectTableHeadings, 'value');
+// remove 'Edit' value for downloadable content
+array_splice($projectTableHeadingVals, array_search('Edit', $projectTableHeadingVals), 1);
+$projectCSVHeadings = array_unique(
+    array_merge($projectTableHeadingVals, [ 'type', 'action owner', 'comments' ])
+);
+error_log(print_r($projectCSVHeadings, true));
 
 $bartCSVHeadings = array_column($bartTableHeadings, 'value');
 
@@ -394,12 +396,11 @@ try {
     $displayData = array_map(function($row) use ($data) {
         return array_slice($row, 0, count($row) - 3);
     }, $data);
-    // error_log(print_r(array_slice($displayData, 0, 3), true));
     $context['data'] = $displayData;
-    // $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
+    error_log('wtf headings? ' . print_r($csvHeadings, true));
     $context['dataWithHeadings'] = [ $csvHeadings ];
     // splice out 'Edit' for downloadable content
-    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1);
+    // array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1);
     // rename 'ID' column because Excel is garbage
     $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
     $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
