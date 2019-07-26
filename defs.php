@@ -69,7 +69,6 @@ array_splice($projectTableHeadingVals, array_search('Edit', $projectTableHeading
 $projectCSVHeadings = array_unique(
     array_merge($projectTableHeadingVals, [ 'type', 'action owner', 'comments' ])
 );
-error_log(print_r($projectCSVHeadings, true));
 
 $bartCSVHeadings = array_column($bartTableHeadings, 'value');
 
@@ -397,7 +396,6 @@ try {
         return array_slice($row, 0, count($row) - 3);
     }, $data);
     $context['data'] = $displayData;
-    error_log('wtf headings? ' . print_r($csvHeadings, true));
     $context['dataWithHeadings'] = [ $csvHeadings ];
     // splice out 'Edit' for downloadable content
     // array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1);

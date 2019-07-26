@@ -46,29 +46,60 @@ try {
 
     // if Auth ok, validate fields on first data element of POST against fields in DB
     // note: element at index 0 is heading names, not table data
-    $link->where('table_name', 'CDL');
-    $link->orWhere('table_name', 'BARTDL');
-    $cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
-    $cols = array_map('strtolower', $cols);
+    // $link->where('table_name', 'CDL');
+    // $link->orWhere('table_name', 'BARTDL');
+    // $cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
+    // $cols = array_map('strtolower', $cols);
     
-    $post = trim(file_get_contents('php://input'));
-    $post = json_decode($post, true);
-    error_log(print_r(array_slice($post, 0, 2), true));
+    // get raw POST input coz it's in JSON and PHP doesn't handle that well
+    // $post = trim(file_get_contents('php://input'));
+    // $post = json_decode($post, true);
+    // error_log(print_r(array_slice($post, 0, 2), true));
     // $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
 
-    $postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
+    // $postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
 
-    if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match name of ID col
+    // if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match name of ID col
 
     // compare POST keys to columns
-    foreach ($postKeys as $key) {
-        if (array_search(strtolower($key), $cols) === false) {
-            header('Status: 400 Bad Request', true, 400);
-            exit;
-        }
-    }
+    // foreach ($postKeys as $key) {
+    //     if (array_search(strtolower($key), $cols) === false) {
+    //         header('Status: 400 Bad Request', true, 400);
+    //         exit;
+    //     }
+    // }
 
     // header('Content-Type: text/csv', true);
+
+    error_log(print_r($_GET, true));
+    if (empty($_GET['fields'])) {
+        http_response_code(400);
+        echo 'No data receieved';
+        exit;
+    }
+
+    $fields = explode(',', $_GET['fields']);
+
+    if (!empty($_GET['range'])) {
+        $range = explode(',', $_GET['range']);
+        if (count($range) > 2) {
+            http_response_code(400);
+            echo 'Range must be two comma-separted numbers';
+            exit;
+        }
+        $from = min($range);
+        $to = max($range);
+        $link->where('id', $from, '>=');
+    }
+
+    $link->orderBy('id', 'ASC');
+    $defs = $to ?
+        $link->get('deficiency', $to, $fields)
+        : $link->get('deficiency', $fields);
+
+    error_log(print_r($defs, true));
+    echo "<pre>" . print_r($defs, true) . "</pre>";
+    exit;
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");

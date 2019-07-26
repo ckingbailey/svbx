@@ -1,6 +1,6 @@
-/* create view UP */
+/* create deficiency view UP */
 CREATE VIEW deficiency AS
-    SELECT CDL.defID AS _id,
+    SELECT CDL.defID AS id,
     loc.locationName AS location,
     sev.severityName AS severity,
     stat.statusName AS status,
@@ -14,12 +14,11 @@ CREATE VIEW deficiency AS
     CDL.actionOwner AS actionOwner,
     com.cdlCommText AS comment
     FROM CDL
-    JOIN location loc ON CDL.location = loc.locationID
-    JOIN severity sev ON CDL.severity = sev.severityID
-    JOIN status stat ON CDL.status = stat.statusID
-    JOIN system sys ON CDL.systemAffected = sys.systemID
-    JOIN system grp ON CDL.groupToResolve = grp.systemID
-    JOIN requiredBy req ON CDL.requiredBy = req.reqByID
-    JOIN defType type ON CDL.defType = type.defTypeID
-    JOIN cdlComments com ON CDL.defID = com.defID
-    ORDER BY CDL.defID
+    LEFT JOIN location loc ON CDL.location = loc.locationID
+    LEFT JOIN severity sev ON CDL.severity = sev.severityID
+    LEFT JOIN status stat ON CDL.status = stat.statusID
+    LEFT JOIN system sys ON CDL.systemAffected = sys.systemID
+    LEFT JOIN system grp ON CDL.groupToResolve = grp.systemID
+    LEFT JOIN requiredBy req ON CDL.requiredBy = req.reqByID
+    LEFT JOIN defType type ON CDL.defType = type.defTypeID
+    LEFT JOIN cdlComments com ON CDL.defID = com.defID
