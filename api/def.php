@@ -5,28 +5,44 @@ use League\Csv\Writer;
 require 'vendor/autoload.php';
 require 'session.php';
 
+/**
+ * The way this ought to work:
+ * Takes a GET request containing a list of fields as query string
+ * For 1=>1 field names such as location, severity, status
+ *   get deficiency view from database
+ * For `comments`
+ *   grab all comments text and their def.ids from database
+ *   iterate over this comments collection
+ *     transforming into an assoc array of [ def.id => "comment text" ]
+ *     and combining comments text that share common def.id into single string with comments separated by "\n"
+ *   then iterate over defs collection, matching def.id to comments array keys
+ *     and appending comments text to 'comments' key of each def
+ * Headings
+ *   use field names passed in qs as headings
+ */
+
 // only if it's a POST will you get a 0 and bypass this statement
-if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
-    header('Access-Control-Allow-Methods: POST', true, 405);
-    exit;
-}
+// if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
+//     header('Access-Control-Allow-Methods: POST', true, 405);
+//     exit;
+// }
 
 try {
     // check Session vars against DB
     $link = new MySqliDB(DB_CREDENTIALS);
-    $fields = [ 'username', 'userID', 'firstname', 'lastname', 'role' ];
+    // $fields = [ 'username', 'userID', 'firstname', 'lastname', 'role' ];
 
-    $link->where('userID', $_SESSION['userID']);
-    $result = $link->getOne('users_enc', $fields);
+    // $link->where('userID', $_SESSION['userID']);
+    // $result = $link->getOne('users_enc', $fields);
 
-    if ($result['username'] !== $_SESSION['username']
-        || $result['role'] !== $_SESSION['role']
-        || $result['firstname'] !== $_SESSION['firstname']
-        || $result['lastname'] !== $_SESSION['lastname'])
-    {
-        header('Status: 403 Forbidden', true, 403);
-        exit;
-    }
+    // if ($result['username'] !== $_SESSION['username']
+    //     || $result['role'] !== $_SESSION['role']
+    //     || $result['firstname'] !== $_SESSION['firstname']
+    //     || $result['lastname'] !== $_SESSION['lastname'])
+    // {
+    //     header('Status: 403 Forbidden', true, 403);
+    //     exit;
+    // }
 
     // if Auth ok, validate fields on first data element of POST against fields in DB
     // note: element at index 0 is heading names, not table data
