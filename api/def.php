@@ -21,11 +21,11 @@ require 'session.php';
  *   use field names passed in qs as headings
  */
 
-// only if it's a POST will you get a 0 and bypass this statement
-// if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST')) {
-//     header('Access-Control-Allow-Methods: POST', true, 405);
-//     exit;
-// }
+// only if it's a GET will you get a 0 and bypass this statement
+if (strcasecmp($_SERVER['REQUEST_METHOD'], 'GET')) {
+    http_response_code(405);
+    exit;
+}
 
 try {
     // check Session vars against DB
@@ -84,34 +84,64 @@ try {
         $range = explode(',', $_GET['range']);
         if (count($range) > 2) {
             http_response_code(400);
-            echo 'Range must be two comma-separted numbers';
+            echo 'Range must be two comma-separated numbers';
             exit;
         }
-        $from = min($range);
-        $to = max($range);
+        list($from, $to) = [ min($range), max($range) ];
         $link->where('id', $from, '>=');
     }
 
     $link->orderBy('id', 'ASC');
-    $defs = $to ?
+    $defs = !empty($to) ?
         $link->get('deficiency', $to, $fields)
         : $link->get('deficiency', $fields);
 
-    error_log(print_r($defs, true));
-    echo "<pre>" . print_r($defs, true) . "</pre>";
-    exit;
+    // if comments included, combine defs and put comments in extra cols
+    if (array_search('comment', $fields)) {
+        $next = null;
+        $comments = [];
+        $output = [];
+        $nextID = !empty($defs[$i + 1]) ? $defs[$i + 1]['id'] : null;
+        foreach ($defs as $i => &$def) {
+            // if next def is different from current def
+            // push cur def to output array
+            if ($nextID !== $def['id']) {
+                error_log('cur: ' . $def['id'] . ', next: ' . $nextID);
+                // if any comments have been collected
+                // add them to prev before pushing it to output array
+                if (!empty($comments)) {
+                    // push cur to end of comments collection
+                    array_push($comments, html_entity_decode($def['comment'], ENT_QUOTES));
+                    unset($def['comment']);
+                    $def = array_merge($def, $comments);
+                    // reset comments collection
+                    $comments = [];
+                }
+                array_push($output, $def);
+            }
+            // collect comment only if cur def is same as next def
+            elseif (!empty($def['comment'])) {
+                array_push($comments, html_entity_decode($def['comment'], ENT_QUOTES));
+            }
+        }
+        $defs = $output;
+    }
+
+    // error_log('output: ' . print_r(array_slice($defs, 0, 3), true));
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");
-    $csv->insertAll($post);
+    $csv->insertAll($defs);
     $csv->output("defs_summary_" . date('YmdHis') . ".csv");
     // echo Export::csv($post);
 } catch (\Exception $e) {
     error_log($e);
-    header('500 Internal server error', true, 500);
+    http_response_code(500);
+    echo $e;
 } catch (\Error $e) {
     error_log($e);
-    header('500 Internal server error', true, 500);
+    http_response_code(500);
+    echo $e;
 } finally {
     if (is_a($link, 'MySqliDB')) $link->disconnect();
     exit;
