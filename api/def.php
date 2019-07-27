@@ -87,26 +87,28 @@ try {
             echo 'Range must be two comma-separated numbers';
             exit;
         }
-        list($from, $to) = [ min($range), max($range) ];
+        list($from, $to) = [ intval(min($range)), intval(max($range)) ];
+        error_log('get from ' . $from . ' to ' . $to);
         $link->where('id', $from, '>=');
+        $link->where('id', $to, '<=');
     }
 
     $link->orderBy('id', 'ASC');
-    $defs = !empty($to) ?
-        $link->get('deficiency', $to, $fields)
-        : $link->get('deficiency', $fields);
+    $defs = $link->get('deficiency', null, $fields);
+    error_log($link->getLastQuery());
+    error_log('got defs ' . print_r(array_slice($defs, 0, 2), true));
 
     // if comments included, combine defs and put comments in extra cols
-    if (array_search('comment', $fields)) {
+    if (array_search('comment', $fields) !== false) {
         $next = null;
         $comments = [];
         $output = [];
-        $nextID = !empty($defs[$i + 1]) ? $defs[$i + 1]['id'] : null;
         foreach ($defs as $i => &$def) {
+            $nextID = !empty($defs[$i + 1]) ? $defs[$i + 1]['id'] : null;
             // if next def is different from current def
             // push cur def to output array
+            error_log('cur: ' . $def['id'] . ', next: ' . $nextID);
             if ($nextID !== $def['id']) {
-                error_log('cur: ' . $def['id'] . ', next: ' . $nextID);
                 // if any comments have been collected
                 // add them to prev before pushing it to output array
                 if (!empty($comments)) {
@@ -127,7 +129,7 @@ try {
         $defs = $output;
     }
 
-    // error_log('output: ' . print_r(array_slice($defs, 0, 3), true));
+    error_log('output: ' . print_r(array_slice($defs, 0, 2), true));
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");
