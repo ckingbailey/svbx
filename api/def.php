@@ -71,7 +71,6 @@ try {
 
     // header('Content-Type: text/csv', true);
 
-    error_log(print_r($_GET, true));
     if (empty($_GET['fields'])) {
         http_response_code(400);
         echo 'No data receieved';
@@ -88,15 +87,12 @@ try {
             exit;
         }
         list($from, $to) = [ intval(min($range)), intval(max($range)) ];
-        error_log('get from ' . $from . ' to ' . $to);
         $link->where('id', $from, '>=');
         $link->where('id', $to, '<=');
     }
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get('deficiency', null, $fields);
-    error_log($link->getLastQuery());
-    error_log('got defs ' . print_r(array_slice($defs, 0, 2), true));
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
@@ -105,15 +101,17 @@ try {
         $output = [];
         foreach ($defs as $i => &$def) {
             $nextID = !empty($defs[$i + 1]) ? $defs[$i + 1]['id'] : null;
+            // decode special chars
+            $def['comment'] = html_entity_decode($def['comment'], ENT_QUOTES, 'utf-8');
+            $def['description'] = html_entity_decode($def['description'], ENT_QUOTES, 'utf-8');
             // if next def is different from current def
             // push cur def to output array
-            error_log('cur: ' . $def['id'] . ', next: ' . $nextID);
             if ($nextID !== $def['id']) {
                 // if any comments have been collected
                 // add them to prev before pushing it to output array
                 if (!empty($comments)) {
                     // push cur to end of comments collection
-                    array_push($comments, html_entity_decode($def['comment'], ENT_QUOTES));
+                    array_push($comments, $def['comment']);
                     unset($def['comment']);
                     $def = array_merge($def, $comments);
                     // reset comments collection
@@ -123,12 +121,13 @@ try {
             }
             // collect comment only if cur def is same as next def
             elseif (!empty($def['comment'])) {
-                array_push($comments, html_entity_decode($def['comment'], ENT_QUOTES));
+                array_push($comments, $def['comment']);
             }
         }
         $defs = $output;
     }
 
+    array_unshift($defs, $fields);
     error_log('output: ' . print_r(array_slice($defs, 0, 2), true));
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
