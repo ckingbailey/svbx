@@ -27,49 +27,27 @@ if (strcasecmp($_SERVER['REQUEST_METHOD'], 'GET')) {
     exit;
 }
 
+$pHed = [
+    'id' => '_id',
+    'location' => 'Location',
+    'severity' => 'Severity',
+    'status' => 'Status',
+    'systemAffected' => 'System Affected',
+    'groupToResolve' => 'Group to Resolve',
+    'description' => 'Description',
+    'specLoc' => 'Specific Location',
+    'requiredBy' => 'Required Prior To',
+    'dueDate' => 'Due Date',
+    'defType' => 'Type',
+    'actionOwner' => 'Action Owner',
+    'comment' => 'Comments'
+];
+$bHed = [];
+$head = [];
+
 try {
     // check Session vars against DB
     $link = new MySqliDB(DB_CREDENTIALS);
-    // $fields = [ 'username', 'userID', 'firstname', 'lastname', 'role' ];
-
-    // $link->where('userID', $_SESSION['userID']);
-    // $result = $link->getOne('users_enc', $fields);
-
-    // if ($result['username'] !== $_SESSION['username']
-    //     || $result['role'] !== $_SESSION['role']
-    //     || $result['firstname'] !== $_SESSION['firstname']
-    //     || $result['lastname'] !== $_SESSION['lastname'])
-    // {
-    //     header('Status: 403 Forbidden', true, 403);
-    //     exit;
-    // }
-
-    // if Auth ok, validate fields on first data element of POST against fields in DB
-    // note: element at index 0 is heading names, not table data
-    // $link->where('table_name', 'CDL');
-    // $link->orWhere('table_name', 'BARTDL');
-    // $cols = $link->getValue('information_schema.columns', 'column_name', null); // returns 50+ columns
-    // $cols = array_map('strtolower', $cols);
-    
-    // get raw POST input coz it's in JSON and PHP doesn't handle that well
-    // $post = trim(file_get_contents('php://input'));
-    // $post = json_decode($post, true);
-    // error_log(print_r(array_slice($post, 0, 2), true));
-    // $post = filter_var_array($post, FILTER_SANITIZE_SPECIAL_CHARS);
-
-    // $postKeys = array_keys($post[1] + $post[count($post) - 1] + $post[floor((count($post) / 2))]); // grab keys from first, middle, and last element of post data
-
-    // if (($idIndex = array_search('ID', $postKeys)) !== false) unset($postKeys[$idIndex]); // don't try to match name of ID col
-
-    // compare POST keys to columns
-    // foreach ($postKeys as $key) {
-    //     if (array_search(strtolower($key), $cols) === false) {
-    //         header('Status: 400 Bad Request', true, 400);
-    //         exit;
-    //     }
-    // }
-
-    // header('Content-Type: text/csv', true);
 
     if (empty($_GET['fields'])) {
         http_response_code(400);
@@ -128,7 +106,6 @@ try {
     }
 
     array_unshift($defs, $fields);
-    error_log('output: ' . print_r(array_slice($defs, 0, 2), true));
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");

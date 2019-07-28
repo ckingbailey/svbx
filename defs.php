@@ -63,15 +63,6 @@ $projectTableHeadings = [
     'edit' => [ 'value' => 'Edit', 'cellWd' => '1', 'collapse' => 'sm', 'classList' => 'def-table__edit', 'href' => '/updateDef.php?id=' ]
 ];
 
-$projectTableHeadingVals = array_column($projectTableHeadings, 'value');
-// remove 'Edit' value for downloadable content
-array_splice($projectTableHeadingVals, array_search('Edit', $projectTableHeadingVals), 1);
-$projectCSVHeadings = array_unique(
-    array_merge($projectTableHeadingVals, [ 'type', 'action owner', 'comments' ])
-);
-
-$bartCSVHeadings = array_column($bartTableHeadings, 'value');
-
 $bartFields = [
     'ID',
     's.statusName as status',
@@ -272,9 +263,9 @@ $projectSort = [
     'dueDate' => 'Due date'
 ];
 
-list($table, $tableAlias, $addPath, $tableHeadings, $csvHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
-    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectCSVHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
+list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
+    ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
+    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
@@ -391,17 +382,16 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    error_log('got ' . count($data) . 'records');
+    error_log("records:\n" . print_r($data, true));
     // slice off last 3 columns from each result for web display
-    $displayData = array_map(function($row) use ($data) {
-        return array_slice($row, 0, count($row) - 3);
-    }, $data);
-    $context['data'] = $displayData;
-    $context['dataWithHeadings'] = [ $csvHeadings ];
-    // splice out 'Edit' for downloadable content
-    // array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1);
+    // $displayData = array_map(function($row) use ($data) {
+    //     return array_slice($row, 0, count($row) - 3);
+    // }, $data);
+    $context['data'] = $data;
     // rename 'ID' column because Excel is garbage
-    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
-    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
+    // $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
+    // $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
 
     $context['count'] = $link->count;
 

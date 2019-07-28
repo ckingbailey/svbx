@@ -44,16 +44,11 @@
             })
         })
         document.getElementById('getCsvBtn').addEventListener('click', event => {
-            const json = JSON.stringify({{ dataWithHeadings | json_encode | raw }})
-            console.log(JSON.parse(json))
             querystring = 'fields=id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment&range=0,10'
             url = '/api/def.php?' + querystring
             fetch(url, {
                 credentials: 'same-origin',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Accept': 'text/csv'
-                }
+                headers: { 'Accept': 'text/csv' }
             }).then(res => {
                 if (!res.ok) {
                     console.error(`${res.status}: ${res.statusText}`)
