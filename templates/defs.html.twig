@@ -44,7 +44,15 @@
             })
         })
         document.getElementById('getCsvBtn').addEventListener('click', event => {
-            querystring = 'fields=id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment&range=0,10'
+            let view
+            querystring = 'fields='
+            {% if view is same as('BART') %}
+            querystring += 'id,status,date_created,description,resolution,nextStep,comment'
+            querystring += '&view=BART'
+            view = 'bart'
+            {% else %}
+            querystring += 'id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
+            {% endif %}
             url = '/api/def.php?' + querystring
             fetch(url, {
                 credentials: 'same-origin',
@@ -63,7 +71,7 @@
                     + '' + (d.getHours() < 10 ? '0' + d.getHours() : d.getHours())
                     + '' + (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes())
                     + '' + (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds())
-                download(text, `defs_summary_${timestamp}.csv`, 'text/csv')
+                download(text, `${view || ''}defs_summary_${timestamp}.csv`, 'text/csv')
             }).catch(err => {
                 if (typeof err.then === 'function') {
                     err.then(text => {

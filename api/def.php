@@ -27,24 +27,6 @@ if (strcasecmp($_SERVER['REQUEST_METHOD'], 'GET')) {
     exit;
 }
 
-$pHed = [
-    'id' => '_id',
-    'location' => 'Location',
-    'severity' => 'Severity',
-    'status' => 'Status',
-    'systemAffected' => 'System Affected',
-    'groupToResolve' => 'Group to Resolve',
-    'description' => 'Description',
-    'specLoc' => 'Specific Location',
-    'requiredBy' => 'Required Prior To',
-    'dueDate' => 'Due Date',
-    'defType' => 'Type',
-    'actionOwner' => 'Action Owner',
-    'comment' => 'Comments'
-];
-$bHed = [];
-$head = [];
-
 try {
     // check Session vars against DB
     $link = new MySqliDB(DB_CREDENTIALS);
@@ -56,6 +38,40 @@ try {
     }
 
     $fields = explode(',', $_GET['fields']);
+    $view = 'deficiency';
+    $headings = [
+        'id' => '_id',
+        'location' => 'Location',
+        'severity' => 'Severity',
+        'status' => 'Status',
+        'systemAffected' => 'System Affected',
+        'groupToResolve' => 'Group to Resolve',
+        'description' => 'Description',
+        'specLoc' => 'Specific Location',
+        'requiredBy' => 'Required Prior To',
+        'dueDate' => 'Due Date',
+        'defType' => 'Type',
+        'actionOwner' => 'Action Owner',
+        'comment' => 'Comments'
+    ];
+    if (!empty($_GET['view'])) {
+        if (strtolower($_GET['view']) === 'bart') {
+            $view = 'bart_def';
+            $headings = [
+                'id' => '_id',
+                'status' => 'Status',
+                'date_created' => 'Date Created',
+                'description' => 'Description',
+                'resolution' => 'Resolution',
+                'nextStep' => 'Next Step',
+                'comment' => 'Comments'
+            ];
+        } else {
+            http_response_code(400);
+            echo $_GET['view'] . ' is not a known view';
+            exit;
+        }
+    } 
 
     if (!empty($_GET['range'])) {
         $range = explode(',', $_GET['range']);
@@ -70,7 +86,7 @@ try {
     }
 
     $link->orderBy('id', 'ASC');
-    $defs = $link->get('deficiency', null, $fields);
+    $defs = $link->get($view, null, $fields);
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
@@ -105,13 +121,12 @@ try {
         $defs = $output;
     }
 
-    array_unshift($defs, $fields);
+    array_unshift($defs, $headings);
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");
     $csv->insertAll($defs);
     $csv->output("defs_summary_" . date('YmdHis') . ".csv");
-    // echo Export::csv($post);
 } catch (\Exception $e) {
     error_log($e);
     http_response_code(500);

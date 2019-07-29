@@ -382,8 +382,6 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
-    error_log('got ' . count($data) . 'records');
-    error_log("records:\n" . print_r($data, true));
     // slice off last 3 columns from each result for web display
     // $displayData = array_map(function($row) use ($data) {
     //     return array_slice($row, 0, count($row) - 3);
