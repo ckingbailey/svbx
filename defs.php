@@ -82,10 +82,7 @@ $projectFields = [
     "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
-    "type.defTypeName AS defType",
-    "actionOwner",
-    "(SELECT COUNT(cdlCommID) FROM cdlComments comm WHERE comm.defID=ID) AS comments"
+    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
 ];
 
 $bartJoins = [
