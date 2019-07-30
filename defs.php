@@ -82,7 +82,10 @@ $projectFields = [
     "c.description AS description",
     "c.specLoc AS specLoc",
     "r.requiredBy AS requiredBy",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
+    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate",
+    "type.defTypeName AS defType",
+    "actionOwner",
+    "(SELECT COUNT(cdlCommID) FROM cdlComments comm WHERE comm.defID=ID) AS comments"
 ];
 
 $bartJoins = [
@@ -96,7 +99,8 @@ $projectJoins = [
     "severity s" => "c.severity = s.severityID",
     "status t" => "c.status = t.statusID",
     "system y" => "c.systemAffected = y.systemID",
-    "system g" => "c.groupToResolve = g.systemID"
+    "system g" => "c.groupToResolve = g.systemID",
+    'defType type' => 'c.defType = type.defTypeID'
 ];
 
 $bartFilters = [
@@ -378,11 +382,14 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
+    // slice off last 3 columns from each result for web display
+    // $displayData = array_map(function($row) use ($data) {
+    //     return array_slice($row, 0, count($row) - 3);
+    // }, $data);
     $context['data'] = $data;
-    $context['dataWithHeadings'] = [ array_column($context['tableHeadings'], 'value') ];
-    array_splice($context['dataWithHeadings'][0], array_search('Edit', $context['dataWithHeadings'][0]), 1); // splice out 'Edit'
-    $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';// rename 'ID' column
-    $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $context['data']);
+    // rename 'ID' column because Excel is garbage
+    // $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
+    // $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
 
     $context['count'] = $link->count;
 
