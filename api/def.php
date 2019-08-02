@@ -116,7 +116,6 @@ try {
                 foreach ($val as $extraVal) {
                     $arrayVals[] = $system[$extraVal];
                 }
-                error_log("collected array vals\n" . print_r($arrayVals, true));
                 $link->where($key, $arrayVals, 'IN');
             } elseif (strcasecmp($key, 'requiredby') === 0) {
                 $table = $key;
@@ -128,12 +127,26 @@ try {
                     $dict[$row[$id]] = $row[$name];
                     return $dict;
                 }, []);
-                error_log("$key lookup\n" . print_r($lookup, true));
                 $link->where($key, $lookup[$val]);
-            } elseif (strcasecmp($key, 'safetycert') === 0) {
+            } elseif (strcasecmp($key, 'next_step') === 0) {
+                $table = 'bdNextStep';
+                $id = 'bdNextStepID';
+                $name = 'nextStepName';
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                error_log("why is there a 0 val for next_step?\n" . print_r($temp, true));
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                error_log("$key lookup\n" . print_r($lookup, true));
+                $link->where('nextStep', $lookup[$val]);
+            } elseif (strcasecmp($key, 'safetyCert') === 0) {
                 // safety cert is the only one that's not a join
                 $link->where($key, $val);
-            } else {
+            } elseif ($view === 'deficiency'
+            || strcasecmp($key, 'status') === 0) {
                 $table = $key;
                 $id = "{$table}ID";
                 $name = "{$table}Name";
@@ -144,7 +157,6 @@ try {
                     $dict[$row[$id]] = $row[$name];
                     return $dict;
                 }, []);
-                error_log("$key lookup\n" . print_r($lookup, true));
                 $link->where($key, $lookup[$val]);
             }
             $filters[] = [ $key, $val ];
@@ -154,9 +166,6 @@ try {
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get($view, null, $fields);
-    error_log("API query\n" . $link->getLastQuery());
-    if (!empty($filters))
-        error_log("defs\n" . print_r($defs, true));
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
