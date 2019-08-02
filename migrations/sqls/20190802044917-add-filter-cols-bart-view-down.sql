@@ -1,4 +1,4 @@
-/* Replace with your SQL commands */
+/* ADD bic, safety_cert_vta, resolution_disputed, structural DOWN */
 ALTER VIEW bart_def AS
     SELECT ID as id,
     stat.statusName AS status,
