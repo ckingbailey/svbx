@@ -10,7 +10,9 @@ $orderBy = null;
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET)) {
-    $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
+    $get = array_filter($_GET, function ($val) {
+        return (gettype($val) === 'string' && $val !== '') || (bool) $val;
+    }); // filter to remove falsey values -- is this necessary?
     unset($get['search'], $get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
     $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
@@ -136,7 +138,7 @@ $bartFilters = [
         'fields' => ['partyID', 'partyName'],
         'join' => [
             'joinTable' => 'BARTDL b',
-            'joinOn' => 'p.partyID = b.creator',
+            'joinOn' => 'p.partyID = b.bic',
             'joinType' => 'INNER'
         ],
         'groupBy' => 'p.partyID',
@@ -350,7 +352,7 @@ try {
     }
 
     // filter on user-selected query params
-    if ($get) {
+    if (!empty($get)) {
         foreach ($get as $param => $val) {
             if ($param === 'description'
                 || $param === 'defID'
@@ -379,14 +381,8 @@ try {
     
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
-    // slice off last 3 columns from each result for web display
-    // $displayData = array_map(function($row) use ($data) {
-    //     return array_slice($row, 0, count($row) - 3);
-    // }, $data);
     $context['data'] = $data;
-    // rename 'ID' column because Excel is garbage
-    // $context['dataWithHeadings'][0][(array_search($context['dataWithHeadings'], $context['dataWithHeadings'][0]))] = 'defID';
-    // $context['dataWithHeadings'] = array_merge($context['dataWithHeadings'], $data);
+    error_log("query\n" . $link->getLastQuery());
 
     $context['count'] = $link->count;
 

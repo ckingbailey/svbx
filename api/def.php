@@ -37,7 +37,10 @@ try {
         exit;
     }
 
-    $fields = explode(',', $_GET['fields']);
+    $get = $_GET;
+    $fields = explode(',', $get['fields']);
+    unset($get['fields']);
+
     $view = 'deficiency';
     $headings = [
         'id' => '_id',
@@ -54,8 +57,8 @@ try {
         'actionOwner' => 'Action Owner',
         'comment' => 'Comments'
     ];
-    if (!empty($_GET['view'])) {
-        if (strtolower($_GET['view']) === 'bart') {
+    if (!empty($get['view'])) {
+        if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
             $headings = [
                 'id' => '_id',
@@ -68,12 +71,14 @@ try {
             ];
         } else {
             http_response_code(400);
-            echo $_GET['view'] . ' is not a known view';
+            error_log('Someone attempted to get view=' . $get['view']);
+            echo $get['view'] . ' is not a valid view';
             exit;
         }
-    } 
+        unset($get['view']);
+    }
 
-    if (!empty($_GET['range'])) {
+    if (!empty($get['range'])) {
         $range = explode(',', $_GET['range']);
         if (count($range) > 2) {
             http_response_code(400);
@@ -83,6 +88,80 @@ try {
         list($from, $to) = [ intval(min($range)), intval(max($range)) ];
         $link->where('id', $from, '>=');
         $link->where('id', $to, '<=');
+        unset($get['range']);
+    }
+
+    // filter defs with remaining GET params
+    if (!empty($get)) {
+        $filters = [];
+        foreach ($get as $key => $val) {
+            if (strcasecmp($key, 'identifiedby') === 0
+            || strcasecmp($key, 'specloc') === 0
+            || strcasecmp($key, 'id') === 0
+            || strcasecmp($key, 'description') === 0) {
+                $link->where($key, "%{$val}%", 'LIKE');
+            } elseif (strcasecmp($key, 'systemAffected') === 0
+            || strcasecmp($key, 'groupToResolve') === 0
+            && is_array($val))
+            {
+                // fetch systemIDs because they are not in the view
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $system = $link2->get('system', null, [ 'systemID', 'systemName' ]);
+                $link2->disconnect();
+                $system = array_reduce($system, function ($dict, $sys) {
+                    $dict[$sys['systemID']] = $sys['systemName'];
+                    return $dict;
+                }, []);
+                $arrayVals = [ $system[array_shift($val)] ];
+                foreach ($val as $extraVal) {
+                    $arrayVals[] = $system[$extraVal];
+                }
+                $link->where($key, $arrayVals, 'IN');
+            } elseif (strcasecmp($key, 'requiredby') === 0) {
+                $table = $key;
+                $id = 'reqById';
+                $name = 'requiredBy';
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                $link->where($key, $lookup[$val]);
+            } elseif (strcasecmp($key, 'next_step') === 0) {
+                $table = 'bdNextStep';
+                $id = 'bdNextStepID';
+                $name = 'nextStepName';
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                error_log("why is there a 0 val for next_step?\n" . print_r($temp, true));
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                error_log("$key lookup\n" . print_r($lookup, true));
+                $link->where('nextStep', $lookup[$val]);
+            } elseif (strcasecmp($key, 'safetyCert') === 0) {
+                // safety cert is the only one that's not a join
+                $link->where($key, $val);
+            } elseif ($view === 'deficiency'
+            || strcasecmp($key, 'status') === 0) {
+                $table = $key;
+                $id = "{$table}ID";
+                $name = "{$table}Name";
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                $link->where($key, $lookup[$val]);
+            }
+            $filters[] = [ $key, $val ];
+            unset($get[$key]);
+        }
     }
 
     $link->orderBy('id', 'ASC');

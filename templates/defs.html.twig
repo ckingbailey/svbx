@@ -34,7 +34,7 @@
     <script src="js/pie_chart.js"></script>
     <script>
         document.forms.filterForm.addEventListener('submit', {{submitScript.function | default("unnameEmptyFormControls") | raw}})
-        document.getElementById('reset').addEventListener('click', ev => {
+        document.getElementById('reset-btn').addEventListener('click', ev => {
             {{resetScript.function | default("resetSearch") | raw}}(ev)
         })
         document.querySelectorAll('select[name^="sort_"]').forEach((select, i, collection) => {
@@ -44,16 +44,18 @@
             })
         })
         document.getElementById('getCsvBtn').addEventListener('click', event => {
-            let view
-            querystring = 'fields='
-            {% if view is same as('BART') %}
-            querystring += 'id,status,date_created,description,resolution,nextStep,comment'
-            querystring += '&view=BART'
-            view = 'bart'
-            {% else %}
-            querystring += 'id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
-            {% endif %}
-            url = '/api/def.php?' + querystring
+            const view = getQueryValue('view')
+            const fields = view && view === 'BART'
+                ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
+                : 'id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
+            let filters = window.location.search
+                .toLowerCase()
+                .slice(1)
+                .replace('view=bart', '')
+            filters = filters.startsWith('&') ? filters : `&${filters}`
+            filters = filters.replace('defid', 'id')
+            const querystring = '?fields=' + fields + filters
+            const url = '/api/def.php' + querystring
             fetch(url, {
                 credentials: 'same-origin',
                 headers: { 'Accept': 'text/csv' }
@@ -81,6 +83,23 @@
                 else console.error(err)
             })
         })
+        function getQueryValue(key) {
+            if (!window.location.search) return false
+            const qs = qsToObj()
+            if (key in qs) return qs[key]
+            return false
+        }
+        function qsToObj() {
+            if (!window.location.search) return false
+            return window.location.search
+                .slice(1)
+                .split('&')
+                .reduce((o, prop) => {
+                    const [ key, val ] = prop.split('=')
+                    o[key] = val
+                    return o
+                }, {})
+        }
     {% if view is same as('BART') %}
         const openCloseChart = new PieChart(
                 window.d3,
