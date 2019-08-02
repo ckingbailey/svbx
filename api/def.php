@@ -37,7 +37,10 @@ try {
         exit;
     }
 
-    $fields = explode(',', $_GET['fields']);
+    $get = $_GET;
+    $fields = explode(',', $get['fields']);
+    unset($get['fields']);
+
     $view = 'deficiency';
     $headings = [
         'id' => '_id',
@@ -54,8 +57,8 @@ try {
         'actionOwner' => 'Action Owner',
         'comment' => 'Comments'
     ];
-    if (!empty($_GET['view'])) {
-        if (strtolower($_GET['view']) === 'bart') {
+    if (!empty($get['view'])) {
+        if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
             $headings = [
                 'id' => '_id',
@@ -68,12 +71,14 @@ try {
             ];
         } else {
             http_response_code(400);
-            echo $_GET['view'] . ' is not a known view';
+            error_log('Someone attempted to get view=' . $get['view']);
+            echo $get['view'] . ' is not a valid view';
             exit;
         }
-    } 
+        unset($get['view']);
+    }
 
-    if (!empty($_GET['range'])) {
+    if (!empty($get['range'])) {
         $range = explode(',', $_GET['range']);
         if (count($range) > 2) {
             http_response_code(400);
@@ -83,10 +88,23 @@ try {
         list($from, $to) = [ intval(min($range)), intval(max($range)) ];
         $link->where('id', $from, '>=');
         $link->where('id', $to, '<=');
+        unset($get['range']);
+    }
+
+    error_log(print_r($get, true));
+    if (!empty($get)) {
+        $filters = [];
+        foreach ($get as $key => $val) {
+            $link->where($key, $val);
+            $filters[] = $get[$key];
+            unset($get[$key]);
+        }
     }
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get($view, null, $fields);
+    if (!empty($filters))
+        error_log("query after filtering defs API:\n" . $link->getLastQuery());
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
