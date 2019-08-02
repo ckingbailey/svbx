@@ -10,11 +10,9 @@ $orderBy = null;
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET)) {
-    error_log("\$_GET before filtering:\n" . print_r($_GET, true));
     $get = array_filter($_GET, function ($val) {
         return (gettype($val) === 'string' && $val !== '') || (bool) $val;
     }); // filter to remove falsey values -- is this necessary?
-    error_log("\$_GET after filtering:\n" . print_r($get, true));
     unset($get['search'], $get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
     $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
@@ -355,7 +353,6 @@ try {
 
     // filter on user-selected query params
     if (!empty($get)) {
-        error_log("filters params:\n" . print_r($get, true));
         foreach ($get as $param => $val) {
             if ($param === 'description'
                 || $param === 'defID'
@@ -385,8 +382,6 @@ try {
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
     $context['data'] = $data;
-    if (!empty($get))
-        error_log("query after filtering defs view:\n" . $link->getLastQuery());
 
     $context['count'] = $link->count;
 

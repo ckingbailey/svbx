@@ -48,10 +48,11 @@
             const fields = view && view === 'BART'
                 ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
                 : 'id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
-            const filters = window.location.search
+            let filters = window.location.search
                 .toLowerCase()
                 .slice(1)
                 .replace('view=bart', '')
+            filters = filters.startsWith('&') ? filters : `&${filters}`
             const querystring = '?fields=' + fields + filters
             const url = '/api/def.php' + querystring
             fetch(url, {
@@ -84,7 +85,6 @@
         function getQueryValue(key) {
             if (!window.location.search) return false
             const qs = qsToObj()
-            console.log(qs)
             if (key in qs) return qs[key]
             return false
         }

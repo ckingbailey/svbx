@@ -91,7 +91,6 @@ try {
         unset($get['range']);
     }
 
-    error_log(print_r($get, true));
     if (!empty($get)) {
         $filters = [];
         foreach ($get as $key => $val) {
@@ -103,8 +102,6 @@ try {
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get($view, null, $fields);
-    if (!empty($filters))
-        error_log("query after filtering defs API:\n" . $link->getLastQuery());
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
