@@ -53,6 +53,7 @@
                 .slice(1)
                 .replace('view=bart', '')
             filters = filters.startsWith('&') ? filters : `&${filters}`
+            filters = filters.replace('defid', 'id')
             const querystring = '?fields=' + fields + filters
             const url = '/api/def.php' + querystring
             fetch(url, {

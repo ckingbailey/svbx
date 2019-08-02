@@ -382,6 +382,7 @@ try {
     // fetch table data and append it to $context for display by Twig template
     $data = $result = $link->get($table, null, $queryParams['fields']);
     $context['data'] = $data;
+    error_log("query\n" . $link->getLastQuery());
 
     $context['count'] = $link->count;
 

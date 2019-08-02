@@ -93,15 +93,32 @@ try {
 
     // filter defs with remaining GET params
     if (!empty($get)) {
-        error_log("GET params to filter on\n" . print_r($get, true));
         $filters = [];
         foreach ($get as $key => $val) {
-            error_log($key . ' => ' . $val);
             if (strcasecmp($key, 'identifiedby') === 0
-            || strcasecmp($key, 'specloc') === 0) {
+            || strcasecmp($key, 'specloc') === 0
+            || strcasecmp($key, 'id') === 0
+            || strcasecmp($key, 'description') === 0) {
                 $link->where($key, "%{$val}%", 'LIKE');
-            }
-            else $link->where($key, $val);
+            } elseif (strcasecmp($key, 'systemAffected') === 0
+            || strcasecmp($key, 'groupToResolve') === 0
+            && is_array($val))
+            {
+                // fetch systemIDs because they are not in the view
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $system = $link2->get('system', null, [ 'systemID', 'systemName' ]);
+                $link2->disconnect();
+                $system = array_reduce($system, function ($dict, $sys) {
+                    $dict[$sys['systemID']] = $sys['systemName'];
+                    return $dict;
+                }, []);
+                $arrayVals = [ $system[array_shift($val)] ];
+                foreach ($val as $extraVal) {
+                    $arrayVals[] = $system[$extraVal];
+                }
+                error_log("collected array vals\n" . print_r($arrayVals, true));
+                $link->where($key, $arrayVals, 'IN');
+            } else $link->where($key, $val);
             $filters[] = [ $key, $val ];
             unset($get[$key]);
         }
@@ -109,7 +126,7 @@ try {
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get($view, null, $fields);
-    error_log("query\n" . $link->getLastQuery());
+    error_log("API query\n" . $link->getLastQuery());
     if (!empty($filters))
         error_log("defs\n" . print_r($defs, true));
 
