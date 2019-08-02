@@ -91,17 +91,27 @@ try {
         unset($get['range']);
     }
 
+    // filter defs with remaining GET params
     if (!empty($get)) {
+        error_log("GET params to filter on\n" . print_r($get, true));
         $filters = [];
         foreach ($get as $key => $val) {
-            $link->where($key, $val);
-            $filters[] = $get[$key];
+            error_log($key . ' => ' . $val);
+            if (strcasecmp($key, 'identifiedby') === 0
+            || strcasecmp($key, 'specloc') === 0) {
+                $link->where($key, "%{$val}%", 'LIKE');
+            }
+            else $link->where($key, $val);
+            $filters[] = [ $key, $val ];
             unset($get[$key]);
         }
     }
 
     $link->orderBy('id', 'ASC');
     $defs = $link->get($view, null, $fields);
+    error_log("query\n" . $link->getLastQuery());
+    if (!empty($filters))
+        error_log("defs\n" . print_r($defs, true));
 
     // if comments included, combine defs and put comments in extra cols
     if (array_search('comment', $fields) !== false) {
