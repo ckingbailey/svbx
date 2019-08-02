@@ -118,7 +118,35 @@ try {
                 }
                 error_log("collected array vals\n" . print_r($arrayVals, true));
                 $link->where($key, $arrayVals, 'IN');
-            } else $link->where($key, $val);
+            } elseif (strcasecmp($key, 'requiredby') === 0) {
+                $table = $key;
+                $id = 'reqById';
+                $name = 'requiredBy';
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                error_log("$key lookup\n" . print_r($lookup, true));
+                $link->where($key, $lookup[$val]);
+            } elseif (strcasecmp($key, 'safetycert') === 0) {
+                // safety cert is the only one that's not a join
+                $link->where($key, $val);
+            } else {
+                $table = $key;
+                $id = "{$table}ID";
+                $name = "{$table}Name";
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                error_log("$key lookup\n" . print_r($lookup, true));
+                $link->where($key, $lookup[$val]);
+            }
             $filters[] = [ $key, $val ];
             unset($get[$key]);
         }
