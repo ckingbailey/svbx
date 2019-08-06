@@ -93,7 +93,6 @@ try {
 
     // filter defs with remaining GET params
     if (!empty($get)) {
-        $filters = [];
         foreach ($get as $key => $val) {
             if (strcasecmp($key, 'identifiedby') === 0
             || strcasecmp($key, 'specloc') === 0
@@ -117,8 +116,8 @@ try {
                     $arrayVals[] = $system[$extraVal];
                 }
                 $link->where($key, $arrayVals, 'IN');
-            } elseif (strcasecmp($key, 'requiredby') === 0) {
-                $table = $key;
+            } elseif (strcasecmp($key, 'requiredBy') === 0) {
+                $table = 'requiredBy'; // mind the capitalization
                 $id = 'reqById';
                 $name = 'requiredBy';
                 $link2 = new MySqliDB(DB_CREDENTIALS);
@@ -134,13 +133,11 @@ try {
                 $name = 'nextStepName';
                 $link2 = new MySqliDB(DB_CREDENTIALS);
                 $temp = $link2->get($table, null, [ $id, $name ]);
-                error_log("why is there a 0 val for next_step?\n" . print_r($temp, true));
                 $link2->disconnect();
                 $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
                     $dict[$row[$id]] = $row[$name];
                     return $dict;
                 }, []);
-                error_log("$key lookup\n" . print_r($lookup, true));
                 $link->where('nextStep', $lookup[$val]);
             } elseif (strcasecmp($key, 'safetyCert') === 0) {
                 // safety cert is the only one that's not a join
@@ -158,8 +155,9 @@ try {
                     return $dict;
                 }, []);
                 $link->where($key, $lookup[$val]);
+            } else {
+                $link->where($key, $val);
             }
-            $filters[] = [ $key, $val ];
             unset($get[$key]);
         }
     }
