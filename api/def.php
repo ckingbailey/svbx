@@ -139,10 +139,8 @@ try {
                     return $dict;
                 }, []);
                 $link->where('nextStep', $lookup[$val]);
-            } elseif (strcasecmp($key, 'safetyCert') === 0) {
-                // safety cert is the only one that's not a join
-                $link->where($key, $val);
-            } elseif ($view === 'deficiency'
+            } elseif (($view === 'deficiency'
+            && strcasecmp($key, 'safetyCert') !== 0)
             || strcasecmp($key, 'status') === 0) {
                 $table = $key;
                 $id = "{$table}ID";
