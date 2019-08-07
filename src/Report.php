@@ -5,6 +5,9 @@ use MysqliDB;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 
+/**
+ * Class for outputting reports that are too complex for parameters of Deficiency object
+ */
 class Report {
     private $data = [];
     private $lastQuery = '';
@@ -17,9 +20,12 @@ class Report {
 
     public static function delta($milestone, $date = null, $system = null) {
         $openLastWeek = 'COUNT(CASE'
-            . ' WHEN CDL.dateCreated > CAST("%1$s" AS DATE) THEN NULL' // didn't yet exist last week
-            . ' WHEN dateClosed <= CAST("%1$s" AS DATE) THEN NULL' // already closed last week
-            . ' ELSE defID END) AS openLastWeek';
+            . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
+            . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
+            . ' ELSE NULL END) AS openLastWeek';
+            // . ' WHEN CDL.dateCreated > CAST("%1$s" AS DATE) THEN NULL' // didn't yet exist last week
+            // . ' WHEN dateClosed <= CAST("%1$s" AS DATE) THEN NULL' // already closed last week
+            // . ' ELSE defID END) AS openLastWeek';
         $toDate = new CarbonImmutable($date);
         $fromDate = $toDate->subWeek()->toDateString();
         $fields = [
@@ -47,7 +53,6 @@ class Report {
         if (empty($reqByID)) throw new \UnexpectedValueException("Could not find milestone for query term $milestone");
 
         return new Report('CDL', $fields, $join, $where, $groupBy);
-        
     }    
     
     private function __construct($table = null, $fields = [], $join = null, $where = null, $groupBy = null) {
@@ -97,6 +102,7 @@ class Report {
     }
 
     public function get() {
+        error_log($this->getQuery());
         return $this->data;
     }
 
