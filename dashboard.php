@@ -33,7 +33,7 @@ $context['data']['system'] = $link->
   // where('CDL.status', '3', '<>')->
   join('CDL', 'system.systemID = CDL.groupToResolve', 'LEFT')->
   join('users_enc', 'system.lead = users_enc.userid', 'LEFT')->
-  get('system', null, ['systemName', 'COUNT(IF(status = 1, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
+  get('system', null, ['systemName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
 $context['data']['location'] = $link->  
   orderBy('locationName', 'ASC')->

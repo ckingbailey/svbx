@@ -68,15 +68,13 @@
             <div class='card-body grey-bg'>
                 <ul class='dash__list'>
                     <li class='bg-secondary text-white text-center row dash__list-row'>
-                        <h5 class='col-sm-5 col-8 dash__list-heading'>System</h5>
-                        <h5 class='col-sm-3 col-4 dash__list-heading text-right'>Actions</h5>
-                        <h5 class='col-sm-4 dash__list-heading dash__list-col-lead'>Lead</h5>
+                        <h5 class='col-6 dash__list-heading'>System</h5>
+                        <h5 class='col-6 dash__list-heading'>Actions</h5>
                     </li>
                     {% for system in data.system %}
                     <li class='row thin-grey-separator text-center dash__list-row'>
-                        <span class='col-sm-5 col-8'>{{ system.systemName }}</span>
-                        <span class='col-sm-3 col-4 text-right'>{{ system.count }}</span>
-                        <span class='col-sm-4 dash__list-col-lead'>{{ system.lead }}</span>
+                        <span class='col-6'>{{ system.systemName }}</span>
+                        <span class='col-6'>{{ system.count }}</span>
                     </li>
                     {% endfor %}
                 </ul>
