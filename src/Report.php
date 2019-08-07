@@ -18,14 +18,11 @@ class Report {
     private $where = [];
     private $groupBy = null;
 
-    public static function delta($milestone, $date = null, $system = null) {
+    public static function delta($milestone = null, $date = null, $system = null) {
         $openLastWeek = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
             . ' ELSE NULL END) AS openLastWeek';
-            // . ' WHEN CDL.dateCreated > CAST("%1$s" AS DATE) THEN NULL' // didn't yet exist last week
-            // . ' WHEN dateClosed <= CAST("%1$s" AS DATE) THEN NULL' // already closed last week
-            // . ' ELSE defID END) AS openLastWeek';
         $toDate = new CarbonImmutable($date);
         $fromDate = $toDate->subWeek()->toDateString();
         $fields = [
@@ -37,21 +34,27 @@ class Report {
         $join = ['system', 'systemAffected = system.systemID', 'LEFT'];
         
         $link = new MysqliDb(DB_CREDENTIALS);
-        $whereField = intval($milestone) ? 'reqByID' : 'requiredBy';
-        $reqByID = $link
-            ->where($whereField, $milestone)
-            ->getValue('requiredBy', 'reqByID');
+
         $where = [
-            [ 'requiredBy', $reqByID, '<='],
             [ 'status', '3', '<>']
         ];    
+
+        // grab ID of by milestone name from db, if milestone provided
+        if (!empty($milestone)) {
+            $whereField = intval($milestone) ? 'reqByID' : 'requiredBy';
+            $reqByID = $link
+                ->where($whereField, $milestone)
+                ->getValue('requiredBy', 'reqByID');
+            
+            if (empty($reqByID)) throw new \UnexpectedValueException("Could not find milestone for query term $milestone");
+            
+            $where[] = [ 'requiredBy', $reqByID, '<='];
+        }
         
         if (!empty($system)) {
             list($groupBy, $where[]) = [ null, [ 'systemAffected', $system ] ];
         } else $groupBy = 'systemAffected';
     
-        if (empty($reqByID)) throw new \UnexpectedValueException("Could not find milestone for query term $milestone");
-
         return new Report('CDL', $fields, $join, $where, $groupBy);
     }    
     
@@ -102,7 +105,6 @@ class Report {
     }
 
     public function get() {
-        error_log($this->getQuery());
         return $this->data;
     }
 

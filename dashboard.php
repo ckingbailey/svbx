@@ -59,8 +59,12 @@ $twig = new Twig_Environment($loader, [
 ]);
 if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-// instantiate report object
-$sit3delta = Report::delta('SIT3');
-$context['data']['weeklyReport'] = $sit3delta->get();
+$context['data']['milestones'] = $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]);
+error_log('milestons: ' . print_r($context['data']['milestones'], true));
 
+// instantiate report object
+$sit3delta = Report::delta();
+$context['data']['deltaReport'] = $sit3delta->get();
+
+$link->disconnect();
 $twig->display('dashboard.html.twig', $context);
