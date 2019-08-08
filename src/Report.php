@@ -47,7 +47,10 @@ class Report {
             "COUNT(IF(status = 1, defID, NULL)) as toDate" // need to allow the `to` range to be set
         ];
         
-        $where = [ [ 'status', '3', '<>'] ];
+        $where = [
+            [ 'CDL.dateCreated', $to, '<='],
+            [ 'status', '3', '<>']
+        ];
 
         // grab ID of by milestone name from db, if milestone provided
         if (!empty($milestone))
