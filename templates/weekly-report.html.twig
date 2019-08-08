@@ -7,27 +7,30 @@
 ##  ]
 #}
 
-{% set thisWeekLabel = "Open this week: " %}
-{% set lastWeekLabel = "Open last week: " %}
-{% set deltaLabel = "Delta this week: " %}
+{% set thisWeekLabel = data.selected.to %}
+{% set lastWeekLabel = data.selected.from %}
+{% set deltaLabel = "Delta" %}
 <div id="deltaReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
         <form id="delta-picker" method="GET" action="#deltaReport">
             <label for="field">Open Deficiencies by</label>
             <select id="field" name="field">
                 <option></option>
-                <option value="severity">Severity</option>
-                <option value="system">System Affected</option>
+                {% for field in ['severity', 'system'] %}
+                {% set selected = data.selected.field == field ? ' selected' : '' %}
+                <option value="{{ field }}"{{ selected }}>{{ field | capitalize }}</option>
+                {% endfor %}
             </select>
             <label for="from-date">From</label>
-            <input id="from-date" name="from" type="date">
+            <input id="from-date" name="from" type="date" value="{{ data.selected.from }}">
             <label for="to-date">To</label>
-            <input id="to-date" name="to" type="date">
+            <input id="to-date" name="to" type="date" value="{{ data.selected.to }}">
             <label for="milestone">Required prior to</label>
             <select id="milestone" name="milestone">
                 <option></option>
                 {% for milestone in data.milestones %}
-                <option value="{{ milestone.id }}">{{ milestone.name }}</option>
+                {% set selected = data.selected.milestone == milestone ? ' selected' : '' %}
+                <option value="{{ milestone.id }}"{{ selected }}>{{ milestone.name }}</option>
                 {% endfor %}
             </select>
             <button type="submit" class="btn btn-primary">Apply</button>
@@ -42,7 +45,7 @@
                 <button id='downloadReport' type='button' onclick='return downloadReport()' class="btn btn-sm btn-success">Download this data</button>
             </header>
             <div class="row thick-black-line ml-0 mr-0 mb-1 weekly-report__list-heading">
-                <div class="col-sm-3">System</div>
+                <div class="col-sm-3">{{ data.selected.field | capitalize }}</div>
                 <div class="col-sm-3 text-right">{{ lastWeekLabel }}</div>
                 <div class="col-sm-3 text-right">{{ thisWeekLabel }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
