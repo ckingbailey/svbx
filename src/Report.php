@@ -103,6 +103,7 @@ class Report {
     }
 
     public function get() {
+        error_log('query..........> ' . $this->getQuery());
         return $this->data;
     }
 
