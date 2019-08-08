@@ -22,7 +22,7 @@ class Report {
         $openLastWeek = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
-            . ' ELSE NULL END) AS openLastWeek';
+            . ' ELSE NULL END) AS fromDate';
         $toDate = new CarbonImmutable($to ?: date('Y-m-d'));
         $fromDate = ($from ?
             new CarbonImmutable($from)
@@ -30,12 +30,12 @@ class Report {
 
         $params = [
             'severity' => [
-                'select' => 'severityName AS severity',
+                'select' => 'severityName AS fieldName',
                 'join' => [ 'severity', 'severity = severity.severityID' ],
                 'groupBy' => 'severity'
             ],
             'system' => [
-                'select' => 'systemName AS system',
+                'select' => 'systemName AS fieldName',
                 'join' => [ 'system', 'groupToResolve = system.systemID' ],
                 'groupBy' => 'groupToResolve'
             ]
@@ -44,7 +44,7 @@ class Report {
         $fields = [
             $params[$field]['select'],
             sprintf($openLastWeek, $fromDate),
-            "COUNT(IF(status = 1, defID, NULL)) as openThisWeek"
+            "COUNT(IF(status = 1, defID, NULL)) as toDate" // need to allow the `to` range to be set
         ];
         
         $where = [ [ 'status', '3', '<>'] ];

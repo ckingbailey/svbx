@@ -7,8 +7,8 @@
 ##  ]
 #}
 
-{% set thisWeekLabel = data.selected.to %}
-{% set lastWeekLabel = data.selected.from %}
+{% set toLabel = data.selected.to %}
+{% set fromLabel = data.selected.from %}
 {% set deltaLabel = "Delta" %}
 <div id="deltaReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
@@ -37,9 +37,9 @@
         </form>
         <div class="thin-grey-border border-radius">
             <header class="d-flex justify-content-between pad grey-bg item-margin-bottom">
-                <span>Deficiencies by {{ data.selected.field | default('_') }}
-                from {{ data.selected.from | default('_') }}
-                to {{ data.selected.to | default('_') }}
+                <span>Deficiencies by {{ data.selected.field | default('__') }}
+                from {{ data.selected.from | default('__') }}
+                to {{ data.selected.to | default('__') }}
                 {% if data.selected.milestone %}required prior to {{ data.selected.milestone }}{% endif %}
                 </span>
                 <button id='downloadReport' type='button' onclick='return downloadReport()' class="btn btn-sm btn-success">Download this data</button>
@@ -53,16 +53,16 @@
             {% for row in data.deltaReport %}
             <div class="row thin-grey-separator ml-0 mr-0">
                 <div class="col-sm-3">
-                    <div class="weekly-report__system-name">{{ row.system }}</div>
+                    <div class="weekly-report__system-name">{{ row.fieldName }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ lastWeekLabel }}</span>{{ row.openLastWeek }}</div>
+                    <div><span class="weekly-report__label">{{ fromLabel }}</span>{{ row.fromDate }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ thisWeekLabel }}</span>{{ row.openThisWeek }}</div>
+                    <div><span class="weekly-report__label">{{ toLabel }}</span>{{ row.toDate }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.openLastWeek - row.openThisWeek }}</div>
+                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.fromDate - row.toDate }}</div>
                 </div>
             </div>
             {% endfor %}
