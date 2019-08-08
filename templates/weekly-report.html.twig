@@ -13,19 +13,20 @@
 <div id="deltaReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
         <form id="delta-picker" method="GET" action="#deltaReport">
-            <label for="group-by">Show</label>
-            <select id="group-by">
+            <label for="field">Show</label>
+            <select id="field" name="field">
                 <option></option>
                 <option value="severity">Severity</option>
-                <option value="systemAffected">System Affected</option>
+                <option value="system">System Affected</option>
             </select>
             <span> Open Deficiencies</span>
             <label for="from-date">From</label>
-            <input id="from-date" type="date">
+            <input id="from-date" name="from" type="date">
             <label for="to-date">To</label>
-            <input id="to-date" type="date">
+            <input id="to-date" name="to" type="date">
             <label for="milestone">By</label>
-            <select id="milestone">
+            <select id="milestone" name="milestone">
+                <option></option>
                 {% for milestone in data.milestones %}
                 <option value="{{ milestone.id }}">{{ milestone.name }}</option>
                 {% endfor %}

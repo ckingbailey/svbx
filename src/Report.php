@@ -51,7 +51,7 @@ class Report {
 
         // grab ID of by milestone name from db, if milestone provided
         if (!empty($milestone))
-            $where[] = [ 'requiredBy', $reqByID, '<='];
+            $where[] = [ 'requiredBy', $milestone, '<='];
         
         return new Report('CDL', $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
     }    
