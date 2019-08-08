@@ -18,44 +18,42 @@ class Report {
     private $where = [];
     private $groupBy = null;
 
-    public static function delta($milestone = null, $date = null, $system = null) {
+    public static function delta($field = 'system', $to = null, $from = null, $milestone = null) {
         $openLastWeek = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
             . ' ELSE NULL END) AS openLastWeek';
-        $toDate = new CarbonImmutable($date);
-        $fromDate = $toDate->subWeek()->toDateString();
+        $toDate = new CarbonImmutable($to ?: date('Y-m-d'));
+        $fromDate = ($from ?
+            new CarbonImmutable($from)
+            : $toDate->subWeek())->toDateString();
+
+        $params = [
+            'severity' => [
+                'select' => 'severityName AS severity',
+                'join' => [ 'severity', 'severity = severity.severityID' ],
+                'groupBy' => 'severity'
+            ],
+            'system' => [
+                'select' => 'systemName AS system',
+                'join' => [ 'system', 'groupToResolve = system.systemID' ],
+                'groupBy' => 'groupToResolve'
+            ]
+        ];
+        
         $fields = [
-            'systemName AS system',
+            $params[$field]['select'],
             sprintf($openLastWeek, $fromDate),
             "COUNT(IF(status = 1, defID, NULL)) as openThisWeek"
         ];
         
-        $join = ['system', 'systemAffected = system.systemID', 'LEFT'];
-        
-        $link = new MysqliDb(DB_CREDENTIALS);
-
-        $where = [
-            [ 'status', '3', '<>']
-        ];    
+        $where = [ [ 'status', '3', '<>'] ];
 
         // grab ID of by milestone name from db, if milestone provided
-        if (!empty($milestone)) {
-            $whereField = intval($milestone) ? 'reqByID' : 'requiredBy';
-            $reqByID = $link
-                ->where($whereField, $milestone)
-                ->getValue('requiredBy', 'reqByID');
-            
-            if (empty($reqByID)) throw new \UnexpectedValueException("Could not find milestone for query term $milestone");
-            
+        if (!empty($milestone))
             $where[] = [ 'requiredBy', $reqByID, '<='];
-        }
         
-        if (!empty($system)) {
-            list($groupBy, $where[]) = [ null, [ 'systemAffected', $system ] ];
-        } else $groupBy = 'systemAffected';
-    
-        return new Report('CDL', $fields, $join, $where, $groupBy);
+        return new Report('CDL', $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
     }    
     
     private function __construct($table = null, $fields = [], $join = null, $where = null, $groupBy = null) {
