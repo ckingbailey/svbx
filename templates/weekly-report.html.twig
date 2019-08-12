@@ -46,8 +46,8 @@
             </header>
             <div class="row thick-black-line ml-0 mr-0 mb-1 weekly-report__list-heading">
                 <div class="col-sm-3">{{ data.selected.field | capitalize }}</div>
-                <div class="col-sm-3 text-right">{{ lastWeekLabel }}</div>
-                <div class="col-sm-3 text-right">{{ thisWeekLabel }}</div>
+                <div class="col-sm-3 text-right">{{ data.selected.from }}</div>
+                <div class="col-sm-3 text-right">{{ data.selected.to }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
             </div>
             {% for row in data.deltaReport %}

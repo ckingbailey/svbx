@@ -121,7 +121,7 @@
     drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 
     function downloadReport() {
-        fetch('/api/report.php?milestone=sit3&format=csv&type=delta', {
+        fetch('/api/report.php?field={{- data.selected.field -}}&milestone={{- data.selected.milestone -}}&to={{- data.selected.to -}}&from={{- data.selected.from -}}&format=csv&type=delta', {
             credentials: 'same-origin'
         }).then(res => {
             if (!res.ok) throw res

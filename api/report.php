@@ -28,7 +28,12 @@ try {
     $format = $_GET['format'];
     $reportType = $_GET['type'];
 
-    $report = Report::delta($_GET['milestone'])->get();
+    $report = Report::delta(
+        $_GET['field'],
+        $_GET['to'],
+        $_GET['from'],
+        $_GET['milestone']
+    )->get();
     $headings = array_keys($report[0]);
     array_unshift($report, $headings);
 
