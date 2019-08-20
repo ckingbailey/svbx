@@ -33,9 +33,10 @@ try {
         $_GET['to'],
         $_GET['from'],
         $_GET['milestone']
-    )->get();
-    $headings = array_keys($report[0]);
-    array_unshift($report, $headings);
+    )->getWithHeadings();
+    // $headings = array_keys($report[0]);
+    // array_unshift($report, $headings);
+    error_log('data with headings from /report api ' . print_r($report, true));
 
     echo Export::$format($report);
 } catch (\UnexpectedValueException $e) {

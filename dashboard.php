@@ -7,13 +7,14 @@ require 'vendor/autoload.php';
 require 'WeeklyDelta.php';
 require 'session.php';
 
+// init context with some defaults
 $context = [
   'session' => $_SESSION,
   'title' => 'Home',
   'pageHeading' => 'Database Information',
   'data' => [
     'selected' => [
-      'field' => 'system',
+      'field' => 'severity',
       'from' => null,
       'to' => null,
       'milestone' => null
@@ -88,6 +89,7 @@ if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug())
 $context['data']['milestones'] = $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]);
 
 // instantiate report object
+error_log('selected: ' . print_r($context['data']['selected'], true));
 $report = Report::delta(
   $context['data']['selected']['field'],
   $context['data']['selected']['from'],

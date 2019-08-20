@@ -12,10 +12,9 @@
 {% set deltaLabel = "Delta" %}
 <div id="deltaReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
-        <form id="delta-picker" method="GET" action="#deltaReport">
+        <form id="delta-picker" method="GET" action="#deltaReport" class="item-margin-bottom">
             <label for="field">Open Deficiencies by</label>
             <select id="field" name="field">
-                <option></option>
                 {% for field in ['severity', 'system'] %}
                 {% set selected = data.selected.field == field ? ' selected' : '' %}
                 <option value="{{ field }}"{{ selected }}>{{ field | capitalize }}</option>
@@ -29,7 +28,7 @@
             <select id="milestone" name="milestone">
                 <option></option>
                 {% for milestone in data.milestones %}
-                {% set selected = data.selected.milestone == milestone ? ' selected' : '' %}
+                {% set selected = data.selected.milestone == milestone.id ? ' selected' : '' %}
                 <option value="{{ milestone.id }}"{{ selected }}>{{ milestone.name }}</option>
                 {% endfor %}
             </select>
@@ -46,8 +45,8 @@
             </header>
             <div class="row thick-black-line ml-0 mr-0 mb-1 weekly-report__list-heading">
                 <div class="col-sm-3">{{ data.selected.field | capitalize }}</div>
-                <div class="col-sm-3 text-right">{{ data.selected.from }}</div>
-                <div class="col-sm-3 text-right">{{ data.selected.to }}</div>
+                <div class="col-sm-3 text-right">Open on {{ data.selected.from }}</div>
+                <div class="col-sm-3 text-right">Open on {{ data.selected.to }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
             </div>
             {% for row in data.deltaReport %}

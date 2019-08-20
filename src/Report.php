@@ -13,12 +13,13 @@ class Report {
     private $lastQuery = '';
 
     private $table = null;
+    private $headings = [];
     private $fields = [];
     private $join = [];
     private $where = [];
     private $groupBy = null;
 
-    public static function delta($field = 'system', $to = null, $from = null, $milestone = null) {
+    public static function delta($field = 'severity', $to = null, $from = null, $milestone = null) {
         $openLastWeek = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
@@ -40,6 +41,8 @@ class Report {
                 'groupBy' => 'groupToResolve'
             ]
         ];
+
+        $headings = [ $field, $to, $from, $milestone ];
         
         $fields = [
             $params[$field]['select'],
@@ -56,11 +59,12 @@ class Report {
         if (!empty($milestone))
             $where[] = [ 'requiredBy', $milestone, '<='];
         
-        return new Report('CDL', $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
+        return new Report('CDL', $headings, $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
     }    
     
-    private function __construct($table = null, $fields = [], $join = null, $where = null, $groupBy = null) {
+    private function __construct($table = null, $headings = [], $fields = [], $join = null, $where = null, $groupBy = null) {
         $this->table = $table;
+        $this->headings = $headings;
         $this->fields = $fields;
 
         if (!empty($join)) {
@@ -106,8 +110,14 @@ class Report {
     }
 
     public function get() {
-        error_log('query..........> ' . $this->getQuery());
         return $this->data;
+    }
+
+    public function getWithHeadings() {
+        $dataWithHeadings = $this->data;
+        $headings = array_filter($this->headings);
+        array_unshift($dataWithHeadings, $headings);
+        return $dataWithHeadings;
     }
 
     public function __toString() {
