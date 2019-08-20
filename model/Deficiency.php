@@ -177,11 +177,8 @@ class Deficiency
             'where' => [
                 [
                     'field' => 'statusName',
-                    'value' => 'open'
-                ],
-                [
-                    'field' => 'statusName',
-                    'value' => 'closed'
+                    'value' => 'deleted',
+                    'comparison' => '!='
                 ]
             ]
         ],
@@ -441,8 +438,10 @@ class Deficiency
                 if (!empty($lookup['where'])) {
                     $i = 0;
                     foreach ($lookup['where'] as $where) {
-                        if ($i === 0) $link->where($where['field'], $where['value']);
-                        else $link->orWhere($where['field'], $where['value']);
+                        $comparator = $where['comparison'] ?: '=';
+                        $whereMethod = $i === 0 ? 'where' : 'orWhere';
+                        if ($i === 0) $link->where($where['field'], $where['value'], $comparator);
+                        else $link->orWhere($where['field'], $where['value'], $comparator);
                         $i++;
                     }
                 }
