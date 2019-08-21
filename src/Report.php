@@ -20,7 +20,7 @@ class Report {
     private $groupBy = null;
 
     public static function delta($field = 'severity', $to = null, $from = null, $milestone = null) {
-        $openLastWeek = 'COUNT(CASE'
+        $countOpenFromDate = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
             . ' ELSE NULL END) AS fromDate';
@@ -46,7 +46,7 @@ class Report {
         
         $fields = [
             $params[$field]['select'],
-            sprintf($openLastWeek, $fromDate),
+            sprintf($countOpenFromDate, $fromDate),
             "COUNT(IF(status = 1, defID, NULL)) as toDate" // need to allow the `to` range to be set
         ];
         
@@ -59,7 +59,7 @@ class Report {
         if (!empty($milestone))
             $where[] = [ 'requiredBy', $milestone, '<='];
         
-        return new Report('CDL', $headings, $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
+        return new self('CDL', $headings, $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
     }    
     
     private function __construct($table = null, $headings = [], $fields = [], $join = null, $where = null, $groupBy = null) {
