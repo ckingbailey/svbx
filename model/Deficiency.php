@@ -27,7 +27,7 @@ class Deficiency
         'dateCreated'
     ];
     // NOTE: prop names do not nec. have to match db col names
-    //  (but it could help)
+    //  (but it could help for clarity)
     protected $props = [
         'id' => null,
         'safetyCert' => null,
@@ -51,8 +51,8 @@ class Deficiency
         'evidenceLink' => null,
         'oldID' => null,
         'closureComments' => null,
-        'created_by' => null, // validate: userID
-        'updated_by' => null, // validate: userID
+        'created_by' => null, // validate: username
+        'updated_by' => null, // validate: username
         'dateCreated' => null, // validate: date (before lastUpdated, dateClosed?)
         'lastUpdated' => null,
         'dateClosed' => null, // validate against status || set
@@ -332,6 +332,7 @@ class Deficiency
 
     public function validateRequiredInfo($action, $props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
         // TODO: map each required field to type, validate or coerce types
+        // TODO: empty() is inadequate as it will throw for 0 or '0', which may be valid vals
         foreach ($this->requiredFields as $field) {
             if (($action === 'insert' && empty($this->props[$field]))
                 || ($action === 'update' && $this->props[$field] === ''))
@@ -342,11 +343,28 @@ class Deficiency
     }
 
     public function validateClosureInfo($props = null) { // TODO: takes an optional (String) single prop or (Array) of props to validate
-        if (intval($this->props['status']) === 2) { // TODO: numerical props should already be (int) by this point
-            if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
-            if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
-            if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
-            if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(static::DATE_FORMAT));
+        try {
+            $db = new MysqliDb(DB_CREDENTIALS);
+            
+            // get IDs of 'closed' statuses
+            $db->where('statusName', '%closed%', 'LIKE');
+            $statusIDs = array_column($db->get('status', null, [ 'statusID' ]), 'statusID');
+            
+            // if it has a 'closed' status, make sure it has closure information
+            if (array_search($this->props['status'], $statusIDs) !== FALSE) {
+                if (empty($this->props['repo'])) throw new \Exception('Missing closure info @ `repo`');
+                if (empty($this->props['evidenceID'])) throw new \Exception('Missing closure info @ `evidenceID`');
+                if (empty($this->props['evidenceType'])) throw new \Exception('Missing closure info @ `evidenceType`');
+                if (empty($this->props['dateClosed'])) $this->set('dateClosed', date(static::DATE_FORMAT));
+            }
+        } catch (\Exception $e) {
+            error_log($e);
+            throw $e;
+        } catch (\Error $e) {
+            error_log($e);
+            throw $e;
+        } finally {
+            if (!empty($db) && is_a($db, 'MysqliDb')) $db->disconnect();
         }
     }
 
@@ -367,7 +385,7 @@ class Deficiency
 
         $this->validate('insert');
 
-        $insertableData = $this->propsToFields($insertableData);
+        $insertableData = $this->propsToFields();
         unset(
             $insertableData[$this->fields['id']],
             $insertableData[$this->fields['lastUpdated']]
@@ -382,7 +400,6 @@ class Deficiency
                 error_log($link->getLastQuery());
                 throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
             }
-            if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
             return $this->props['id'];
         } catch (\Exception $e) {
             throw $e;
@@ -438,7 +455,7 @@ class Deficiency
                 if (!empty($lookup['where'])) {
                     $i = 0;
                     foreach ($lookup['where'] as $where) {
-                        $comparator = $where['comparison'] ?: '=';
+                        $comparator = !empty($where['comparison']) ? $where['comparison'] : '=';
                         $whereMethod = $i === 0 ? 'where' : 'orWhere';
                         if ($i === 0) $link->where($where['field'], $where['value'], $comparator);
                         else $link->orWhere($where['field'], $where['value'], $comparator);
@@ -451,7 +468,7 @@ class Deficiency
             
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
             return $options;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log($e);
             throw $e;
         }
@@ -475,6 +492,10 @@ class Deficiency
         }
     }
 
+    /**
+     * Returns all props, with specified numeric props as their string values from db lookup
+     * If no props names passed, returns all string values
+     */
     public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
         // TODO: test for presence of $props in foreignKeys
         $foreignKeys = $props ?
