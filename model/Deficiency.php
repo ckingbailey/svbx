@@ -311,7 +311,6 @@ class Deficiency
             else $acc[$key] = $props[$key];
             // trim & stripcslashes here should be temporary
             // may be removed once all tainted Defs are cleaned of '\r\n'
-            fwrite(STDOUT, '$acc[\'' . print_r($key, true) . '\'] = ' . gettype($acc[$key]) . ' ' . print_r($acc[$key], true) . ", " . PHP_EOL);
             $acc[$key] = trim(stripcslashes($acc[$key]));
             return $acc;
         }, []);
