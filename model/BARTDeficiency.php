@@ -82,9 +82,9 @@ class BARTDeficiency extends Deficiency {
         'structural' => 'intval',
         'id_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'description_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'cat1_bart' => null,
-        'cat2_bart' => null,
-        'cat3_bart' => null,
+        'cat1_bart' => false,
+        'cat2_bart' => false,
+        'cat3_bart' => false,
         'level_bart' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'dateOpen_bart' => 'date',
         'dateClose_bart' => 'date',
@@ -94,9 +94,9 @@ class BARTDeficiency extends Deficiency {
         'evidenceType' => 'intval',
         'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'closureComment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'attachments' => null,
+        'attachments' => false,
         'newAttachment' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'comments' => null,
+        'comments' => false,
         'newComment' => 'FILTER_SANITIZE_SPECIAL_CHARS'
     ];
 
