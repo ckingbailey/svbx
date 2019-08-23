@@ -87,16 +87,17 @@ class Deficiency
         'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'created_by' => null,
-        'updated_by' => null,
+        'created_by' => false,
+        'updated_by' => false,
         'dateCreated' => 'date',
         'dateClosed' => 'date',
+        'lastUpdated' => 'date',
         'closureRequested' => 'intval',
-        'closureRequestedBy' => null,
-        'comments' => null,
-        'newComment' => null,
-        'pics' => null,
-        'newPic' => null
+        'closureRequestedBy' => false,
+        'comments' => false,
+        'newComment' => false,
+        'pics' => false,
+        'newPic' => false
     ];
 
     // maps object props to database fields
@@ -248,7 +249,7 @@ class Deficiency
             $this->set($data);
         } else {
             // no id or props = no good
-            throw new Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
+            throw new \Exception('What is this? You tried to instantiate a new Deficiency without passing any data or id');
         }
     }
 
@@ -293,19 +294,24 @@ class Deficiency
 
     public function sanitize($props = null) {
         $props = $props ?: $this->props;
+        $reverseLookup = array_flip($this->fields);
         return array_reduce(array_keys($props), function($acc, $key) use ($props) {
-            if (strpos($this->filters[$key], 'FILTER') === 0)
-                $acc[$key] = filter_var($props[$key], constant($this->filters[$key]));
-            elseif (!empty($this->filters[$key])) {
+            // if $key is not in filters, look it up its corresponding prop name in fields
+            $propName = !empty($this->filters[$key]) ? $key : array_search($key, $this->fields);
+            $filter = $this->filters[$propName];
+            if (strpos($filter, 'FILTER') === 0)
+                $acc[$key] = filter_var($props[$key], constant($filter));
+            elseif ($filter !== false) {
                 // this if condition should be temporary
                 // use only until all '0000-00-00' dates are properly set to NULL
-                if ($this->filters[$key] === 'date' && $props[$key] === '0000-00-00')
+                if ($filter === 'date' && $props[$key] === '0000-00-00')
                     $props[$key] = null;
-                $acc[$key] = $this->filters[$key]($props[$key]) ?: null;
+                $acc[$key] = $filter($props[$key]) ?: null;
             }
             else $acc[$key] = $props[$key];
             // trim & stripcslashes here should be temporary
             // may be removed once all tainted Defs are cleaned of '\r\n'
+            fwrite(STDOUT, '$acc[\'' . print_r($key, true) . '\'] = ' . gettype($acc[$key]) . ' ' . print_r($acc[$key], true) . ", " . PHP_EOL);
             $acc[$key] = trim(stripcslashes($acc[$key]));
             return $acc;
         }, []);
@@ -417,7 +423,7 @@ class Deficiency
         $this->validate('update');
 
         $updatableData = $this->propsToFields();
-        unset($updatableData['id']);
+        // unset($updatableData['id']);
         $updatableData = $this->sanitize($updatableData);
 
         try {
