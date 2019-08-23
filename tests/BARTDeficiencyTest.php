@@ -97,7 +97,7 @@ final class BARTDeficiencyTest extends TestCase
         $newDef->set('status', 2);
 
         $success = $newDef->update();
-        $this->assertEquals($status, 1);
+        $this->assertEquals($success, 1);
 
         $dateClosed = $newDef->get('dateClosed');
         $d = DateTime::createFromFormat(static::$dateFormat, $dateClosed);
