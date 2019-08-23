@@ -99,6 +99,7 @@ class Deficiency
         'newPic' => null
     ];
 
+    // maps object props to database fields
     protected $fields = [
         'id' =>  'defID',
         'safetyCert' => 'safetyCert',
@@ -125,6 +126,7 @@ class Deficiency
         'created_by' => 'created_by',
         'updated_by' => 'updated_by',
         'dateCreated' => 'dateCreated',
+        'lastUpdated' => 'lastUpdated',
         'dateClosed' => 'dateClosed',
         'closureRequested' => 'closureRequested',
         'closureRequestedBy' => 'closureRequestedBy'
