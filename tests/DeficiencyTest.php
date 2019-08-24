@@ -52,7 +52,7 @@ final class DeficiencyTest extends TestCase
             'identifiedBy' => 'ckb',
             'defType' => 1,
             'description' => 'test_description',
-            'created_by' => 'demo', // required creation info
+            'created_by' => 'test_user', // required creation info
         ]))->insert();
         
         $this->assertNotEquals(intval($this->newDefID), 0);
@@ -85,7 +85,7 @@ final class DeficiencyTest extends TestCase
             'identifiedBy' => 'ckb',
             'defType' => 1,
             'description' => 'test_description',
-            'created_by' => 'demo', // required creation info
+            'created_by' => 'test_user', // required creation info
             'repo' => 1, // required closure info, fk
             'evidenceType' => 1, // required closure info, fk
             'evidenceID' => 'aaa000-bbb999' // required closure info
@@ -116,7 +116,7 @@ final class DeficiencyTest extends TestCase
             'identifiedBy' => 'ckb',
             'defType' => 1,
             'description' => 'test_description',
-            'created_by' => 'demo', // required creation info
+            'created_by' => 'test_user', // required creation info
         ]))->insert();
 
         $newDef = new Deficiency($this->newDefID);
