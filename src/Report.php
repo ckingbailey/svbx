@@ -29,6 +29,8 @@ class Report {
             new CarbonImmutable($from)
             : $toDate->subWeek())->toDateString();
 
+        $toDate = $toDate->toDateString();
+
         $params = [
             'severity' => [
                 'select' => 'severityName AS fieldName',
@@ -42,7 +44,7 @@ class Report {
             ]
         ];
 
-        $headings = [ $field, $to, $from, $milestone ];
+        $headings = [ $field, $fromDate, $toDate, $milestone ];
         
         $fields = [
             $params[$field]['select'],
@@ -51,11 +53,10 @@ class Report {
         ];
         
         $where = [
-            [ 'CDL.dateCreated', $toDate->format('Y-m-d'), '<='],
+            [ 'CDL.dateCreated', $toDate, '<='],
             [ 'status', '3', '<>']
         ];
 
-        // grab ID of by milestone name from db, if milestone provided
         if (!empty($milestone))
             $where[] = [ 'requiredBy', $milestone, '<='];
         

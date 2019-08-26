@@ -89,7 +89,6 @@ if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug())
 $context['data']['milestones'] = $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]);
 
 // instantiate report object
-error_log('selected: ' . print_r($context['data']['selected'], true));
 $report = Report::delta(
   $context['data']['selected']['field'],
   $context['data']['selected']['from'],
