@@ -51,7 +51,7 @@ class Report {
         ];
         
         $where = [
-            [ 'CDL.dateCreated', $to, '<='],
+            [ 'CDL.dateCreated', $toDate->format('Y-m-d'), '<='],
             [ 'status', '3', '<>']
         ];
 

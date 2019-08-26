@@ -14,6 +14,24 @@ final class DeficiencyTest extends TestCase
         $this->newDefID = null;
     }
 
+    protected function tearDown(): void
+    {
+        try {
+            $db = new MysqliDb(DB_CREDENTIALS);
+
+            $db->where('defID', $this->newDefID);
+            $db->delete('CDL');
+        } catch (Exception $e) {
+            error_log(print_r($e, true));
+            throw $e;
+        } catch (Error $e) {
+            error_log(print_r($e, true));
+            throw $e;
+        } finally {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
+        }
+    }
+
     public function testCanCreateNewWithRequiredProps(): void
     {
         $this->assertInstanceOf(
