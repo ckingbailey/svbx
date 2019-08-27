@@ -57,8 +57,9 @@ class Report {
             [ 'status', '3', '<>']
         ];
 
-        if (!empty($milestone))
+        if (!empty($milestone)) {
             $where[] = [ 'requiredBy', $milestone, '<='];
+        }
         
         return new self('CDL', $headings, $fields, $params[$field]['join'], $where, $params[$field]['groupBy']);
     }    
@@ -122,7 +123,7 @@ class Report {
     }
 
     public function __toString() {
-        print_r($this->get(), true);
+        return print_r($this->get(), true);
     }
 
 }

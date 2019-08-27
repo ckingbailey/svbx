@@ -15,7 +15,8 @@ final class ReportTest extends TestCase
             'dateCreated' => '2019-01-01',
             'status' => 1,
             'severity' => 3,
-            'groupToResolve' => 1
+            'groupToResolve' => 1,
+            'requiredBy' => 6
         ],
         [
             'dateCreated' => '2019-01-01',
@@ -25,13 +26,15 @@ final class ReportTest extends TestCase
             'dateClosed' => '2019-03-31',
             'repo' => 1,
             'evidenceID' => 'test_evidenceID',
-            'evidenceType' => 1
+            'evidenceType' => 1,
+            'requiredBy' => 5
         ],
         [
             'dateCreated' => '2019-03-01',
             'status' => 1,
             'severity' => 2,
-            'groupToResolve' => 2
+            'groupToResolve' => 2,
+            'requiredBy' => 4
         ],
         [
             'dateCreated' => '2019-03-01',
@@ -41,13 +44,15 @@ final class ReportTest extends TestCase
             'dateClosed' => '2019-05-31',
             'repo' => 1,
             'evidenceID' => 'test_evidenceID',
-            'evidenceType' => 1
+            'evidenceType' => 1,
+            'requiredBy' => 3
         ],
         [
             'dateCreated' => '2019-05-01',
             'status' => 1,
             'severity' => 1,
-            'groupToResolve' => 3
+            'groupToResolve' => 3,
+            'requiredBy' => 2
         ],
         [
             'dateCreated' => '2019-05-01',
@@ -57,13 +62,16 @@ final class ReportTest extends TestCase
             'dateClosed' => '2019-07-31',
             'repo' => 1,
             'evidenceID' => 'test_evidenceID',
-            'evidenceType' => 1
+            'evidenceType' => 1,
+            'requiredBy' => 1
         ],
         [
             'dateCreated' => '2019-07-01',
             'status' => 1,
             'severity' => 4,
-            'groupToResolve' => 4
+            'groupToResolve' => 4,
+            'requiredBy' => 6,
+            'requiredBy' => 6
         ],
         [
             'dateCreated' => '2019-07-01',
@@ -73,7 +81,8 @@ final class ReportTest extends TestCase
             'dateClosed' => '2019-07-31',
             'repo' => 1,
             'evidenceID' => 'test_evidenceID',
-            'evidenceType' => 1
+            'evidenceType' => 1,
+            'requiredBy' => 5
         ],
     ];
 
@@ -85,7 +94,7 @@ final class ReportTest extends TestCase
             $db = new MysqliDb(DB_CREDENTIALS);
 
             foreach (self::$fixtureData as $defData) {
-                $def = new Deficiency(null, [
+                $def = new Deficiency(null, $defData + [
                     'safetyCert' => 1,
                     'systemAffected' => 1,
                     'location' => 1,
@@ -97,7 +106,7 @@ final class ReportTest extends TestCase
                     'defType' => 1,
                     'description' => 'test_description',
                     'created_by' => 'test_user'
-                ] + $defData);
+                ]);
 
                 array_push(self::$fixtureIDs, $def->insert());
             }
@@ -204,6 +213,32 @@ final class ReportTest extends TestCase
             [ 'fieldName' => 'Major', 'fromDate' => 2, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 2 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 0, 'toDate' => 2 ],
+        ], $reportData);
+    }
+
+    public function testDefaultSeverityReportDatesWithMilestoneContainsExpectedData(): void
+    {
+        $milestone = 4;
+        $report = Report::delta('severity', null, null, $milestone);
+
+        $reportData = $report->getWithHeadings();
+        fwrite(STDOUT, print_r($reportData, true));
+
+        $headings = array_shift($reportData);
+        $endDateStr = date('Y-m-d');
+        $startDateStr = DateTime
+        ::createFromFormat(static::$dateFormat, $endDateStr)
+        ->sub(new DateInterval('P7D'))
+        ->format(static::$dateFormat);
+        $expect = [ 'severity', $startDateStr, $endDateStr, $milestone ];
+
+        $this->assertSame($expect, $headings);
+
+        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+
+        $this->assertSame([
+            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1 ],
         ], $reportData);
     }
 
