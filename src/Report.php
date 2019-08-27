@@ -31,6 +31,9 @@ class Report {
 
         $toDate = $toDate->toDateString();
 
+        if ($toDate < $fromDate)
+            throw new \UnexpectedValueException("End date, $toDate, is less that start date, $fromDate");
+
         $params = [
             'severity' => [
                 'select' => 'severityName AS fieldName',

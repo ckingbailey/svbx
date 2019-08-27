@@ -221,6 +221,7 @@ final class ReportTest extends TestCase
     {
         $milestone = 4;
         $report = Report::delta('severity', null, null, $milestone);
+        fwrite(STDOUT, $report->getQuery());
 
         $reportData = $report->getWithHeadings();
 
@@ -258,7 +259,6 @@ final class ReportTest extends TestCase
         $this->assertSame($expect, $headings);
 
         $this->assertTrue($this->sortByArrayOrder($reportData, static::$systemOrder));
-        fwrite(STDOUT, print_r($reportData, true));
 
         $expect = [
             [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
@@ -267,6 +267,73 @@ final class ReportTest extends TestCase
             [ 'fieldName' => 'Fire Protection', 'fromDate' => 1, 'toDate' => 1 ]
         ];
         $this->assertSame($expect, $reportData);
+    }
+
+    public function testSystemReportWithEarlierStartDateReturnsExpectedData(): void
+    {
+        // $endDateStr = date('Y-m-d');
+        $startDateStr = '2019-06-30';
+
+        $report = Report::delta('system', $startDateStr)->get();
+        $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
+
+        $expect = [
+            [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 2, 'toDate' => 1 ],
+            [ 'fieldName' => 'Fire Protection', 'fromDate' => 0, 'toDate' => 1 ]
+        ];
+
+        $this->assertSame($expect, $report);
+    }
+
+    public function testSystemReportWithEarlierStartAndEndDateReturnsExpectedData(): void
+    {
+        $startDateStr = '2019-04-30';
+        $endDateStr = '2019-07-10';
+
+        $report = Report::delta('system', $startDateStr, $endDateStr)->get();
+        $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
+
+        $expect = [
+            [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1 ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
+            [ 'fieldName' => 'Fire Protection', 'fromDate' => 0, 'toDate' => 2 ]
+        ];
+
+        $this->assertSame($expect, $report);
+    }
+
+    public function testDefaultSystemReportWithMilestoneReturnsExpectedData(): void
+    {
+        $report = Report::delta('system', null, null, 5);
+        fwrite(STDOUT, $report->getQuery());
+        $report = $report->get();
+        $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
+
+        $expect = [
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1 ]
+        ];
+
+        $this->assertSame($expect, $report);
+    }
+
+    public function testSystemReportWithEarlierDateRangeWithMilestoneReturnsExpectedData(): void
+    {
+        $startDateStr = '2019-04-01';
+        $endDateStr = '2019-06-01';
+
+        $report = Report::delta('system', $startDateStr, $endDateStr, 5)->get();
+        $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
+
+        $expect = [
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1 ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
+        ];
+
+        $this->assertSame($expect, $report);
     }
 
     private function sortBySeverityName($a, $b) {
