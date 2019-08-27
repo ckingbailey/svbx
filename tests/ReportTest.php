@@ -160,37 +160,36 @@ final class ReportTest extends TestCase
 
         $this->assertSame($headings, $expected);
 
-        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+        $this->assertTrue($this->sortByArrayOrder($reportData, static::$severityOrder));
 
-        $this->assertSame([
+        $expected = [
             [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 1, 'toDate' => 1 ],
-        ], $reportData);
+        ];
+        $this->assertSame($expected, $reportData);
     }
 
     public function testSeverityReportWithEarlierStartDateContainsExpectedData(): void
     {
         $startDateStr = '2019-07-01';
 
-        $report = Report::delta('severity', $startDateStr);
-        $this->assertInstanceOf(Report::class, $report);
+        $report = Report::delta('severity', $startDateStr)->getWithHeadings();
 
-        $reportData = $report->getWithHeadings();
-
-        $headings = array_shift($reportData);
+        $headings = array_shift($report);
         $expected = [ 'severity', $startDateStr, date('Y-m-d')];
         $this->assertSame($expected, $headings);
 
-        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+        $this->assertTrue($this->sortByArrayOrder($report, static::$severityOrder));
 
-        $this->assertSame([
+        $expected = [
             [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 1 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 2, 'toDate' => 1 ],
-        ], $reportData);
+        ];
+        $this->assertSame($expected, $report);
     }
 
     public function testSeverityReportWithEarlierStartAndEndDatesContainsExpectedData(): void
@@ -198,33 +197,29 @@ final class ReportTest extends TestCase
         $startDateStr = '2019-05-01';
         $endDateStr = '2019-07-01';
 
-        $report = Report::delta('severity', $startDateStr, $endDateStr);
-        $this->assertInstanceOf(Report::class, $report);
+        $report = Report::delta('severity', $startDateStr, $endDateStr)->getWithHeadings();
 
-        $reportData = $report->getWithHeadings();
-
-        $headings = array_shift($reportData);
+        $headings = array_shift($report);
         $expected = [ 'severity', $startDateStr, $endDateStr ];
         $this->assertSame($expected, $headings);
 
-        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+        $this->assertTrue($this->sortByArrayOrder($report, static::$severityOrder));
 
-        $this->assertSame([
+        $expected = [
             [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Major', 'fromDate' => 2, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 2 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 0, 'toDate' => 2 ],
-        ], $reportData);
+        ];
+        $this->assertSame($expected, $report);
     }
 
     public function testDefaultSeverityReportDatesWithMilestoneContainsExpectedData(): void
     {
         $milestone = 4;
-        $report = Report::delta('severity', null, null, $milestone);
+        $report = Report::delta('severity', null, null, $milestone)->getWithHeadings();
 
-        $reportData = $report->getWithHeadings();
-
-        $headings = array_shift($reportData);
+        $headings = array_shift($report);
         $endDateStr = date('Y-m-d');
         $startDateStr = DateTime
         ::createFromFormat(static::$dateFormat, $endDateStr)
@@ -234,30 +229,29 @@ final class ReportTest extends TestCase
 
         $this->assertSame($expect, $headings);
 
-        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+        $this->assertTrue($this->sortByArrayOrder($report, static::$severityOrder));
 
-        $this->assertSame([
+        $expected = [
             [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1 ],
-        ], $reportData);
+        ];
+        $this->assertSame($expected, $report);
     }
 
     public function testSystemReportWithDefaultDatesReturnsExpectedData(): void
     {
-        $report = Report::delta('system');
+        $report = Report::delta('system')->getWithHeadings();
         $endDateStr = date('Y-m-d');
         $startDateStr = DateTime
         ::createFromFormat(static::$dateFormat, $endDateStr)
         ->sub(new DateInterval('P7D'))
         ->format(static::$dateFormat);
 
-        $reportData = $report->getWithHeadings();
-
-        $headings = array_shift($reportData);
+        $headings = array_shift($report);
         $expect = [ 'system', $startDateStr, $endDateStr ];
         $this->assertSame($expect, $headings);
 
-        $this->assertTrue($this->sortByArrayOrder($reportData, static::$systemOrder));
+        $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
             [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
@@ -265,12 +259,11 @@ final class ReportTest extends TestCase
             [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Fire Protection', 'fromDate' => 1, 'toDate' => 1 ]
         ];
-        $this->assertSame($expect, $reportData);
+        $this->assertSame($expect, $report);
     }
 
     public function testSystemReportWithEarlierStartDateReturnsExpectedData(): void
     {
-        // $endDateStr = date('Y-m-d');
         $startDateStr = '2019-06-30';
 
         $report = Report::delta('system', $startDateStr)->get();
@@ -297,8 +290,6 @@ final class ReportTest extends TestCase
         $expect = [
             [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 2 ],
-            // [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
-            // [ 'fieldName' => 'Fire Protection', 'fromDate' => 0, 'toDate' => 2 ]
         ];
 
         $this->assertSame($expect, $report);
@@ -306,9 +297,8 @@ final class ReportTest extends TestCase
 
     public function testDefaultSystemReportWithMilestoneReturnsExpectedData(): void
     {
-        $report = Report::delta('system', null, null, 5);
-        $report = $report->getWithHeadings();
-        array_shift($report);
+        $report = Report::delta('system', null, null, 5)->get();
+
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
@@ -333,17 +323,6 @@ final class ReportTest extends TestCase
         ];
 
         $this->assertSame($expect, $report);
-    }
-
-    private function sortBySeverityName($a, $b) {
-        $aIndex = array_search($a['fieldName'], static::$severityOrder);
-        $bIndex = array_search($b['fieldName'], static::$severityOrder);
-        if ($aIndex === false || $bIndex === false)
-            throw new UnexpectedValueException(sprintf(
-                'Unexpected value %s found in $reportData',
-                $aIndex === false ? $a['fieldName'] : $b['fieldName']
-            ));
-        return $aIndex - $bIndex;
     }
 
     private function sortByArrayOrder(&$target, $order) {
