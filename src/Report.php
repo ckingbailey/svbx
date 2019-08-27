@@ -23,7 +23,7 @@ class Report {
         $countOpenFromDate = 'COUNT(CASE'
             . ' WHEN (CDL.dateCreated <= CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
-            . ' ELSE NULL END) AS fromDate';
+            . ' ELSE NULL END) AS %2$s';
         $toDate = new CarbonImmutable($to ?: date('Y-m-d'));
         $fromDate = ($from ?
             new CarbonImmutable($from)
@@ -48,8 +48,8 @@ class Report {
         
         $fields = [
             $params[$field]['select'],
-            sprintf($countOpenFromDate, $fromDate),
-            "COUNT(IF(status = 1, defID, NULL)) as toDate" // need to allow the `to` range to be set
+            sprintf($countOpenFromDate, $fromDate, 'fromDate'),
+            sprintf($countOpenFromDate, $toDate, 'toDate') // "COUNT(IF(status = 1, defID, NULL)) as toDate" // need to allow the `to` range to be set
         ];
         
         $where = [

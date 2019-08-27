@@ -162,8 +162,7 @@ final class ReportTest extends TestCase
 
     public function testSeverityReportWithEarlierStartDateContainsExpectedData(): void
     {
-        $startDate = DateTime::createFromFormat(static::$dateFormat, '2019-07-01');
-        $startDateStr = $startDate->format(static::$dateFormat);
+        $startDateStr = '2019-07-01';
 
         $report = Report::delta('severity', $startDateStr);
         $this->assertInstanceOf(Report::class, $report);
@@ -172,7 +171,7 @@ final class ReportTest extends TestCase
 
         $headings = array_shift($reportData);
         $expected = [ 'severity', $startDateStr, date('Y-m-d')];
-        $this->assertSame($headings, $expected);
+        $this->assertSame($expected, $headings);
 
         $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
 
@@ -181,6 +180,30 @@ final class ReportTest extends TestCase
             [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 1 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 2, 'toDate' => 1 ],
+        ], $reportData);
+    }
+
+    public function testSeverityReportWithEarlierStartAndEndDatesContainsExpectedData(): void
+    {
+        $startDateStr = '2019-05-01';
+        $endDateStr = '2019-07-01';
+
+        $report = Report::delta('severity', $startDateStr, $endDateStr);
+        $this->assertInstanceOf(Report::class, $report);
+
+        $reportData = $report->getWithHeadings();
+
+        $headings = array_shift($reportData);
+        $expected = [ 'severity', $startDateStr, $endDateStr ];
+        $this->assertSame($expected, $headings);
+
+        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+
+        $this->assertSame([
+            [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Major', 'fromDate' => 2, 'toDate' => 1 ],
+            [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 2 ],
+            [ 'fieldName' => 'Blocker', 'fromDate' => 0, 'toDate' => 2 ],
         ], $reportData);
     }
 
