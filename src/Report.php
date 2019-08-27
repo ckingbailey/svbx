@@ -91,15 +91,15 @@ class Report {
                     if (!is_array($having)) throw new \UnexpectedValueException(
                         'Invalid type, '
                         . gettype($having)
-                        . ' for having clause, '
+                        . ', for having clause, '
                         . print_r($having, true)
                     );
-                    elseif ((is_array($having)
+                    if ((is_array($having)
                     && !empty($invalid = array_filter(
                         $having,
                         function ($clause) { return !is_array($clause); }
                     )))) throw new \UnexpectedValueException(
-                        'Having conditions array contains mixed values, '
+                        'Having conditions array contains non-array values, '
                         . print_r($invalid, true)
                     );
 

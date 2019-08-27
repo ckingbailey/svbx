@@ -221,7 +221,6 @@ final class ReportTest extends TestCase
     {
         $milestone = 4;
         $report = Report::delta('severity', null, null, $milestone);
-        fwrite(STDOUT, $report->getQuery());
 
         $reportData = $report->getWithHeadings();
 
@@ -308,7 +307,6 @@ final class ReportTest extends TestCase
     public function testDefaultSystemReportWithMilestoneReturnsExpectedData(): void
     {
         $report = Report::delta('system', null, null, 5);
-        fwrite(STDOUT, $report->getQuery());
         $report = $report->getWithHeadings();
         array_shift($report);
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
