@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 final class ReportTest extends TestCase
 {
     protected static $dateFormat = 'Y-m-d';
+    protected static $severityOrder = ['Minor', 'Major', 'Critical', 'Blocker'];
     private static $fixtureIDs = [];
     private static $fixtureData = [
         [
@@ -133,7 +134,7 @@ final class ReportTest extends TestCase
         }
     }
 
-    public function testInstantiateReport(): void
+    public function testDefaultSeverityReportContainsExpectedData(): void
     {
         $report = Report::delta();
         $this->assertInstanceOf(Report::class, $report);
@@ -144,31 +145,53 @@ final class ReportTest extends TestCase
         $startDate = DateTime
         ::createFromFormat(static::$dateFormat, $endDate)
         ->sub(new DateInterval('P7D'));
-        $expected = [
-            'severity', $startDate->format(static::$dateFormat) , $endDate
-        ];
+        $expected = [ 'severity', $startDate->format(static::$dateFormat) , $endDate ];
         $headings = array_shift($reportData);
 
         $this->assertSame($headings, $expected);
 
-        $severityOrder = ['Minor', 'Major', 'Critical', 'Blocker'];
-        $this->assertTrue(usort($reportData, function($a, $b) use ($severityOrder) {
-            $aIndex = array_search($a['fieldName'], $severityOrder);
-            $bIndex = array_search($b['fieldName'], $severityOrder);
-            if ($aIndex === false)
-                throw new UnexpectedValueException("Unexpected value {$a['fieldName']} found in \$reportData");
-            if ($bIndex === false)
-                throw new UnexpectedValueException("Unexpected value {$a['fieldName']} found in \$reportData");
-            return $aIndex - $bIndex;
-        }));
+        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
 
-        $this->assertSame($reportData, [
+        $this->assertSame([
             [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1 ],
             [ 'fieldName' => 'Blocker', 'fromDate' => 1, 'toDate' => 1 ],
-        ]);
+        ], $reportData);
+    }
 
-        // fwrite(STDOUT, print_r($report->getQuery(), true));
+    public function testSeverityReportWithEarlierStartDateContainsExpectedData(): void
+    {
+        $startDate = DateTime::createFromFormat(static::$dateFormat, '2019-07-01');
+        $startDateStr = $startDate->format(static::$dateFormat);
+
+        $report = Report::delta('severity', $startDateStr);
+        $this->assertInstanceOf(Report::class, $report);
+
+        $reportData = $report->getWithHeadings();
+
+        $headings = array_shift($reportData);
+        $expected = [ 'severity', $startDateStr, date('Y-m-d')];
+        $this->assertSame($headings, $expected);
+
+        $this->assertTrue(usort($reportData, [$this, 'sortBySeverityName']));
+
+        $this->assertSame([
+            [ 'fieldName' => 'Minor', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Critical', 'fromDate' => 2, 'toDate' => 1 ],
+            [ 'fieldName' => 'Blocker', 'fromDate' => 2, 'toDate' => 1 ],
+        ], $reportData);
+    }
+
+    private function sortBySeverityName($a, $b) {
+        $aIndex = array_search($a['fieldName'], static::$severityOrder);
+        $bIndex = array_search($b['fieldName'], static::$severityOrder);
+        if ($aIndex === false || $bIndex === false)
+            throw new UnexpectedValueException(sprintf(
+                'Unexpected value %s found in $reportData',
+                $aIndex === false ? $a['fieldName'] : $b['fieldName']
+            ));
+        return $aIndex - $bIndex;
     }
 }

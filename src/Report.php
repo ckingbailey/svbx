@@ -19,9 +19,9 @@ class Report {
     private $where = [];
     private $groupBy = null;
 
-    public static function delta($field = 'severity', $to = null, $from = null, $milestone = null) {
+    public static function delta($field = 'severity', $from = null, $to = null, $milestone = null) {
         $countOpenFromDate = 'COUNT(CASE'
-            . ' WHEN (CDL.dateCreated < CAST("%1$s" AS DATE)'
+            . ' WHEN (CDL.dateCreated <= CAST("%1$s" AS DATE)'
             . ' && (status = "1" || dateClosed > CAST("%1$s" AS DATE))) THEN defID'
             . ' ELSE NULL END) AS fromDate';
         $toDate = new CarbonImmutable($to ?: date('Y-m-d'));
