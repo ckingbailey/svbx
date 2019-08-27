@@ -9,6 +9,7 @@ final class ReportTest extends TestCase
 {
     protected static $dateFormat = 'Y-m-d';
     protected static $severityOrder = ['Minor', 'Major', 'Critical', 'Blocker'];
+    protected static $systemOrder = ['Electrical', 'Mechanical', 'SCADA', 'Fire Protection'];
     private static $fixtureIDs = [];
     private static $fixtureData = [
         [
@@ -222,7 +223,6 @@ final class ReportTest extends TestCase
         $report = Report::delta('severity', null, null, $milestone);
 
         $reportData = $report->getWithHeadings();
-        fwrite(STDOUT, print_r($reportData, true));
 
         $headings = array_shift($reportData);
         $endDateStr = date('Y-m-d');
@@ -242,6 +242,33 @@ final class ReportTest extends TestCase
         ], $reportData);
     }
 
+    public function testSystemReportWithDefaultDatesReturnsExpectedData(): void
+    {
+        $report = Report::delta('system');
+        $endDateStr = date('Y-m-d');
+        $startDateStr = DateTime
+        ::createFromFormat(static::$dateFormat, $endDateStr)
+        ->sub(new DateInterval('P7D'))
+        ->format(static::$dateFormat);
+
+        $reportData = $report->getWithHeadings();
+
+        $headings = array_shift($reportData);
+        $expect = [ 'system', $startDateStr, $endDateStr ];
+        $this->assertSame($expect, $headings);
+
+        $this->assertTrue($this->sortByArrayOrder($reportData, static::$systemOrder));
+        fwrite(STDOUT, print_r($reportData, true));
+
+        $expect = [
+            [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Fire Protection', 'fromDate' => 1, 'toDate' => 1 ]
+        ];
+        $this->assertSame($expect, $reportData);
+    }
+
     private function sortBySeverityName($a, $b) {
         $aIndex = array_search($a['fieldName'], static::$severityOrder);
         $bIndex = array_search($b['fieldName'], static::$severityOrder);
@@ -251,5 +278,18 @@ final class ReportTest extends TestCase
                 $aIndex === false ? $a['fieldName'] : $b['fieldName']
             ));
         return $aIndex - $bIndex;
+    }
+
+    private function sortByArrayOrder(&$target, $order) {
+        return usort($target, function ($a, $b) use ($order) {
+            $aIndex = array_search($a['fieldName'], $order);
+            $bIndex = array_search($b['fieldName'], $order);
+            if ($aIndex === false || $bIndex === false)
+                throw new UnexpectedValueException(sprintf(
+                    'Unexpected value %s found in $reportData',
+                    !$aIndex ? $a['fieldName'] : $b['fieldName']
+                ));
+            return $aIndex - $bIndex;
+        });
     }
 }
