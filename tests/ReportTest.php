@@ -289,17 +289,17 @@ final class ReportTest extends TestCase
 
     public function testSystemReportWithEarlierStartAndEndDateReturnsExpectedData(): void
     {
-        $startDateStr = '2019-04-30';
-        $endDateStr = '2019-07-10';
+        $startDateStr = '2019-04-01';
+        $endDateStr = '2019-04-30';
 
         $report = Report::delta('system', $startDateStr, $endDateStr)->get();
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
             [ 'fieldName' => 'Electrical', 'fromDate' => 1, 'toDate' => 1 ],
-            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1 ],
-            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
-            [ 'fieldName' => 'Fire Protection', 'fromDate' => 0, 'toDate' => 2 ]
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 2 ],
+            // [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
+            // [ 'fieldName' => 'Fire Protection', 'fromDate' => 0, 'toDate' => 2 ]
         ];
 
         $this->assertSame($expect, $report);
@@ -309,7 +309,8 @@ final class ReportTest extends TestCase
     {
         $report = Report::delta('system', null, null, 5);
         fwrite(STDOUT, $report->getQuery());
-        $report = $report->get();
+        $report = $report->getWithHeadings();
+        array_shift($report);
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [

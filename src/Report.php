@@ -57,7 +57,10 @@ class Report {
         
         $where = [
             [ 'CDL.dateCreated', $toDate, '<='],
-            [ 'status', '3', '<>']
+            [ 'status', '3', '<>'],
+            'having' => [
+                [ '(fromDate <> 0 || toDate <> 0)' ]
+            ]
         ];
 
         if (!empty($milestone)) {
@@ -76,9 +79,44 @@ class Report {
             if (is_array($join[0])) $this->join = $join;
             else array_push($this->join, $join);
         }
+
+        // offset `where` may containg both WHERE and HAVING clauses
         if (!empty($where)) {
-            if (is_array($where[0])) $this->where = $where;
-            else $this->where[] = $where;
+            if (is_array($where)) {
+                if (!empty($where['having'])) {
+                    $having = $where['having'];
+                    unset($where['having']);
+
+                    // validate that `having` clause is an array of arrays
+                    if (!is_array($having)) throw new \UnexpectedValueException(
+                        'Invalid type, '
+                        . gettype($having)
+                        . ' for having clause, '
+                        . print_r($having, true)
+                    );
+                    elseif ((is_array($having)
+                    && !empty($invalid = array_filter(
+                        $having,
+                        function ($clause) { return !is_array($clause); }
+                    )))) throw new \UnexpectedValueException(
+                        'Having conditions array contains mixed values, '
+                        . print_r($invalid, true)
+                    );
+
+                    $this->having = $having;
+                }
+
+                if (is_array($where[0])
+                && empty(array_filter(
+                    $where,
+                    function ($clause) { return !is_array($clause); })
+                )) $this->where = $where;
+            }
+            elseif (is_string($where)) $this->where[] = [ $where ];
+            else throw new \UnexpectedValueException(
+                'Invalid type, ' . gettype($where)
+                . ' for where clause, ' . print_r($where, true)
+            );
         }
         $this->groupBy = $groupBy;
 
@@ -94,10 +132,20 @@ class Report {
             } else $link->join($join[0], $join[1], $join[2]);
         }
 
-        foreach($this->where as $where) {
-            if (empty($where[2])) {
+        foreach ($this->where as $where) {
+            if (empty($where[1])) {
+                $link->where($where[0]);
+            } if (empty($where[2])) {
                 $link->where($where[0], $where[1]);
             } else $link->where($where[0], $where[1], $where[2]);
+        }
+
+        foreach ($this->having as $having) {
+            if (empty($having[1])) {
+                $link->having($having[0]);
+            } elseif (empty($having[2])) {
+                $link->having($having[0], $having[1]);
+            } else $link->having($having[0], $having[1], $having[2]);
         }
 
         if (!empty($this->groupBy)) $link->groupBy($this->groupBy);
