@@ -1,4 +1,5 @@
 {
+    "name": "ckingbailey/svbx",
     "require": {
         "mailgun/mailgun-php": "^2.5",
         "php-http/guzzle6-adapter": "^1.1",
@@ -19,6 +20,6 @@
         "phpunit/phpunit": "^8"
     },
     "scripts": {
-        "test": "phpunit --testdox tests"
+        "test": "PHP_ENV=testing phpunit --testdox tests"
     }
 }

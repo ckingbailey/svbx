@@ -1,44 +1,81 @@
 {# 'data' => [
+##      'selected' => [
+##          'field' => <fieldName>,
+##          'from' => <fromDate>,
+##          'to' => <toDate>,
+##          ['required by' => <milestone>]
+##      ],
 ##      [
-##          'system' => (string),
-##          'openLastWeek' => (int),
-##          'openThisWeek' => (int),
+##          'fieldName' => (string),
+##          'fromDate' => (int),
+##          'toDate' => (int),
+##          ['required by' => (int)]
 ##      ]
 ##  ]
 #}
 
-{% set thisWeekLabel = "Open this week: " %}
-{% set lastWeekLabel = "Open last week: " %}
-{% set deltaLabel = "Delta this week: " %}
-<div id="weeklyReport" class="row item-margin-bottom">
+{% set toLabel = data.selected.to %}
+{% set fromLabel = data.selected.from %}
+{% set deltaLabel = "Delta" %}
+<div id="deltaReport" class="row item-margin-bottom">
     <div class="col-sm-10 offset-sm-1">
+        <form id="delta-picker" method="GET" action="#deltaReport" class="item-margin-bottom">
+            <label for="field">Open Deficiencies by</label>
+            <select id="field" name="field">
+                {% for field in ['severity', 'system'] %}
+                {% set selected = data.selected.field == field ? ' selected' : '' %}
+                <option value="{{ field }}"{{ selected }}>{{ field | capitalize }}</option>
+                {% endfor %}
+            </select>
+            <label for="from-date">From</label>
+            <input id="from-date" name="from" type="date" value="{{ data.selected.from }}">
+            <label for="to-date">To</label>
+            <input id="to-date" name="to" type="date" value="{{ data.selected.to }}">
+            <label for="milestone">Required prior to</label>
+            <select id="milestone" name="milestone">
+                <option></option>
+                {% for id, milestone in data.milestones %}
+                {% set selected = data.selected.milestone == id ? ' selected' : '' %}
+                <option value="{{ id }}"{{ selected }}>{{ milestone }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
         <div class="thin-grey-border border-radius">
             <header class="d-flex justify-content-between pad grey-bg item-margin-bottom">
-                <span>Weekly delta of open Deficiencies that are required for closure prior to Phase 3 start</span>
+                <span>Deficiencies by {{ data.selected.field | default('__') }}
+                from {{ data.selected.from | default('__') }}
+                to {{ data.selected.to | default('__') }}
+                {% if data.selected.milestone %}required prior to {{ data.milestones[data.selected.milestone] }}{% endif %}
+                </span>
                 <button id='downloadReport' type='button' onclick='return downloadReport()' class="btn btn-sm btn-success">Download this data</button>
             </header>
             <div class="row thick-black-line ml-0 mr-0 mb-1 weekly-report__list-heading">
-                <div class="col-sm-3">System</div>
-                <div class="col-sm-3 text-right">{{ lastWeekLabel }}</div>
-                <div class="col-sm-3 text-right">{{ thisWeekLabel }}</div>
+                <div class="col-sm-3">{{ data.selected.field | capitalize }}</div>
+                <div class="col-sm-3 text-right">Open on {{ data.selected.from }}</div>
+                <div class="col-sm-3 text-right">Open on {{ data.selected.to }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
             </div>
-            {% for row in data.weeklyReport %}
+            {% if data.deltaReport.error %}
+            <h4 class="text-red text-center pt-3 pb-3">{{ data.deltaReport.error }}</h4>
+            {% else %}
+            {% for row in data.deltaReport %}
             <div class="row thin-grey-separator ml-0 mr-0">
                 <div class="col-sm-3">
-                    <div class="weekly-report__system-name">{{ row.system }}</div>
+                    <div class="weekly-report__system-name">{{ row.fieldName }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ lastWeekLabel }}</span>{{ row.openLastWeek }}</div>
+                    <div><span class="weekly-report__label">{{ fromLabel }}</span>{{ row.fromDate }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ thisWeekLabel }}</span>{{ row.openThisWeek }}</div>
+                    <div><span class="weekly-report__label">{{ toLabel }}</span>{{ row.toDate }}</div>
                 </div>
                 <div class="col-sm-3 text-right">
-                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.openLastWeek - row.openThisWeek }}</div>
+                    <div><span class="weekly-report__label">{{ deltaLabel }}</span>{{ row.fromDate - row.toDate }}</div>
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>

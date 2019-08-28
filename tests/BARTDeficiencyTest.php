@@ -38,7 +38,7 @@ final class BARTDeficiencyTest extends TestCase
             'resolution_vta' => 'test resolution vta',
             'priority_vta' => 1,
             'safety_cert_vta' => 1,
-            'created_by' => 32
+            'created_by' => 1
         ]))->insert();
 
         $this->assertNotEquals(intval($this->newDefID), 0);
@@ -59,7 +59,7 @@ final class BARTDeficiencyTest extends TestCase
             'resolution_vta' => 'test resolution vta',
             'priority_vta' => 1,
             'safety_cert_vta' => 1,
-            'created_by' => 32,
+            'created_by' => 1,
             'repo' => 1,
             'evidenceID' => 'test-evidence_ID',
             'evidenceType' => 1
@@ -87,7 +87,7 @@ final class BARTDeficiencyTest extends TestCase
             'resolution_vta' => 'test resolution vta',
             'priority_vta' => 1,
             'safety_cert_vta' => 1,
-            'created_by' => 32,
+            'created_by' => 1,
             'repo' => 1,
             'evidenceID' => 'test-evidence_ID',
             'evidenceType' => 1

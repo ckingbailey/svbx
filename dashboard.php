@@ -1,15 +1,43 @@
 <?php
 use SVBX\Report;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 
 require 'vendor/autoload.php';
 require 'WeeklyDelta.php';
 require 'session.php';
 
+// init context with some defaults
 $context = [
   'session' => $_SESSION,
   'title' => 'Home',
-  'pageHeading' => 'Database Information'
+  'pageHeading' => 'Database Information',
+  'data' => [
+    'selected' => [
+      'field' => 'severity',
+      'from' => null,
+      'to' => null,
+      'milestone' => null
+    ]
+  ]
 ];
+
+if (!empty($_GET)) {
+  $context['data']['selected']['field'] = filter_var($_GET['field'], FILTER_SANITIZE_STRING);
+  $context['data']['selected']['from'] = filter_var($_GET['from'], FILTER_SANITIZE_STRING);
+  $context['data']['selected']['to'] = filter_var($_GET['to'], FILTER_SANITIZE_STRING);
+  $context['data']['selected']['milestone'] = filter_var($_GET['milestone'], FILTER_SANITIZE_STRING);
+}
+
+// defaults 
+$context['data']['selected']['to'] = new CarbonImmutable($context['data']['selected']['to']);
+$context['data']['selected']['from'] = ($context['data']['selected']['from']
+  ? new CarbonImmutable($context['data']['selected']['from'])
+  : $context['data']['selected']['to']->subWeek())->toDateString();
+$context['data']['selected']['to'] = $context['data']['selected']['to']->toDateString();
+
+$context['data']['selected']['milestone'] = intval($context['data']['selected']['milestone'])
+  ?: null;
 
 $link = new MysqliDb(DB_CREDENTIALS);
 
@@ -23,7 +51,6 @@ $context['data']['status'] = $link->
 $context['data']['severity'] = $link->
   orderBy('severityName', 'ASC')->
   groupBy('severityName')->
-  // where('CDL.status', '1')->
   join('CDL', 'severity.severityID = CDL.severity', 'LEFT')->
   get('severity', null, ['severityName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
@@ -33,7 +60,7 @@ $context['data']['system'] = $link->
   // where('CDL.status', '3', '<>')->
   join('CDL', 'system.systemID = CDL.groupToResolve', 'LEFT')->
   join('users_enc', 'system.lead = users_enc.userid', 'LEFT')->
-  get('system', null, ['systemName', 'COUNT(IF(status = 1, 1, NULL)) as count', 'CONCAT(SUBSTR(firstname, 1, 1), " ", lastname) as lead']);
+  get('system', null, ['systemName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
 $context['data']['location'] = $link->  
   orderBy('locationName', 'ASC')->
@@ -59,8 +86,28 @@ $twig = new Twig_Environment($loader, [
 ]);
 if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
+$context['data']['milestones'] = array_reduce(
+  $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]),
+  function ($map, $row) {
+    $map[$row['id']] = $row['name'];
+    return $map;
+  },
+  []
+);
+$link->disconnect();
+
 // instantiate report object
-$sit3delta = Report::delta('SIT3');
-$context['data']['weeklyReport'] = $sit3delta->get();
+try {
+  $report = Report::delta(
+    $context['data']['selected']['field'],
+    $context['data']['selected']['from'],
+    $context['data']['selected']['to'],
+    $context['data']['selected']['milestone']
+  );
+  $context['data']['deltaReport'] = $report->get();
+} catch (Exception | Error $e) {
+  error_log($e);
+  $context['data']['deltaReport']['error'] = $e->getMessage();
+}
 
 $twig->display('dashboard.html.twig', $context);
