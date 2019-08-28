@@ -1,8 +1,15 @@
 {# 'data' => [
+##      'selected' => [
+##          'field' => <fieldName>,
+##          'from' => <fromDate>,
+##          'to' => <toDate>,
+##          ['required by' => <milestone>]
+##      ],
 ##      [
-##          'system' => (string),
-##          'openLastWeek' => (int),
-##          'openThisWeek' => (int),
+##          'fieldName' => (string),
+##          'fromDate' => (int),
+##          'toDate' => (int),
+##          ['required by' => (int)]
 ##      ]
 ##  ]
 #}
@@ -49,6 +56,9 @@
                 <div class="col-sm-3 text-right">Open on {{ data.selected.to }}</div>
                 <div class="col-sm-3 text-right">{{ deltaLabel }}</div>
             </div>
+            {% if data.deltaReport.error %}
+            <h4 class="text-red text-center pt-3 pb-3">{{ data.deltaReport.error }}</h4>
+            {% else %}
             {% for row in data.deltaReport %}
             <div class="row thin-grey-separator ml-0 mr-0">
                 <div class="col-sm-3">
@@ -65,6 +75,7 @@
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>

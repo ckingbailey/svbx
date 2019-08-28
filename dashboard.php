@@ -17,7 +17,7 @@ $context = [
       'field' => 'severity',
       'from' => null,
       'to' => null,
-      'milestone' => null
+      'required by' => null
     ]
   ]
 ];
@@ -26,7 +26,7 @@ if (!empty($_GET)) {
   $context['data']['selected']['field'] = filter_var($_GET['field'], FILTER_SANITIZE_STRING);
   $context['data']['selected']['from'] = filter_var($_GET['from'], FILTER_SANITIZE_STRING);
   $context['data']['selected']['to'] = filter_var($_GET['to'], FILTER_SANITIZE_STRING);
-  $context['data']['selected']['milestone'] = filter_var($_GET['milestone'], FILTER_SANITIZE_STRING);
+  $context['data']['selected']['required by'] = filter_var($_GET['milestone'], FILTER_SANITIZE_STRING);
 }
 
 // defaults 
@@ -36,7 +36,7 @@ $context['data']['selected']['from'] = ($context['data']['selected']['from']
   : $context['data']['selected']['to']->subWeek())->toDateString();
 $context['data']['selected']['to'] = $context['data']['selected']['to']->toDateString();
 
-$context['data']['selected']['milestone'] = intval($context['data']['selected']['milestone'])
+$context['data']['selected']['required by'] = intval($context['data']['selected']['required by'])
   ?: null;
 
 $link = new MysqliDb(DB_CREDENTIALS);
@@ -87,15 +87,20 @@ $twig = new Twig_Environment($loader, [
 if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
 $context['data']['milestones'] = $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]);
+$link->disconnect();
 
 // instantiate report object
-$report = Report::delta(
-  $context['data']['selected']['field'],
-  $context['data']['selected']['from'],
-  $context['data']['selected']['to'],
-  $context['data']['selected']['milestone']
-);
-$context['data']['deltaReport'] = $report->get();
+try {
+  $report = Report::delta(
+    $context['data']['selected']['field'],
+    $context['data']['selected']['from'],
+    $context['data']['selected']['to'],
+    $context['data']['selected']['required by']
+  );
+  $context['data']['deltaReport'] = $report->get();
+} catch (Exception | Error $e) {
+  error_log($e);
+  $context['data']['deltaReport']['error'] = $e->getMessage();
+}
 
-$link->disconnect();
 $twig->display('dashboard.html.twig', $context);
