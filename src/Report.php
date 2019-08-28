@@ -47,7 +47,7 @@ class Report {
             ]
         ];
 
-        $headings = [ $field, $fromDate, $toDate, $milestone ];
+        $headings = [ $field, $fromDate, $toDate ];
         
         $fields = [
             $params[$field]['select'],
@@ -64,6 +64,9 @@ class Report {
         ];
 
         if (!empty($milestone)) {
+            $heading = 'required by';
+            $headings[] = $heading;
+            $fields[] = "$milestone as '$heading'";
             $where[] = [ 'requiredBy', $milestone, '<='];
         }
         

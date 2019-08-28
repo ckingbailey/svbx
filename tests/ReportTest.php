@@ -225,15 +225,15 @@ final class ReportTest extends TestCase
         ::createFromFormat(static::$dateFormat, $endDateStr)
         ->sub(new DateInterval('P7D'))
         ->format(static::$dateFormat);
-        $expect = [ 'severity', $startDateStr, $endDateStr, $milestone ];
+        $expect = [ 'severity', $startDateStr, $endDateStr, 'required by' ];
 
         $this->assertSame($expect, $headings);
 
         $this->assertTrue($this->sortByArrayOrder($report, static::$severityOrder));
 
         $expected = [
-            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1 ],
-            [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1 ],
+            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
+            [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
         ];
         $this->assertSame($expected, $report);
     }
@@ -297,29 +297,31 @@ final class ReportTest extends TestCase
 
     public function testDefaultSystemReportWithMilestoneReturnsExpectedData(): void
     {
-        $report = Report::delta('system', null, null, 5)->get();
+        $milestone = 5;
+        $report = Report::delta('system', null, null, $milestone)->get();
 
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
-            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1 ],
-            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1 ]
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ]
         ];
 
         $this->assertSame($expect, $report);
     }
 
-    public function testSystemReportWithEarlierDateRangeWithMilestoneReturnsExpectedData(): void
+    public function testSystemReportWithEarlierDateRangeAndMilestoneReturnsExpectedData(): void
     {
         $startDateStr = '2019-04-01';
         $endDateStr = '2019-06-01';
+        $milestone = 5;
 
-        $report = Report::delta('system', $startDateStr, $endDateStr, 5)->get();
+        $report = Report::delta('system', $startDateStr, $endDateStr, $milestone)->get();
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
-            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1 ],
-            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2 ],
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1, 'required by' => $milestone ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2, 'required by' => $milestone ],
         ];
 
         $this->assertSame($expect, $report);
