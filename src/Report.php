@@ -64,7 +64,7 @@ class Report {
         ];
 
         if (!empty($milestone)) {
-            $heading = 'required by';
+            $heading = 'milestone';
             $headings[] = $heading;
             $fields[] = "$milestone as '$heading'";
             $where[] = [ 'requiredBy', $milestone, '<='];

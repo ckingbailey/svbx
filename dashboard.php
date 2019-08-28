@@ -17,7 +17,7 @@ $context = [
       'field' => 'severity',
       'from' => null,
       'to' => null,
-      'required by' => null
+      'milestone' => null
     ]
   ]
 ];
@@ -26,7 +26,7 @@ if (!empty($_GET)) {
   $context['data']['selected']['field'] = filter_var($_GET['field'], FILTER_SANITIZE_STRING);
   $context['data']['selected']['from'] = filter_var($_GET['from'], FILTER_SANITIZE_STRING);
   $context['data']['selected']['to'] = filter_var($_GET['to'], FILTER_SANITIZE_STRING);
-  $context['data']['selected']['required by'] = filter_var($_GET['milestone'], FILTER_SANITIZE_STRING);
+  $context['data']['selected']['milestone'] = filter_var($_GET['milestone'], FILTER_SANITIZE_STRING);
 }
 
 // defaults 
@@ -36,7 +36,7 @@ $context['data']['selected']['from'] = ($context['data']['selected']['from']
   : $context['data']['selected']['to']->subWeek())->toDateString();
 $context['data']['selected']['to'] = $context['data']['selected']['to']->toDateString();
 
-$context['data']['selected']['required by'] = intval($context['data']['selected']['required by'])
+$context['data']['selected']['milestone'] = intval($context['data']['selected']['milestone'])
   ?: null;
 
 $link = new MysqliDb(DB_CREDENTIALS);
@@ -86,7 +86,14 @@ $twig = new Twig_Environment($loader, [
 ]);
 if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-$context['data']['milestones'] = $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]);
+$context['data']['milestones'] = array_reduce(
+  $link->get('requiredBy', null, [ 'reqByID as id', 'requiredBy as name' ]),
+  function ($map, $row) {
+    $map[$row['id']] = $row['name'];
+    return $map;
+  },
+  []
+);
 $link->disconnect();
 
 // instantiate report object
@@ -95,7 +102,7 @@ try {
     $context['data']['selected']['field'],
     $context['data']['selected']['from'],
     $context['data']['selected']['to'],
-    $context['data']['selected']['required by']
+    $context['data']['selected']['milestone']
   );
   $context['data']['deltaReport'] = $report->get();
 } catch (Exception | Error $e) {

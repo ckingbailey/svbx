@@ -34,9 +34,9 @@
             <label for="milestone">Required prior to</label>
             <select id="milestone" name="milestone">
                 <option></option>
-                {% for milestone in data.milestones %}
-                {% set selected = data.selected.milestone == milestone.id ? ' selected' : '' %}
-                <option value="{{ milestone.id }}"{{ selected }}>{{ milestone.name }}</option>
+                {% for id, milestone in data.milestones %}
+                {% set selected = data.selected.milestone == id ? ' selected' : '' %}
+                <option value="{{ id }}"{{ selected }}>{{ milestone }}</option>
                 {% endfor %}
             </select>
             <button type="submit" class="btn btn-primary">Apply</button>
@@ -46,7 +46,7 @@
                 <span>Deficiencies by {{ data.selected.field | default('__') }}
                 from {{ data.selected.from | default('__') }}
                 to {{ data.selected.to | default('__') }}
-                {% if data.selected.milestone %}required prior to {{ data.selected.milestone }}{% endif %}
+                {% if data.selected.milestone %}required prior to {{ data.milestones[data.selected.milestone] }}{% endif %}
                 </span>
                 <button id='downloadReport' type='button' onclick='return downloadReport()' class="btn btn-sm btn-success">Download this data</button>
             </header>

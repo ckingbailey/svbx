@@ -225,15 +225,15 @@ final class ReportTest extends TestCase
         ::createFromFormat(static::$dateFormat, $endDateStr)
         ->sub(new DateInterval('P7D'))
         ->format(static::$dateFormat);
-        $expect = [ 'severity', $startDateStr, $endDateStr, 'required by' ];
+        $expect = [ 'severity', $startDateStr, $endDateStr, 'milestone' ];
 
         $this->assertSame($expect, $headings);
 
         $this->assertTrue($this->sortByArrayOrder($report, static::$severityOrder));
 
         $expected = [
-            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
-            [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
+            [ 'fieldName' => 'Major', 'fromDate' => 1, 'toDate' => 1, 'milestone' => $milestone ],
+            [ 'fieldName' => 'Critical', 'fromDate' => 1, 'toDate' => 1, 'milestone' => $milestone ],
         ];
         $this->assertSame($expected, $report);
     }
@@ -303,8 +303,8 @@ final class ReportTest extends TestCase
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
-            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ],
-            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1, 'required by' => $milestone ]
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 1, 'toDate' => 1, 'milestone' => $milestone ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 1, 'toDate' => 1, 'milestone' => $milestone ]
         ];
 
         $this->assertSame($expect, $report);
@@ -320,8 +320,8 @@ final class ReportTest extends TestCase
         $this->assertTrue($this->sortByArrayOrder($report, static::$systemOrder));
 
         $expect = [
-            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1, 'required by' => $milestone ],
-            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2, 'required by' => $milestone ],
+            [ 'fieldName' => 'Mechanical', 'fromDate' => 2, 'toDate' => 1, 'milestone' => $milestone ],
+            [ 'fieldName' => 'SCADA', 'fromDate' => 0, 'toDate' => 2, 'milestone' => $milestone ],
         ];
 
         $this->assertSame($expect, $report);
