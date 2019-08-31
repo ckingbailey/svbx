@@ -50,6 +50,7 @@ class Deficiency
         'evidenceID' => null,
         'evidenceLink' => null,
         'oldID' => null,
+        'bartDefID' => null,
         'closureComments' => null,
         'created_by' => null, // validate: username
         'updated_by' => null, // validate: username
@@ -86,6 +87,7 @@ class Deficiency
         'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'bartDefID' => 'intval',
         'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'created_by' => false,
         'updated_by' => false,
@@ -123,6 +125,7 @@ class Deficiency
         'evidenceID' => 'evidenceID',
         'evidenceLink' => 'evidenceLink',
         'oldID' => 'oldID',
+        'bartDefID' => 'bartDefID',
         'closureComments' => 'closureComments',
         'created_by' => 'created_by',
         'updated_by' => 'updated_by',
@@ -208,6 +211,12 @@ class Deficiency
         'repo' => [
             'table' => 'repo',
             'fields' => ['repoID', 'repoName']
+        ],
+        'bartDefID' => [
+            'table' => 'BARTDL',
+            'alias' => 'bart',
+            'fields' => [ 'ID' ],
+            'order' => [ 'ID', 'ASC' ]
         ],
         'created_by' => [
             'table' => 'users_enc',
@@ -404,7 +413,6 @@ class Deficiency
             if ($newID = $link->insert($this->table, $insertableData)) {
                 $this->set('id', $newID);
             } else {
-                error_log($link->getLastQuery());
                 throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
             }
             return $this->props['id'];
@@ -457,7 +465,9 @@ class Deficiency
                 $table = $lookup['table'];
                 $fields = $lookup['fields'];
                 $fields[0] .= ' AS id';
-                $fields[1] .= ' AS name';
+                if (empty($fields[1]))
+                    $fields[1] = "{$lookup['fields'][0]} AS name";
+                else $fields[1] .= ' AS name';
                 
                 if (!empty($lookup['where'])) {
                     $i = 0;
@@ -468,6 +478,14 @@ class Deficiency
                         else $link->orWhere($where['field'], $where['value'], $comparator);
                         $i++;
                     }
+                }
+
+                if (!empty($lookup['order'])) {
+                    if (is_string($lookup['order']))
+                        $link->orderBy($lookup['order']);
+                    elseif (is_array($lookup['order']))
+                        $direction = empty($lookup['order'][1]) ? 'ASC' : $lookup['order'][1];
+                        $link->orderBy($lookup['order'][0], $direction);
                 }
                 
                 $options[$childField] = $link->get($table, null, $fields);
@@ -522,6 +540,7 @@ class Deficiency
                 $lookupTable = $lookup['table'];
                 $alias = !empty($lookup['alias']) ? $lookup['alias'] : '';
                 $lookupKey = $lookup['fields'][0];
+                $nameField = empty($lookup['fields'][1]) ? $lookupKey : $lookup['fields'][1];
                 $selectField = !empty($lookup['concat']) && $lookup['concat'] === true
                     ? sprintf('CONCAT(%s)',
                         implode(array_map(function($field) use ($alias, $lookupTable) {
@@ -531,7 +550,7 @@ class Deficiency
                         }, array_slice($lookup['fields'], 1)), ','))
                     : sprintf("%s.%s",
                     ($alias ?: $lookupTable),
-                    $lookup['fields'][1]
+                    $nameField
                 );
 
                 $join = $lookupTable . ($alias ? " AS {$alias}" : '');
@@ -560,5 +579,10 @@ class Deficiency
     
     public function __toString() {
         return print_r($this->get(), true);
+    }
+
+    private function falsyValueForZero($val, $falsy = '') {
+        $num = intval($val);
+        return $num === 0 ? $falsy : $num;
     }
 }

@@ -159,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     try {
         $context['options'] = $class::getLookupOptions();
+        error_log(print_r($context['options'], true));
 
         if (!empty($def) && is_a($def, $class)) {
             $def->set($class::MOD_HISTORY); // clear modification history
