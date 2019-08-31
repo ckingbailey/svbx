@@ -2,11 +2,13 @@
 declare(strict_types=1);
 
 use SVBX\Deficiency;
+use SVBX\BARTDeficiency;
 use PHPUnit\Framework\TestCase;
 
 final class DeficiencyTest extends TestCase
 {
     protected $newDefID;
+    protected $bartDefID;
     protected static $dateFormat = 'Y-m-d';
 
     protected function setUp(): void
@@ -150,5 +152,39 @@ final class DeficiencyTest extends TestCase
         $d = DateTime::createFromFormat(static::$dateFormat, $dateClosed);
         $this->assertInstanceOf('DateTime', $d);
         $this->assertEquals($d->format(static::$dateFormat), $dateClosed);
+    }
+
+    public function testCanInsertWithBartId(): void
+    {
+        $this->bartDefID = (new BARTDeficiency(null, [
+            'creator' => 1,
+            'status' => 1,
+            'descriptive_title_vta' => 'test description',
+            'root_prob_vta' => 'test root problem',
+            'resolution_vta' => 'test resolution vta',
+            'priority_vta' => 1,
+            'safety_cert_vta' => 1,
+            'created_by' => 1
+        ]))->insert();
+
+        $this->newDefID = (new Deficiency(false, [
+            'safetyCert' => 1,
+            'systemAffected' => 1,
+            'location' => 1,
+            'specLoc' => 'test_specLoc',
+            'status' => 1,
+            'severity' => 1,
+            'dueDate' => date(static::$dateFormat),
+            'groupToResolve' => 1,
+            'requiredBy' => 1,
+            'contractID' => 1,
+            'identifiedBy' => 'ckb',
+            'defType' => 1,
+            'description' => 'test_description',
+            'bartDefID' => $this->bartDefID,
+            'created_by' => 'test_user', // required creation info
+        ]))->insert();
+
+        $this->assertNotEquals(intval($this->newDefID), 0);
     }
 }
