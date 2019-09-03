@@ -32,7 +32,9 @@ $twig = new Twig_Environment($loader,
         'debug' => $_ENV['PHP_ENV'] === 'dev'
     ]
 );
-$twig->addExtension(new Twig_Extension_Debug());
+if (getenv('PHP_ENV')) {
+    $twig->addExtension(new Twig_Extension_Debug());
+}
 
 // add Twig filters
 $filter_decode = new Twig_Filter('safe', function($str) {
@@ -356,6 +358,7 @@ try {
         foreach ($get as $param => $val) {
             if ($param === 'description'
                 || $param === 'defID'
+                || $param === 'bartDefID'
                 || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
             elseif ($param === 'systemAffected'
                 || $param === 'groupToResolve'
