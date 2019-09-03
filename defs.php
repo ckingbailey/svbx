@@ -32,7 +32,9 @@ $twig = new Twig_Environment($loader,
         'debug' => $_ENV['PHP_ENV'] === 'dev'
     ]
 );
-$twig->addExtension(new Twig_Extension_Debug());
+if (getenv('PHP_ENV')) {
+    $twig->addExtension(new Twig_Extension_Debug());
+}
 
 // add Twig filters
 $filter_decode = new Twig_Filter('safe', function($str) {
@@ -53,8 +55,9 @@ $bartTableHeadings = [
 
 $projectTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
+    'bartID' => [ 'value' => 'BART ID', 'cellWd' => '1', 'collapse' => 'sm' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
-    'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
+    'severity' => [ 'value' => 'Severity', 'cellWd' => '1', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '2', 'collapse' => 'sm', 'classList' => 'def-table__crop-content' ],
     'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collapse' => '', 'classList' => 'def-table__crop-content' ],
@@ -76,6 +79,7 @@ $bartFields = [
 
 $projectFields = [
     "c.defID AS ID",
+    "c.bartDefID AS bartID",
     "l.locationName AS location",
     "s.severityName AS severity",
     "t.statusName AS status",
@@ -356,6 +360,7 @@ try {
         foreach ($get as $param => $val) {
             if ($param === 'description'
                 || $param === 'defID'
+                || $param === 'bartDefID'
                 || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
             elseif ($param === 'systemAffected'
                 || $param === 'groupToResolve'

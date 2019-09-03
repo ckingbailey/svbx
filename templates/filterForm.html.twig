@@ -22,8 +22,10 @@
                 <i class="typcn typcn-arrow-sorted-down"></i>
             </a>
         </h5>
-        <div id="filterDefs" class="collapse{{show}} item-margin-bottom">
+        <div id="filterDefs" class="collapse{{show}} row grey-bg p-1 item-margin-bottom">
+            <div class="col-12">
             {% block filterFields %}{% endblock %}
+            </div>
         </div>
         {% include "includes/sortControls.html.twig" with sortOptions %}
         <div id="container_buttons_submit-reset" class="">

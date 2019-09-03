@@ -117,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // TODO: this should fail early if no ID or if invalid class
+// TODO: this should show an error to the user for missing ID or invalid class
 try {
     if (empty($_GET['id'])) throw new Exception('No id received for update request form');
     if (empty($_GET)) throw new Exception('No data received for update request form');

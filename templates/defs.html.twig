@@ -21,8 +21,14 @@
     {% endif %}
     {% include "infobox.html.twig" %}
     {% include view is same as('BART') ? "bartDefsFilter.html.twig" : "defsFilter.html.twig" %}
-    {% include "table.html.twig" %}
 {% endblock %}
+
+{% block fullWidthContent %}
+    <section class="container-fluid">
+    {% include "table.html.twig" %}
+    </section>
+{% endblock %}
+
 
 {% block scripts %}
     <script type="text/javascript" src="/assets/js/bootstrap-select.js"></script>

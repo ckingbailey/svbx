@@ -61,12 +61,16 @@
 </div>
 <h5 class='grey-bg pad'>Optional Information</h5>
 <div class='row item-margin-bottom'>
-    <div class='col-md-2'><p>Spec or Code</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.spec) }}</div>
-    <div class='col-md-2'><p>Action Owner</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.actionOwner) }}</div>
-    <div class='col-md-2'><p>Old Id</p></div>
-    <div class='col-md-2'>{{ page.input_like(data.oldID) }}</div>
+    <div class='col-md-3'><p>Spec or Code</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.spec) }}</div>
+    <div class='col-md-3'><p>Action Owner</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.actionOwner) }}</div>
+</div>
+<div class='row item-margin-bottom'>
+    <div class='col-md-3'><p>Old Id</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.oldID) }}</div>
+    <div class='col-md-3'><p>BART ID</p></div>
+    <div class='col-md-3'>{{ page.input_like(data.bartDefID) }}</div>
 </div>
 {% include 'includes/closureInfo.html.twig' %}
 {% if not data.comments is empty %}

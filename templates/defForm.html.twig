@@ -5,7 +5,7 @@
     {% for option in options %}
         {% if not option.name is same as ('') %}
             {% set selected = option.id  == curVal ? " selected" : "" %}
-            <option value="{{ option.id }}"{{ selected }}>{{ option.name }}</option>
+            <option value="{{ option.id }}" {{ selected }}>{{ option.name }}</option>
             {% set selected = "" %}
         {% endif %}
     {% endfor %}
@@ -19,222 +19,269 @@
     <header class='container page-header'>
         <h1 class='page-title text-white{{ color }}'>{{ pageHeading }}</h1>
         {% if data.closureRequested %}
-        <h2>{{ data.closureRequested or '' }}</h2>
+            <h2>{{ data.closureRequested or '' }}</h2>
         {% endif %}
         {% if session.errorMsg %}
-        <h3 class='thin-grey-border pad' style="background-color: var(--half-trans-yellow)">{{ session.errorMsg }}</h3>
+            <h3 class='thin-grey-border pad' style="background-color: var(--half-trans-yellow)">{{ session.errorMsg }}</h3>
         {% endif %}
     </header>
 {% endblock %}
 
 {% block content %}
-<form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
-    {% block formControls %}
-    <input type='hidden' name='id' value='{{ data.id }}'>
-    <h4 class='pad grey-bg'>Required Information</h4>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
+    <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
+        {% block formControls %}
+            <input type='hidden' name='id' value='{{ data.id }}'>
+            <h4 class='pad grey-bg'>Required Information</h4>
             <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='safetyCert' class='required'>Safety Certifiable</label></div>
                 <div class='col-md-6'>
-                    <select name='safetyCert' id='safetyCert' class='form-control' required>
-                        {{ form.renderOptions(options.safetyCert, data.safetyCert) }}
-                    </select>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='safetyCert' class='required'>Safety Certifiable</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='safetyCert' id='safetyCert' class='form-control' required>
+                                {{ form.renderOptions(options.safetyCert, data.safetyCert) }}
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='systemAffected' class='required'>System Affected</label></div>
                 <div class='col-md-6'>
-                    <select name='systemAffected' id='systemAffected' class='form-control' required>
-                        {{ form.renderOptions(options.systemAffected, data.systemAffected) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='location' class='required'>General Location</label></div>
-                <div class='col-md-6'>
-                    <select name='location' id='location' class='form-control' required>
-                        {{ form.renderOptions(options.location, data.location) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='specLoc' class='required'>Specific Location</label></div>
-                <div class='col-md-6'><input type='text' name='specLoc' id='specLoc' value='{{ data.specLoc | raw }}' class='form-control' required></div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='status' class='required'>Status</label></div>
-                <div class='col-md-6'>
-                    <select name='status' id='status' onchange='return onSelectStatusClosed(event)' class='form-control' required>
-                        {{ form.renderOptions(options.status, data.status) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='severity' class='required'>Severity</label></div>
-                <div class='col-md-6'>
-                    <select name='severity' id='severity' class='form-control' required>
-                        {{ form.renderOptions(options.severity, data.severity) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='dueDate' class='required'>To be resolved by</label></div>
-                <div class='col-md-6'><input type='date' name='dueDate' id='dueDate' value='{{ data.dueDate }}' class='form-control' required></div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='groupToResolve' class='required'>Group to Resolve</label></div>
-                <div class='col-md-6'>
-                    <select name='groupToResolve' id='groupToResolve' class='form-control' required>
-                        {{ form.renderOptions(options.groupToResolve, data.groupToResolve) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='requiredBy' class='required'>Resolution required prior to</label></div>
-                <div class='col-md-6'>
-                    <select name='requiredBy' id='requiredBy' class='form-control' required>
-                        {{ form.renderOptions(options.requiredBy, data.requiredBy) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='contractID' class='required'>Contract</label></div>
-                <div class='col-md-6'>
-                    <select name='contractID' id='contractID' class='form-control' required>
-                        {{ form.renderOptions(options.contractID, data.contractID) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='identifiedBy' class='required'>Identified By</label></div>
-                <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='{{ data.identifiedBy | raw }}' required></div>
-            </div>
-        </div>
-        <div class='col-md-6'>
-            <div class='row item-margin-bottom'>
-                <div class='col-md-6'><label for='defType' class='required'>Deficiency type</label></div>
-                <div class='col-md-6'>
-                    <select name='defType' id='defType' class='form-control' required>
-                        {{ form.renderOptions(options.defType, data.defType) }}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class='row item-margin-bottom'>
-        <div class='col-md-6 offset-md-3'>
-            <label for='description' class='required'>Deficiency description</label>
-            <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description | raw }}</textarea>
-        </div>
-    </div>
-    <h5 class='grey-bg pad'>
-        <a data-toggle='collapse' href='#optionalInfo' role='button' aria-expanded='false' aria-controls='optionalInfo' class='collapsed'>Optional Information<i class='typcn typcn-arrow-sorted-down'></i></a>
-    </h5>
-    <div id='optionalInfo' class='collapse item-margin-bottom'>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='spec'>Spec or Code</label></div>
-                    <div class='col-md-6'><input type='text' name='spec' id='spec' value='{{ data.spec | raw }}' class='form-control'></div>
-                </div>
-            </div>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='actionOwner'>Action Owner</label></div>
-                    <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='{{ data.actionOwner | raw }}' class='form-control'></div>
-                </div>
-            </div>
-        </div>
-        <div class='row item-margin-bottom'>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='oldID'>Old Id</label></div>
-                    <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='{{ data.oldID | raw }}' class='form-control'></div>
-                </div>
-            </div>
-            <div class='col-md-6'>
-                <div class='row item-margin-bottom'>
-                    <div class='col-md-6'><label for='CDL_pics'>Upload Photo</label></div>
-                    <div class='col-md-6'>
-                        <input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'>
-                        <p class="mb-2 text-red">Max. upload size is 4MB</p>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='systemAffected' class='required'>System Affected</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='systemAffected' id='systemAffected' class='form-control' required>
+                                {{ form.renderOptions(options.systemAffected, data.systemAffected) }}
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
-    </div>
-    {% include 'includes/closureForm.html.twig' %}
-    {% include 'includes/commentForm.html.twig' %}
-    {% if not data.lastUpdated is empty %}
-        {% include 'includes/modHistory.html.twig' %}
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='location' class='required'>General Location</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='location' id='location' class='form-control' required>
+                                {{ form.renderOptions(options.location, data.location) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='specLoc' class='required'>Specific Location</label>
+                        </div>
+                        <div class='col-md-6'><input type='text' name='specLoc' id='specLoc' value='{{ data.specLoc | raw }}' class='form-control' required></div>
+                    </div>
+                </div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='status' class='required'>Status</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='status' id='status' onchange='return onSelectStatusClosed(event)' class='form-control' required>
+                                {{ form.renderOptions(options.status, data.status) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='severity' class='required'>Severity</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='severity' id='severity' class='form-control' required>
+                                {{ form.renderOptions(options.severity, data.severity) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='dueDate' class='required'>To be resolved by</label>
+                        </div>
+                        <div class='col-md-6'><input type='date' name='dueDate' id='dueDate' value='{{ data.dueDate }}' class='form-control' required></div>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='groupToResolve' class='required'>Group to Resolve</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='groupToResolve' id='groupToResolve' class='form-control' required>
+                                {{ form.renderOptions(options.groupToResolve, data.groupToResolve) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='requiredBy' class='required'>Resolution required prior to</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='requiredBy' id='requiredBy' class='form-control' required>
+                                {{ form.renderOptions(options.requiredBy, data.requiredBy) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='contractID' class='required'>Contract</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='contractID' id='contractID' class='form-control' required>
+                                {{ form.renderOptions(options.contractID, data.contractID) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='identifiedBy' class='required'>Identified By</label>
+                        </div>
+                        <div class='col-md-6'><input type='text' name='identifiedBy' id='identifiedBy' class='form-control' value='{{ data.identifiedBy | raw }}' required></div>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div class='row item-margin-bottom'>
+                        <div class='col-md-6'>
+                            <label for='defType' class='required'>Deficiency type</label>
+                        </div>
+                        <div class='col-md-6'>
+                            <select name='defType' id='defType' class='form-control' required>
+                                {{ form.renderOptions(options.defType, data.defType) }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='row item-margin-bottom'>
+                <div class='col-md-6 offset-md-3'>
+                    <label for='description' class='required'>Deficiency description</label>
+                    <textarea name='description' id='description' class='form-control' maxlength='1000' required>{{ data.description | raw }}</textarea>
+                </div>
+            </div>
+            <h5 class='grey-bg pad'>
+                <a data-toggle='collapse' href='#optionalInfo' role='button' aria-expanded='false' aria-controls='optionalInfo' class='collapsed'>Optional Information<i class='typcn typcn-arrow-sorted-down'></i>
+                </a>
+            </h5>
+            <div id='optionalInfo' class='collapse item-margin-bottom'>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='spec'>Spec or Code</label>
+                            </div>
+                            <div class='col-md-6'><input type='text' name='spec' id='spec' value='{{ data.spec | raw }}' class='form-control'></div>
+                        </div>
+                    </div>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='actionOwner'>Action Owner</label>
+                            </div>
+                            <div class='col-md-6'><input type='text' name='actionOwner' id='actionOwner' value='{{ data.actionOwner | raw }}' class='form-control'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='oldID'>Old Id</label>
+                            </div>
+                            <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='{{ data.oldID | raw }}' class='form-control'></div>
+                        </div>
+                    </div>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='bartDefID'>BART ID</label>
+                            </div>
+                            <div class='col-md-6'>
+                                <select name='bartDefID' id='bartDefID' class='form-control' required>
+                                    {{ form.renderOptions(options.bartDefID, data.bartDefID) }}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='CDL_pics'>Upload Photo</label>
+                            </div>
+                            <div class='col-md-6'>
+                                <input type='file' accept='image/*' name='CDL_pics' id='CDL_pics' class='form-control form-control-file'>
+                                <p class="mb-2 text-red">Max. upload size is 4MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class='text-center pad-less bg-yellow'>Photos uploaded from your phone may not preserve rotation information. We are working on a fix for this.</p>
+            </div>
+            {% include 'includes/closureForm.html.twig' %}
+            {% include 'includes/commentForm.html.twig' %}
+            {% if not data.lastUpdated is empty %}
+                {% include 'includes/modHistory.html.twig' %}
+            {% endif %}
+            {% if not data.photos is empty %}
+                <h5 class='grey-bg pad'>
+                    <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i>
+                    </a>
+                </h5>
+                <section id='defPics' class='collapse item-margin-bottom'>
+                    {% for row in data.photos %}
+                        <div class='row item-margin-bottom'>
+                            {% for photo in row %}
+                                <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.id }}'></div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+            <div class='item-margin-bottom center-content'>
+                <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
+                <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
+            </div>
+        {% endblock %}
+    </form>
+    {% if session.role >= 40 and not data.id is empty %}
+        <form action='DeleteDef.php' method='POST' onsubmit=''>
+            <div class='row'>
+                <div class='col-12 center-content'>
+                    <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.id }}' onclick='return confirm("ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.")'>delete</button>
+                </div>
+            </div>
+        </form>
     {% endif %}
-    {% if not data.photos is empty %}
-    <h5 class='grey-bg pad'>
-        <a data-toggle='collapse' href='#defPics' role='button' aria-expanded='' aria-controls='defPics' class='collapsed'>Photos<i class='typcn typcn-arrow-sorted-down'></i></a>
-    </h5>
-    <section id='defPics' class='collapse item-margin-bottom'>
-        {% for row in data.photos %}
-        <div class='row item-margin-bottom'>
-            {% for photo in row %}
-            <div class='col-md-4 text-center'><img src='{{ photo.filepath | raw }}' alt='photo related to deficiency number {{ data.id }}'></div>
-            {% endfor %}
-        </div>
-        {% endfor %}
-    </section>
-    {% endif %}
-    <div class='item-margin-bottom center-content'>
-        <button type='submit' class='btn btn-primary btn-lg'>Submit</button>
-        <button type='reset' class='btn btn-primary btn-lg'>Reset</button>
-    </div>
-    {% endblock %}
-</form>
-{% if session.role >= 40 and not data.id is empty %}
-<form action='DeleteDef.php' method='POST' onsubmit=''>
-    <div class='row'>
-        <div class='col-12 center-content'>
-            <button class='btn btn-danger btn-lg' type='submit' name='q' value='{{ data.id }}'
-                onclick='return confirm("ARE YOU SURE? Deficiencies should not be deleted, your deletion will be logged.")'>delete</button>
-        </div>
-    </div>
-</form>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
-<script src="/js/on_select_closed.js"></script>
-<script>
-    onSelectStatusClosed();
-</script>
+    <script src="/js/on_select_closed.js"></script>
+    <script>
+        onSelectStatusClosed();
+    </script>
 {% endblock %}
