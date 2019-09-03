@@ -55,8 +55,9 @@ $bartTableHeadings = [
 
 $projectTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
+    'bartID' => [ 'value' => 'BART ID', 'cellWd' => '1', 'collapse' => 'sm' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
-    'severity' => [ 'value' => 'Severity', 'cellWd' => '2', 'collapse' => 'xs' ],
+    'severity' => [ 'value' => 'Severity', 'cellWd' => '1', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'systemAffected' => [ 'value' => 'System affected', 'cellWd' => '2', 'collapse' => 'sm', 'classList' => 'def-table__crop-content' ],
     'groupToResolve' => [ 'value' => 'Group to resolve', 'cellWd' => '2', 'collapse' => '', 'classList' => 'def-table__crop-content' ],
@@ -78,6 +79,7 @@ $bartFields = [
 
 $projectFields = [
     "c.defID AS ID",
+    "c.bartDefID AS bartID",
     "l.locationName AS location",
     "s.severityName AS severity",
     "t.statusName AS status",
