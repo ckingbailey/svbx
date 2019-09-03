@@ -22,23 +22,16 @@
             <label>Def #</label>
             <input type="text" name="defID" class="form-control" value="{{values.defID}}">
         </div>
+        <div id="container_input_bartID" class="col-6 col-sm-1 pl-1 pr-1">
+            <label>BART ID</label>
+            <input type="text" name="bartDefID" class="form-control" value="{{values.bartDefID}}">
+        </div>
         <div id="container_select_status" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Status</label>
             <select name="status" class="form-control">
                 <option></option>
                 {% for value, text in selectOptions.status %}
                     {% set selected = (not values.status is empty and values.status == value)
-                        ? ' selected' : '' %}
-                    <option value="{{value}}"{{selected}}>{{text}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div id="container_select_safetyCert" class="col-6 col-sm-1 pl-1 pr-1">
-            <label>Safety cert</label>
-            <select name="safetyCert" class="form-control">
-                <option></option>
-                {% for value, text in selectOptions.safetyCert %}
-                    {% set selected = (not values.safetyCert is empty and values.safetyCert == value)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}
@@ -55,7 +48,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div id="container_select_sysAffected" class="col-6 col-sm-2 pl-1 pr-1">
+        <div id="container_select_sysAffected" class="col-6 col-sm-3 pl-1 pr-1">
             <label>System affected</label>
             <select name="systemAffected[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 {% for value, text in selectOptions.systemAffected %}
@@ -65,7 +58,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div id="container_select_groupToRes" class="col-6 col-sm-2 pl-1 pr-1">
+        <div id="container_select_groupToRes" class="col-6 col-sm-3 pl-1 pr-1">
             <label>Group to resolve</label>
             <select name="groupToResolve[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 {% for value, text in selectOptions.groupToResolve %}
@@ -75,7 +68,20 @@
                 {% endfor %}
             </select>
         </div>
-        <div id="container_select_reqBy" class="col-12 col-sm-2 pl-1 pr-1">
+    </div>
+    <div class="row item-margin-bottom">
+        <div id="container_select_safetyCert" class="col-6 col-sm-1 pl-1 pr-1">
+            <label>Safety cert</label>
+            <select name="safetyCert" class="form-control">
+                <option></option>
+                {% for value, text in selectOptions.safetyCert %}
+                    {% set selected = (not values.safetyCert is empty and values.safetyCert == value)
+                        ? ' selected' : '' %}
+                    <option value="{{value}}"{{selected}}>{{text}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="container_select_reqBy" class="col-12 col-sm-3 pl-1 pr-1">
             <label>Required prior to</label>
             <select name="requiredBy" class="form-control">
                 <option></option>
@@ -86,12 +92,23 @@
                 {% endfor %}
             </select>
         </div>
-    </div>
-    <div class="row item-margin-bottom">
-        <div id="container_input_descrip" class="col-6 col-sm-4 pl-1 pr-1">
+        <div id="container_input_descrip" class="col-6 col-sm-5 pl-1 pr-1">
             <label>Description</label>
             <input type="text" name="description" class="form-control" value="{{values.description}}" />
         </div>
+        <div id="container_select_identifiedBy" class="col-6 col-sm-3 pl-1 pr-1">
+            <label>Identified by</label>
+            <select name="identifiedBy" class="form-control">
+                <option></option>
+                {% for value, text in selectOptions.identifiedBy %}
+                    {% set selected = (not values.identifiedBy is empty and values.identifiedBy == value)
+                        ? ' selected' : '' %}
+                    <option value="{{value}}"{{selected}}>{{text}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row item-margin-bottom">
         <div id="container_select_location" class="col-6 col-sm-3 pl-1 pr-1">
             <label>Location</label>
             <select name="location" class="form-control">
@@ -107,17 +124,6 @@
             <label>Specific location</label>
             <input name="specLoc" type="text" value="{{values.specLoc}}" class="form-control" />
         </div>
-        <div id="container_select_identifiedBy" class="col-6 col-sm-2 pl-1 pr-1">
-            <label>Identified by</label>
-            <select name="identifiedBy" class="form-control">
-                <option></option>
-                {% for value, text in selectOptions.identifiedBy %}
-                    {% set selected = (not values.identifiedBy is empty and values.identifiedBy == value)
-                        ? ' selected' : '' %}
-                    <option value="{{value}}"{{selected}}>{{text}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {{ parent() }}
     </div>
+    {{ parent() }}
 {% endblock %}
