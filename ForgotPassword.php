@@ -174,6 +174,5 @@ if ($_SESSION['badCount'] >= 3)
     mysqli_close($link); ?>
     </div>
     </div>
-    <?php include 'footer.html'; ?>
   </body>
 </html>

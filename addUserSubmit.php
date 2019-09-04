@@ -101,7 +101,7 @@ else {
     <body>
         <?php include('filestart.php');
         echo "<h1>Adding user failed</h1>";
-        echo $message;
+        if (!empty($message)) echo $message;
         include('fileend.php') ?>
     </body>
 </html>

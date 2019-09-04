@@ -15,8 +15,9 @@ if ($_SESSION['role'] <= 10
 // if POST data rec'd, try to INSERT new Def in db
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = intval($_POST['id']);
-    $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
-    $createdByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
+    $postClass = !empty($_POST['class']) ? $_POST['class'] : '';
+    $class = sprintf('SVBX\%sDeficiency', $postClass);
+    $createdByField = $postClass === 'bart' ? 'userID' : 'username';
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
@@ -52,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        if ($_FILES['attachment']['size']
+        if (!empty($_FILES['attachment'])
+            && $_FILES['attachment']['size']
             && $_FILES['attachment']['name']
             && $_FILES['attachment']['tmp_name']
             && $_FILES['attachment']['type'])
@@ -116,11 +118,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $template = $getClass === 'bart' ? 'bartForm.html.twig' : 'defForm.html.twig';
     $pageHeading = '';
 
+    // this is a clone of another def
     if (!empty($_GET['id'])) {
         try {
             $defID = intval($_GET['id']);
             $ref = new ReflectionClass($class);
-            $def = $ref->newInstanceArgs([$defID]);
+            $def = $ref->newInstanceArgs([ $defID ]);
             $def->set($_GET);
             $pageHeading = "Clone Deficiency No. {$_GET['id']}";
         } catch (\ReflectionException $e) {
@@ -129,7 +132,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } catch (\Exception $e) {
             error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
         }
-    } elseif (!empty($_GET['descriptive_title_vta'])) {
+    }
+    // this is a clone of a bart def (?)
+    elseif (!empty($_GET['descriptive_title_vta'])) {
         try {
             $ref = new ReflectionClass($class);
             $def = $ref->newInstanceArgs([null, $_GET]);
@@ -141,6 +146,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             error_log("{$_SERVER['PHP_SELF']} tried to fetch a non-existent Deficiency\n$e");
         }
     }
+    elseif (!empty($_GET)) {
+        $ref = new ReflectionClass($class);
+        $def = $ref->newInstanceArgs([ null, $_GET ]);
+    } else $def = null;
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
