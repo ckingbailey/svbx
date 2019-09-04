@@ -56,9 +56,9 @@ mysqli_close($link);
     </HEAD>
     <BODY>
 <?php
-        include('filestart.php');
-        echo $message;
-        include 'fileend.php';
+    include('filestart.php');
+    if (!empty($message)) echo $message;
+    include 'fileend.php';
 ?>
     </BODY>
 </HTML>

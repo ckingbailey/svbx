@@ -6,7 +6,7 @@ use SVBX\Deficiency;
 
 if ($_SESSION['role'] <= 10
     || (empty($_SESSION['bdPermit'])
-    && ($_POST['class'] === 'bart' || $_GET['class' === 'bart']))) {
+    && ($_POST['class'] === 'bart' || $_GET['class'] === 'bart'))) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
@@ -144,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
-    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
-    if ($_ENV['PHP_ENV'] === 'dev') $twig->addExtension(new Twig_Extension_Debug());
+    $twig = new Twig_Environment($loader, [ 'debug' => getenv('PHP_ENV') === 'dev' ]);
+    if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
     $context = [
         'session' => $_SESSION,
