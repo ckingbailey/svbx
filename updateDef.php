@@ -11,9 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: this should reject early if no ID
     // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
     $id = intval($_POST['id']);
-    $class = sprintf('SVBX\%sDeficiency', $_POST['class']);
-    $qs = '?' . ($_POST['class'] ? "class={$_POST['class']}&" : '' );
-    $updatedByField = $_POST['class'] === 'bart' ? 'userID' : 'username';
+    $class = sprintf('SVBX\%sDeficiency', !empty($_POST['class']) ? $_POST['class'] : '');
+    $qs = '?' . (!empty($_POST['class']) ? "class={$_POST['class']}&" : '' );
+    $updatedByField = (!empty($_POST['class']) && $_POST['class'] === 'bart')
+        ? 'userID' : 'username';
     try {
         $ref = new ReflectionClass($class);
         $def = $ref->newInstanceArgs([ $id, $_POST ]);
@@ -49,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if ($_FILES['attachment']['size']
+        if (!empty($_FILES['attachment'])
+            && $_FILES['attachment']['size']
             && $_FILES['attachment']['name']
             && $_FILES['attachment']['tmp_name']
             && $_FILES['attachment']['type'])
@@ -97,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log($e);
         $_SESSION['errorMsg'] = 'Something went wrong in trying to update deficiency: ' . $e->getMessage();
         $qs = '?'
-            . ($_POST['class'] === 'bart'
+            . (!empty(($_POST['class']) && $_POST['class']) === 'bart'
                 ? 'class=bart&' : '')
             . http_build_query($def->get());
         $location = $_SERVER['PHP_SELF'];
@@ -209,7 +211,7 @@ try {
 
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
-    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
+    $twig = new Twig_Environment($loader, [ 'debug' => getenv('PHP_ENV') === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
     $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {

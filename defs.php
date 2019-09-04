@@ -29,7 +29,7 @@ if(!empty($_GET)) {
 $loader = new Twig_Loader_Filesystem('./templates');
 $twig = new Twig_Environment($loader,
     [
-        'debug' => $_ENV['PHP_ENV'] === 'dev'
+        'debug' => getenv('PHP_ENV') === 'dev'
     ]
 );
 if (getenv('PHP_ENV')) {

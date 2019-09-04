@@ -83,7 +83,7 @@ try {
     
     // instantiate Twig
     $loader = new Twig_Loader_Filesystem('./templates');
-    $twig = new Twig_Environment($loader, [ 'debug' => $_ENV['PHP_ENV'] === 'dev' ]);
+    $twig = new Twig_Environment($loader, [ 'debug' => getenv('PHP_ENV') === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
     // $template = $twig->load();
 
