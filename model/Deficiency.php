@@ -282,7 +282,7 @@ class Deficiency
                 ) {
                     $this->props[$propsKey] = empty($numericProps[$propsKey])
                         ? trim($value)
-                        : intval($value);
+                        : $this->falsyValueForZero($value);
                 } elseif (is_numeric($key) && array_key_exists($value, $this->props)) {
                     $this->props[$value] = null;
                 }
@@ -522,7 +522,7 @@ class Deficiency
      * If no props names passed, returns all string values
      */
     public function getReadable($props = null) { // TODO: takes an optional array of props to join and return
-        // TODO: test for presence of $props in foreignKeys
+        // test for presence of $props in foreignKeys
         $foreignKeys = $props ?
             array_filter(static::$foreignKeys, function($key) use ($props) {
                 return array_search($key, $props) !== false;
