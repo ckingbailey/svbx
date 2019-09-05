@@ -40,6 +40,9 @@ if (getenv('PHP_ENV')) {
 $filter_decode = new Twig_Filter('safe', function($str) {
     return html_entity_decode($str);
 });
+$zerofill = new Twig_Filter('zerofill', function($str, $len) {
+    return str_pid($str, $len, '0', STR_PAD_LEFT);
+});
 $twig->addFilter($filter_decode);    
 
 // set view-dependent variables

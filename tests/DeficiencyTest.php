@@ -187,4 +187,29 @@ final class DeficiencyTest extends TestCase
 
         $this->assertNotEquals(intval($this->newDefID), 0);
     }
+
+    public function testEmptyBartIdDoesNotInsertZero(): void
+    {
+        $this->newDefID = (new Deficiency(null, [
+            'safetyCert' => 1,
+            'systemAffected' => 1,
+            'location' => 1,
+            'specLoc' => 'test_specLoc',
+            'status' => 1,
+            'severity' => 1,
+            'dueDate' => date(static::$dateFormat),
+            'groupToResolve' => 1,
+            'requiredBy' => 1,
+            'contractID' => 1,
+            'identifiedBy' => 'ckb',
+            'defType' => 1,
+            'description' => 'test_description',
+            'bartDefID' => null,
+            'created_by' => 'test_user', // required creation info
+        ]))->insert();
+
+        $newDef = new Deficiency($this->newDefID);
+        $this->assertNotEquals($newDef->get('bartDefID'), 0);
+        $this->assertEquals($newDef->get('bartDefID'), null);
+    }
 }

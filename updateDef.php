@@ -9,7 +9,6 @@ if ($_SESSION['role'] <= 10) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: this should reject early if no ID
-    // TODO: controller should take a generic `id` prop and an additional `class` prop to determine whether it's a BART Def
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', !empty($_POST['class']) ? $_POST['class'] : '');
     $qs = '?' . (!empty($_POST['class']) ? "class={$_POST['class']}&" : '' );
