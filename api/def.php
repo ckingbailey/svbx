@@ -199,7 +199,6 @@ try {
     }
 
     array_unshift($defs, $headings);
-    error_log(print_r($defs, true));
 
     $csv = Writer::createFromFileObject(new SplTempFileObject());
     $csv->setNewline("\r\n");
