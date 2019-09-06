@@ -1,7 +1,7 @@
 /* add bartDefID to def view UP */
 CREATE OR REPLACE VIEW deficiency AS
     SELECT CDL.defID AS id,
-    bartDefID,
+    LPAD(bartDefID, 4, '0') as bartDefID,
     loc.locationName AS location,
     sev.severityName AS severity,
     stat.statusName AS status,
