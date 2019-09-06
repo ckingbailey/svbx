@@ -54,12 +54,17 @@
             const fields = view && view === 'BART'
                 ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
                 : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
+
             let filters = window.location.search
                 .toLowerCase()
                 .slice(1)
                 .replace('view=bart', '')
+            filters = filters.split('&')
+            if (filters[filters.indexOf('defid')])
+                filters[filters.indexOf('defid')] = filters[filters.indexOf('defid')].replace('defid', 'id')
+            filters = filters.join('&')
             filters = filters.startsWith('&') ? filters : `&${filters}`
-            filters = filters.replace('defid', 'id')
+
             const querystring = '?fields=' + fields + filters
             const url = '/api/def.php' + querystring
             fetch(url, {
