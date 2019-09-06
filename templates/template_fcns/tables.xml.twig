@@ -100,16 +100,22 @@
                     ? headings[fieldName].href|trim
                     : headings[fieldName].href|trim ~ id|trim %}
             {% else %}{% endif %}
+
+            {% set cellVal %}
+                {% if headings[fieldName].filter | slice(0, 10) == 'zerofill_4' %}
+                    {{ cell | zerofill_4() }}
+                {% else %}
+                    {{ cell }}
+                {% endif %}
+            {% endset %}
             
             {% if not cell is iterable %}
                 {# if cell is simple scalar then check for href, classes on heading for cell #}
                 {% set cellContent %}
                     {% if not href is empty %}
                         {{ tables.anchorTag(href, id | trim) }}
-                    {% elseif cell is same as('0000-00-00') %}
-                        {{ '—' }}
-                    {% elseif not cell is empty %}
-                        {{ cell | trim | raw | nl2br }}
+                    {% elseif not cell is empty and not cell is same as('0000-00-00') %}
+                        {{ cellVal | trim | raw | nl2br }}
                     {% else %}
                         {{ '—' }}
                     {% endif %}

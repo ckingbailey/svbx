@@ -70,7 +70,7 @@
     <div class='col-md-3'><p>Old Id</p></div>
     <div class='col-md-3'>{{ page.input_like(data.oldID) }}</div>
     <div class='col-md-3'><p>BART ID</p></div>
-    <div class='col-md-3'>{{ page.input_like(data.bartDefID) }}</div>
+    <div class='col-md-3'>{{ page.input_like(data.bartDefID | zerofill_4()) }}</div>
 </div>
 {% include 'includes/closureInfo.html.twig' %}
 {% if not data.comments is empty %}

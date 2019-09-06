@@ -53,7 +53,7 @@
             const view = getQueryValue('view')
             const fields = view && view === 'BART'
                 ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
-                : 'id,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
+                : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
             let filters = window.location.search
                 .toLowerCase()
                 .slice(1)

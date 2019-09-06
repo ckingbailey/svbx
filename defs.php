@@ -40,7 +40,11 @@ if (getenv('PHP_ENV')) {
 $filter_decode = new Twig_Filter('safe', function($str) {
     return html_entity_decode($str);
 });
-$twig->addFilter($filter_decode);    
+$zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
+    return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
+});
+$twig->addFilter($filter_decode);
+$twig->addFilter($zerofill);
 
 // set view-dependent variables
 $bartTableHeadings = [
@@ -55,7 +59,7 @@ $bartTableHeadings = [
 
 $projectTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
-    'bartID' => [ 'value' => 'BART ID', 'cellWd' => '1', 'collapse' => 'sm' ],
+    'bartID' => [ 'value' => 'BART ID', 'filter' => 'zerofill_4', 'cellWd' => '1', 'collapse' => 'sm' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '1', 'collapse' => 'xs' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],

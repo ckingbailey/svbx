@@ -220,9 +220,7 @@
                                 <label for='bartDefID'>BART ID</label>
                             </div>
                             <div class='col-md-6'>
-                                <select name='bartDefID' id='bartDefID' class='form-control'>
-                                    {{ form.renderOptions(options.bartDefID, data.bartDefID) }}
-                                </select>
+                                <input type="number" name="bartDefID" id="bartDefID" min="1" max="9999" value="{{ data.bartDefID | raw }}" class="form-control">
                             </div>
                         </div>
                     </div>

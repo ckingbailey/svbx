@@ -44,6 +44,7 @@ try {
     $view = 'deficiency';
     $headings = [
         'id' => '_id',
+        'bartDefID' => 'BART ID',
         'location' => 'Location',
         'severity' => 'Severity',
         'status' => 'Status',
@@ -97,6 +98,7 @@ try {
             if (strcasecmp($key, 'identifiedby') === 0
             || strcasecmp($key, 'specloc') === 0
             || strcasecmp($key, 'id') === 0
+            || strcasecmp($key, 'bartDefID') === 0
             || strcasecmp($key, 'description') === 0) {
                 $link->where($key, "%{$val}%", 'LIKE');
             } elseif (strcasecmp($key, 'systemAffected') === 0

@@ -87,7 +87,7 @@ class Deficiency
         'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'oldID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
-        'bartDefID' => 'intval',
+        'bartDefID' => 'FILTER_SANITIZE_NUMBER_INT',
         'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'created_by' => false,
         'updated_by' => false,
@@ -212,12 +212,6 @@ class Deficiency
             'table' => 'repo',
             'fields' => ['repoID', 'repoName']
         ],
-        'bartDefID' => [
-            'table' => 'BARTDL',
-            'alias' => 'bart',
-            'fields' => [ 'ID' ],
-            'order' => [ 'ID', 'ASC' ]
-        ],
         'created_by' => [
             'table' => 'users_enc',
             'alias' => 'cb',
@@ -309,7 +303,7 @@ class Deficiency
             $propName = !empty($this->filters[$key]) ? $key : array_search($key, $this->fields);
             $filter = $this->filters[$propName];
             if (strpos($filter, 'FILTER') === 0)
-                $acc[$key] = filter_var($props[$key], constant($filter));
+                $acc[$key] = filter_var($props[$key], constant($filter)) ?: null;
             elseif ($filter !== false) {
                 // this if condition should be temporary
                 // use only until all '0000-00-00' dates are properly set to NULL
@@ -320,7 +314,7 @@ class Deficiency
             else $acc[$key] = $props[$key];
             // trim & stripcslashes here should be temporary
             // may be removed once all tainted Defs are cleaned of '\r\n'
-            $acc[$key] = trim(stripcslashes($acc[$key]));
+            if (is_string($acc[$key])) $acc[$key] = trim(stripcslashes($acc[$key]));
             return $acc;
         }, []);
     }
