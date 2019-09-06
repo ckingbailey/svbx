@@ -86,6 +86,12 @@ try {
     $twig = new Twig_Environment($loader, [ 'debug' => getenv('PHP_ENV') === 'dev' ]);
     $twig->addExtension(new Twig_Extension_Debug());
 
+    // add custom Twig filters
+    $zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
+        return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
+    });
+    $twig->addFilter($zerofill);
+    
     $twig->display($templatePath, $context);
 } catch (Twig_Error $e) {
     echo "Unable to render template";

@@ -156,17 +156,6 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertWithBartId(): void
     {
-        $this->bartDefID = (new BARTDeficiency(null, [
-            'creator' => 1,
-            'status' => 1,
-            'descriptive_title_vta' => 'test description',
-            'root_prob_vta' => 'test root problem',
-            'resolution_vta' => 'test resolution vta',
-            'priority_vta' => 1,
-            'safety_cert_vta' => 1,
-            'created_by' => 1
-        ]))->insert();
-
         $this->newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
@@ -181,7 +170,7 @@ final class DeficiencyTest extends TestCase
             'identifiedBy' => 'ckb',
             'defType' => 1,
             'description' => 'test_description',
-            'bartDefID' => $this->bartDefID,
+            'bartDefID' => 5555,
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
