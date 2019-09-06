@@ -212,12 +212,6 @@ class Deficiency
             'table' => 'repo',
             'fields' => ['repoID', 'repoName']
         ],
-        'bartDefID' => [
-            'table' => 'BARTDL',
-            'alias' => 'bart',
-            'fields' => [ 'ID' ],
-            'order' => [ 'ID', 'ASC' ]
-        ],
         'created_by' => [
             'table' => 'users_enc',
             'alias' => 'cb',
