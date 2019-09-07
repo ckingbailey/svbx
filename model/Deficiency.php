@@ -103,7 +103,7 @@ class Deficiency
     ];
 
     // maps object props to database fields
-    protected $fields = [
+    protected static $fields = [
         'id' =>  'defID',
         'safetyCert' => 'safetyCert',
         'systemAffected' => 'systemAffected',
@@ -236,7 +236,7 @@ class Deficiency
         } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $fields = $this->fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
+                $fields = static::$fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
                 $link->where($fields['id'], $id);
                 if ($data = $link->getOne($this->table, array_values($fields))) {
                     $this->props['id'] = $id;
@@ -272,7 +272,7 @@ class Deficiency
                 if (is_string($key)
                     && ($propsKey = key_exists($key, $this->props)
                         ? $key
-                        : array_search($key, $this->fields))
+                        : array_search($key, static::$fields))
                 ) {
                     $this->props[$propsKey] = empty($numericProps[$propsKey])
                         ? trim($value)
@@ -287,9 +287,9 @@ class Deficiency
     private function propsToFields($props = null) {
         $props = $props ?: array_keys($this->props);
         return array_reduce($props, function($acc, $prop) {
-            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null) {
+            if (!empty(static::$fields[$prop]) && $this->props[$prop] !== null) {
                 $val = $this->props[$prop] !== '' ? $this->props[$prop] : null;
-                $acc[$this->fields[$prop]] = $val;
+                $acc[static::$fields[$prop]] = $val;
             }
             return $acc;
         }, []);
@@ -297,10 +297,10 @@ class Deficiency
 
     public function sanitize($props = null) {
         $props = $props ?: $this->props;
-        $reverseLookup = array_flip($this->fields);
+        $reverseLookup = array_flip(static::$fields);
         return array_reduce(array_keys($props), function($acc, $key) use ($props) {
             // if $key is not in filters, look it up its corresponding prop name in fields
-            $propName = !empty($this->filters[$key]) ? $key : array_search($key, $this->fields);
+            $propName = !empty($this->filters[$key]) ? $key : array_search($key, static::$fields);
             $filter = $this->filters[$propName];
             if (strpos($filter, 'FILTER') === 0)
                 $acc[$key] = filter_var($props[$key], constant($filter)) ?: null;
@@ -397,8 +397,8 @@ class Deficiency
 
         $insertableData = $this->propsToFields();
         unset(
-            $insertableData[$this->fields['id']],
-            $insertableData[$this->fields['lastUpdated']]
+            $insertableData[static::$fields['id']],
+            $insertableData[static::$fields['lastUpdated']]
         );
         $insertableData = $this->sanitize($insertableData);
         
@@ -429,7 +429,7 @@ class Deficiency
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            $link->where($this->fields['id'], $this->props['id']);
+            $link->where(static::$fields['id'], $this->props['id']);
             if (!$success = $link->update($this->table, $updatableData)) {
                 error_log($link->getLastQuery());
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
@@ -526,7 +526,7 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             
             if (empty($this->props['id'])) throw new \Exception('No ID found for Deficiency');
-            $link->where($this->fields['id'], $this->props['id']);
+            $link->where(static::$fields['id'], $this->props['id']);
             
             $lookupFields = [];
             
@@ -569,6 +569,10 @@ class Deficiency
         } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
         }
+    }
+
+    public static function getFields() {
+        return static::$fields;
     }
     
     public function __toString() {

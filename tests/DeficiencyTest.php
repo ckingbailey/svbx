@@ -18,20 +18,29 @@ final class DeficiencyTest extends TestCase
 
     protected function tearDown(): void
     {
-        try {
-            $db = new MysqliDb(DB_CREDENTIALS);
-
-            $db->where('defID', $this->newDefID);
-            $db->delete('CDL');
-        } catch (Exception $e) {
-            error_log(print_r($e, true));
-            throw $e;
-        } catch (Error $e) {
-            error_log(print_r($e, true));
-            throw $e;
-        } finally {
-            if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
+        if ($this->newDefID) {
+            try {
+                $db = new MysqliDb(DB_CREDENTIALS);
+    
+                $db->where('defID', $this->newDefID);
+                $db->delete('CDL');
+            } catch (Exception $e) {
+                error_log(print_r($e, true));
+                throw $e;
+            } catch (Error $e) {
+                error_log(print_r($e, true));
+                throw $e;
+            } finally {
+                if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
+            }
         }
+    }
+
+    public function testCanGetFields(): void
+    {
+        $fields = Deficiency::getFields();
+        $this->assertIsArray($fields);
+        $this->assertEquals($fields['id'], 'defID');
     }
 
     public function testCanCreateNewWithRequiredProps(): void
