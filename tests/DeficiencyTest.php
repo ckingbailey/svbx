@@ -43,6 +43,28 @@ final class DeficiencyTest extends TestCase
         $this->assertEquals($fields['id'], 'defID');
     }
 
+    public function testCanGetJoins(): void
+    {
+        $joins = Deficiency::getJoins();
+        $this->assertIsArray($joins);
+        $this->assertContains([
+            'table' => 'yesNo',
+            'on' => 'CDL.safetyCert = yesNo.yesNoID',
+            'type' => 'LEFT'
+        ], $joins);
+    }
+
+    public function testCanGetJoinsFromList(): void
+    {
+        $joins = Deficiency::getJoins([ 'location', 'status', 'groupToResolve' ]);
+        $this->assertIsArray($joins);
+        $this->assertContains([
+            'table' => 'location',
+            'on' => 'CDL.location = location.locationID',
+            'type' => 'LEFT'
+        ], $joins);
+    }
+
     public function testCanCreateNewWithRequiredProps(): void
     {
         $this->assertInstanceOf(

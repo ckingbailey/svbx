@@ -7,6 +7,7 @@ class DefCollection
 {
     private $defs = [];
     private $fields = [];
+    private $joins = [];
 
     public function __construct($props) {
         return $props;
@@ -18,10 +19,13 @@ class DefCollection
         array $groupBy = [],
         array $orderBy = [ 'id', 'ASC' ]
     ) {
-        $fields = Deficiency::getFields();
+        // get fields from Def and return those that match strings in $select
+        $this->fields = array_intersect($select, Deficiency::getFields());
+        $this->joins = array_filter(Deficiency::getJoins($this->fields));
 
         return [
-            'select' => $select,
+            'select' => $this->fields,
+            'join' => $this->joins,
             'where' => $where,
             'groupBy' => $groupBy,
             'orderBy' => $orderBy

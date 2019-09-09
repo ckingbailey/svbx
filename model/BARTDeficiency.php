@@ -6,7 +6,7 @@ use MysqliDb;
 class BARTDeficiency extends Deficiency {
     const TIMESTAMP_FIELD = 'form_modified';
 
-    protected $table = 'BARTDL';
+    protected static $table = 'BARTDL';
     public $commentsTable = [
         'table' => 'bartdlComments',
         'field' => 'bdCommText',

@@ -5,7 +5,7 @@ use MysqliDb;
 
 class Deficiency
 {
-    protected $table = 'CDL';
+    protected static $table = 'CDL';
     public $commentsTable = [
         'table' => 'cdlComments',
         'field' => 'cdlCommText',
@@ -238,7 +238,7 @@ class Deficiency
                 $link = new MysqliDb(DB_CREDENTIALS);
                 $fields = static::$fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
                 $link->where($fields['id'], $id);
-                if ($data = $link->getOne($this->table, array_values($fields))) {
+                if ($data = $link->getOne(static::$table, array_values($fields))) {
                     $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -404,7 +404,7 @@ class Deficiency
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            if ($newID = $link->insert($this->table, $insertableData)) {
+            if ($newID = $link->insert(static::$table, $insertableData)) {
                 $this->set('id', $newID);
             } else {
                 throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
@@ -430,7 +430,7 @@ class Deficiency
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where(static::$fields['id'], $this->props['id']);
-            if (!$success = $link->update($this->table, $updatableData)) {
+            if (!$success = $link->update(static::$table, $updatableData)) {
                 error_log($link->getLastQuery());
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
@@ -549,7 +549,7 @@ class Deficiency
 
                 $join = $lookupTable . ($alias ? " AS {$alias}" : '');
                 $joinOn = sprintf("%s.%s = %s.%s",
-                    $this->table,
+                    static::$table,
                     $childField,
                     ($alias ?: $lookupTable),
                     $lookupKey
@@ -560,7 +560,7 @@ class Deficiency
                 $lookupFields[] = $selectField . ' AS ' . $childField;
             }
 
-            if (!$readable = $link->getOne($this->table, $lookupFields))
+            if (!$readable = $link->getOne(static::$table, $lookupFields))
                 throw new \Exception('There was a problem fetching on the lookup fields: ' . $link->getLastQuery());
             
             return $readable + $this->get();
@@ -573,6 +573,28 @@ class Deficiency
 
     public static function getFields() {
         return static::$fields;
+    }
+
+    public static function getJoins(array $fields = []): array {
+        $fields = empty($fields)
+        ? static::$foreignKeys
+        : array_filter(static::$foreignKeys, function ($key) use ($fields) {
+            return array_search($key, $fields) !== FALSE;
+        }, ARRAY_FILTER_USE_KEY);
+        // fwrite(STDOUT, 'so what\'s the output of array_filter? ' . print_r($fields, true));
+
+        return array_map(function ($childField, $join) {
+            // fwrite(STDOUT, 'why you think $join is a string? ' . gettype($join) . print_r($join, true));
+
+            list($parentTable, $alias) = !empty($join['alias'])
+            ? [ "{$join['table']} AS {$join['alias']}", $join['alias'] ]
+            : [ $join['table'], $join['table'] ];
+            return [
+                'table' => $parentTable,
+                'on' => static::$table . ".$childField = $alias.{$join['fields'][0]}",
+                'type' => 'LEFT'
+            ];
+        }, array_keys($fields), $fields);
     }
     
     public function __toString() {
