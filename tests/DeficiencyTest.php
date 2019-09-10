@@ -40,7 +40,7 @@ final class DeficiencyTest extends TestCase
     {
         $fields = Deficiency::getFields();
         $this->assertIsArray($fields);
-        $this->assertEquals($fields['defID'], 'id');
+        $this->assertEquals($fields['id'], 'defID');
     }
 
     public function testCanGetJoins(): void

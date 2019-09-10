@@ -8,7 +8,8 @@ class DefCollection
     protected $defs = [];
 
     protected static $whereLike = [
-        'defID',
+        'id',
+        'bartDefID',
         'specLoc',
         'description'
     ];
@@ -24,32 +25,50 @@ class DefCollection
         array $orderBy = [ 'id', 'ASC' ]): array
     {
         // get fields from Def and return those that match strings in $select
-        $fields = array_intersect($select, Deficiency::getFields());
+        $defFields = Deficiency::getFields();
 
-        $where = array_reduce(array_keys($where),
-            function ($output, $field) use ($where, $fields) {
-                if (in_array($field, $fields)) {
-                    $comparator = static::getComparator($where[$field]);
-                    $output[] = [
-                        $field,
-                        $where[$field],
-                        $comparator
-                    ];
+        $fetchable = [
+            'select' => array_reduce($select,
+                function ($output, $field) use ($defFields) {
+                    if (!empty($defFields[$field])) {
+                        $output[$defFields[$field]] = "CDL.$defFields[$field]"
+                        . ($defFields[$field] === $field ? '' : " AS $field");
+                    }
+                    return $output;
+                }, [])
+            ];
+
+        $fetchable['where'] = array_reduce(array_keys($where),
+            function ($output, $field) use ($where, $select, $fetchable, $defFields) {
+                $comparator = static::getComparator($field);
+                $val = $where[$field];
+                if (in_array($field, $select)) {
+                    $field = $fetchable['select'][$defFields[$field]];
+                } elseif (!empty($defFields[$field])) {
+                    $field = "CDL.$field";
                 }
+                $output[] = [
+                    $field,
+                    $val,
+                    $comparator
+                ];
                 return $output;
             }, []);
 
-        return [
-            'select' => $fields,
-            'join' => Deficiency::getJoins($fields),
-            'where' => $where,
-            'groupBy' => $groupBy,
-            'orderBy' => $orderBy
-        ];
+        $fetchable['join'] = Deficiency::getJoins($fetchable['select']);
+
+        if (!empty($groupBy))
+            $fetchable['groupBy'] = $groupBy;
+
+        if (!empty($orderBy))
+            $fetchable['orderBy'] = $orderBy;
+
+        return $fetchable;
     }
 
     protected static function getComparator($field) {
         if (in_array($field, static::$whereLike)) return 'LIKE';
         if (is_array($field)) return 'IN';
+        else return '=';
     }
 }

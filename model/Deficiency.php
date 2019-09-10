@@ -572,7 +572,7 @@ class Deficiency
     }
 
     public static function getFields() {
-        return array_flip(static::$fields);
+        return static::$fields;
     }
 
     public static function getJoins(array $fields = []): array {
