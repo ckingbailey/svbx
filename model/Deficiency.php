@@ -225,7 +225,7 @@ class Deficiency
             'concat' => true
         ]
     ];
-    
+
     public function __construct($id = null, array $data = []) {
         if (!empty($id) && !empty($data)) { // This is a known Def
             $this->props['id'] = $id;
@@ -572,7 +572,7 @@ class Deficiency
     }
 
     public static function getFields() {
-        return static::$fields;
+        return array_flip(static::$fields);
     }
 
     public static function getJoins(array $fields = []): array {

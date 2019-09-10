@@ -7,23 +7,10 @@ class DefCollection
 {
     protected $defs = [];
 
-    protected static $where = [
-        'defID' => 'LIKE',
-        'safetyCert' => '=',
-        'systemAffected' => '=',
-        'location' => '=',
-        'status' => '=',
-        'severity' => '=',
-        'groupToResolve' => '=',
-        'requiredBy' => '=',
-        'contractID' => '=',
-        'defType' => '=',
-        'description' => 'LIKE',
-        'evidenceType' => '=',
-        'repo' => '=',
-        'updated_by' => '=',
-        'created_by' => '=',
-        'closureRequestedBy' => '='
+    protected static $whereLike = [
+        'defID',
+        'specLoc',
+        'description'
     ];
 
     public function __construct($props) {
@@ -34,18 +21,18 @@ class DefCollection
         array $select = [],
         array $where = [],
         array $groupBy = [],
-        array $orderBy = [ 'id', 'ASC' ]
-    ) {
+        array $orderBy = [ 'id', 'ASC' ]): array
+    {
         // get fields from Def and return those that match strings in $select
         $fields = array_intersect($select, Deficiency::getFields());
 
         $where = array_reduce(array_keys($where),
             function ($output, $field) use ($where, $fields) {
                 if (in_array($field, $fields)) {
-                    $comparator = is_array($fields[$field]) ? 'IN' : '=';
+                    $comparator = static::getComparator($where[$field]);
                     $output[] = [
                         $field,
-                        $fields[$field],
+                        $where[$field],
                         $comparator
                     ];
                 }
@@ -59,5 +46,10 @@ class DefCollection
             'groupBy' => $groupBy,
             'orderBy' => $orderBy
         ];
+    }
+
+    protected static function getComparator($field) {
+        if (in_array($field, static::$whereLike)) return 'LIKE';
+        if (is_array($field)) return 'IN';
     }
 }
