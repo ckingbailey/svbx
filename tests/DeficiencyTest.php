@@ -57,12 +57,30 @@ final class DeficiencyTest extends TestCase
     public function testCanGetJoinsFromList(): void
     {
         $joins = Deficiency::getJoins([ 'location', 'status', 'groupToResolve' ]);
-        $this->assertIsArray($joins);
+        $this->assertEquals(3, count($joins));
         $this->assertContains([
             'table' => 'location',
             'on' => 'CDL.location = location.locationID',
             'type' => 'LEFT'
         ], $joins);
+    }
+
+    public function testGetJoinsIgnoresInvalidFields(): void
+    {
+        $joins = Deficiency::getJoins([ 'severity', 'foobar', 'hamSandwich', 'contractID' ]);
+        // fwrite(STDOUT, 'joins from list that includes invalid fields ' . print_r($joins, true));
+        $this->assertEquals([
+            [
+                'table' => 'severity',
+                'on' => 'CDL.severity = severity.severityID',
+                'type' =>   'LEFT'
+            ],
+            [
+                'table' => 'contract',
+                'on' => 'CDL.contractID = contract.contractID',
+                'type' =>   'LEFT'
+            ]
+            ], $joins);
     }
 
     public function testCanCreateNewWithRequiredProps(): void

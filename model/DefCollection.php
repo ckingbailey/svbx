@@ -5,9 +5,26 @@ use SVBX\Deficiency;
 
 class DefCollection
 {
-    private $defs = [];
-    private $fields = [];
-    private $joins = [];
+    protected $defs = [];
+
+    protected static $where = [
+        'defID' => 'LIKE',
+        'safetyCert' => '=',
+        'systemAffected' => '=',
+        'location' => '=',
+        'status' => '=',
+        'severity' => '=',
+        'groupToResolve' => '=',
+        'requiredBy' => '=',
+        'contractID' => '=',
+        'defType' => '=',
+        'description' => 'LIKE',
+        'evidenceType' => '=',
+        'repo' => '=',
+        'updated_by' => '=',
+        'created_by' => '=',
+        'closureRequestedBy' => '='
+    ];
 
     public function __construct($props) {
         return $props;
@@ -20,12 +37,24 @@ class DefCollection
         array $orderBy = [ 'id', 'ASC' ]
     ) {
         // get fields from Def and return those that match strings in $select
-        $this->fields = array_intersect($select, Deficiency::getFields());
-        $this->joins = array_filter(Deficiency::getJoins($this->fields));
+        $fields = array_intersect($select, Deficiency::getFields());
+
+        $where = array_reduce(array_keys($where),
+            function ($output, $field) use ($where, $fields) {
+                if (in_array($field, $fields)) {
+                    $comparator = is_array($fields[$field]) ? 'IN' : '=';
+                    $output[] = [
+                        $field,
+                        $fields[$field],
+                        $comparator
+                    ];
+                }
+                return $output;
+            }, []);
 
         return [
-            'select' => $this->fields,
-            'join' => $this->joins,
+            'select' => $fields,
+            'join' => Deficiency::getJoins($fields),
             'where' => $where,
             'groupBy' => $groupBy,
             'orderBy' => $orderBy

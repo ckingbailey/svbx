@@ -576,25 +576,28 @@ class Deficiency
     }
 
     public static function getJoins(array $fields = []): array {
-        $fields = empty($fields)
-        ? static::$foreignKeys
-        : array_filter(static::$foreignKeys, function ($key) use ($fields) {
-            return array_search($key, $fields) !== FALSE;
-        }, ARRAY_FILTER_USE_KEY);
-        // fwrite(STDOUT, 'so what\'s the output of array_filter? ' . print_r($fields, true));
+        $keys = array_keys(static::$foreignKeys);
+        $fieldList = empty($fields)
+        ? $keys
+        : array_reduce($fields, function ($output, $field) use ($keys) {
+            if (array_search($field, $keys) !== FALSE)
+                $output[] = $field;
+            return $output;
+        }, []);
 
-        return array_map(function ($childField, $join) {
-            // fwrite(STDOUT, 'why you think $join is a string? ' . gettype($join) . print_r($join, true));
+        return array_map(function ($childField) {
+            $join = static::$foreignKeys[$childField];
 
             list($parentTable, $alias) = !empty($join['alias'])
             ? [ "{$join['table']} AS {$join['alias']}", $join['alias'] ]
             : [ $join['table'], $join['table'] ];
+            
             return [
                 'table' => $parentTable,
                 'on' => static::$table . ".$childField = $alias.{$join['fields'][0]}",
                 'type' => 'LEFT'
             ];
-        }, array_keys($fields), $fields);
+        }, $fieldList);
     }
     
     public function __toString() {
