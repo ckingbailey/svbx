@@ -40,18 +40,16 @@ class DefCollection
 
         $fetchable['where'] = array_reduce(array_keys($where),
             function ($output, $field) use ($where, $select, $fetchable, $defFields) {
-                $comparator = static::getComparator($field);
-                $val = $where[$field];
-                if (in_array($field, $select)) {
-                    $field = $fetchable['select'][$defFields[$field]];
-                } elseif (!empty($defFields[$field])) {
-                    $field = "CDL.$field";
+                if (!empty($defFields[$field])) {
+                    $comparator = static::getComparator($field);
+                    $val = $where[$field];
+                    $field = "CDL.{$defFields[$field]}";
+                    $output[] = [
+                        $field,
+                        $val,
+                        $comparator
+                    ];
                 }
-                $output[] = [
-                    $field,
-                    $val,
-                    $comparator
-                ];
                 return $output;
             }, []);
 
