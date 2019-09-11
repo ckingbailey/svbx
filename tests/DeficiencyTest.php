@@ -43,6 +43,12 @@ final class DeficiencyTest extends TestCase
         $this->assertEquals($fields['id'], 'defID');
     }
 
+    public function testCanGetLookupMap() : void
+    {
+        $lookupMap = Deficiency::getLookupMap();
+        $this->assertIsArray($lookupMap);
+    }
+
     public function testCanGetJoins(): void
     {
         $joins = Deficiency::getJoins();
@@ -68,7 +74,6 @@ final class DeficiencyTest extends TestCase
     public function testGetJoinsIgnoresInvalidFields(): void
     {
         $joins = Deficiency::getJoins([ 'severity', 'foobar', 'hamSandwich', 'contractID' ]);
-        // fwrite(STDOUT, 'joins from list that includes invalid fields ' . print_r($joins, true));
         $this->assertEquals([
             [
                 'table' => 'severity',

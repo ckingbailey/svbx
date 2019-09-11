@@ -571,8 +571,24 @@ class Deficiency
         }
     }
 
+    public static function getTable() {
+        return static::$table;
+    }
+
     public static function getFields() {
         return static::$fields;
+    }
+
+    public static function getLookupMap() : array
+    {
+        $foreignKeys = static::$foreignKeys;
+        return array_reduce(array_keys($foreignKeys),
+            function ($lookups, $field) use ($foreignKeys) {
+                $lookups[$field] = !empty($foreignKeys[$field]['concat']) && $foreignKeys[$field]['concat'] === true
+                ? implode(array_slice($foreignKeys[$field]['fields'], 1))
+                : $foreignKeys[$field]['fields'][1];
+                return $lookups;
+            }, []);
     }
 
     public static function getJoins(array $fields = []): array {
