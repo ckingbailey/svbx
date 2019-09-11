@@ -89,6 +89,29 @@ final class DeficiencyTest extends TestCase
         $this->assertEquals($dateCreated, $d->format(static::$dateFormat));
     }
 
+    public function testCanInsertWithNullRepo() : void
+    {
+        $this->newDefID = (new Deficiency(false, [
+            'safetyCert' => 1,
+            'systemAffected' => 1,
+            'location' => 1,
+            'specLoc' => 'test_specLoc',
+            'status' => 1,
+            'severity' => 1,
+            'dueDate' => date(static::$dateFormat),
+            'groupToResolve' => 1,
+            'requiredBy' => 1,
+            'contractID' => 1,
+            'identifiedBy' => 'ckb',
+            'defType' => 1,
+            'description' => 'test_description',
+            'created_by' => 'test_user', // required creation info
+            'repo' => null
+        ]))->insert();
+        
+        $this->assertNotEquals(intval($this->newDefID), 0);
+    }
+
     public function testInsertWithStatusClosedGetsTimestamp(): void
     {
         $this->newDefID = (new Deficiency(false, [
