@@ -7,36 +7,28 @@ use PHPUnit\Framework\TestCase;
 
 final class DeficiencyTest extends TestCase
 {
-    protected $newDefID;
     protected $bartDefID;
     protected static $dateFormat = 'Y-m-d';
 
-    protected function setUp(): void
+    protected function tearDown() : void
     {
-        $this->newDefID = null;
-    }
+        try {
+            $db = new MysqliDb(DB_CREDENTIALS);
 
-    protected function tearDown(): void
-    {
-        if ($this->newDefID) {
-            try {
-                $db = new MysqliDb(DB_CREDENTIALS);
-    
-                $db->where('defID', $this->newDefID);
-                $db->delete('CDL');
-            } catch (Exception $e) {
-                error_log(print_r($e, true));
-                throw $e;
-            } catch (Error $e) {
-                error_log(print_r($e, true));
-                throw $e;
-            } finally {
-                if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
-            }
+            $db->delete('CDL');
+            $db->query('ALTER TABLE CDL AUTO_INCREMENT = 1');
+        } catch (Exception $e) {
+            error_log(print_r($e, true));
+            throw $e;
+        } catch (Error $e) {
+            error_log(print_r($e, true));
+            throw $e;
+        } finally {
+            if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
         }
     }
 
-    public function testCanGetFields(): void
+    public function testCanGetFields() : void
     {
         $fields = Deficiency::getFields();
         $this->assertIsArray($fields);
@@ -112,7 +104,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertNewWithStatusOpen(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -129,9 +121,9 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
         
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $this->assertEqualsIgnoringCase(
             $newDef->getReadable([ 'status' ])['status'],
             'open'
@@ -145,7 +137,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertWithNullRepo() : void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -163,12 +155,12 @@ final class DeficiencyTest extends TestCase
             'repo' => null
         ]))->insert();
         
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
     }
 
     public function testInsertWithStatusClosedGetsTimestamp(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -188,9 +180,9 @@ final class DeficiencyTest extends TestCase
             'evidenceID' => 'aaa000-bbb999' // required closure info
         ]))->insert();
 
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
         
-        $dateClosed = (new Deficiency($this->newDefID))->get('dateClosed');
+        $dateClosed = (new Deficiency($newDefID))->get('dateClosed');
         $d = DateTime::createFromFormat(static::$dateFormat, $dateClosed);
 
         $this->assertInstanceOf('DateTime', $d);
@@ -199,7 +191,7 @@ final class DeficiencyTest extends TestCase
 
     public function testUpdateWithStatusClosedGetsTimestamp(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -216,7 +208,7 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $newDef->set('status', 2);
         $newDef->set('repo', 1);
         $newDef->set('evidenceType', 1);
@@ -233,7 +225,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertWithBartId(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -251,12 +243,12 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
     }
 
     public function testEmptyBartIdDoesNotInsertZero(): void
     {
-        $this->newDefID = (new Deficiency(null, [
+        $newDefID = (new Deficiency(null, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -274,7 +266,7 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $this->assertNotEquals($newDef->get('bartDefID'), 0);
         $this->assertEquals($newDef->get('bartDefID'), null);
     }

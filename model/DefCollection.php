@@ -45,7 +45,7 @@ class DefCollection
         $fetchable['where'] = array_reduce(array_keys($where),
             function ($output, $field) use ($where, $select, $fetchable, $defFields) {
                 if (!empty($defFields[$field])) {
-                    $comparator = static::getComparator($field);
+                    $comparator = static::getComparator($field, $where[$field]);
                     $val = $where[$field];
                     $field = "CDL.{$defFields[$field]}";
                     $output[] = [
@@ -104,9 +104,9 @@ class DefCollection
         ];
     }
 
-    protected static function getComparator($field) {
-        if (in_array($field, static::$whereLike)) return 'LIKE';
-        if (is_array($field)) return 'IN';
+    protected static function getComparator($key, $val) {
+        if (in_array($key, static::$whereLike)) return 'LIKE';
+        if (is_array($val)) return 'IN';
         else return '=';
     }
 }
