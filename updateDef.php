@@ -8,7 +8,7 @@ if ($_SESSION['role'] <= 10) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    error_log('POST received ' . print_r($_POST, true));
+    error_log('updateDef received POST ' . print_r($_POST, true));
     // TODO: this should reject early if no ID
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', !empty($_POST['class']) ? $_POST['class'] : '');
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log('Def #' . $def->get('id') . ' ready for update' . $def);
         $success = $def->update();
         error_log('Def #' . $def->get('id') . ' successfully updated');
-        
+
         // if UPDATE succesful, prepare, upload, and INSERT photo
         // TODO: make all this one transcaction handled by the Deficiency object
         // TODO: create classes for Comment and Attachment
@@ -124,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // TODO: this should fail early if no ID or if invalid class
 // TODO: this should show an error to the user for missing ID or invalid class
 try {
+    error_log('updateDef received GET ' . print_r($_GET, true));
     if (empty($_GET['id'])) throw new Exception('No id received for update request form');
     if (empty($_GET)) throw new Exception('No data received for update request form');
     $class = 'SVBX\%sDeficiency';
