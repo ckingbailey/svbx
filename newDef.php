@@ -4,9 +4,14 @@ require 'session.php';
 
 use SVBX\Deficiency;
 
+function getClass() {
+    if (!empty($_POST['class'])) return $_POST['class'];
+    if (!empty($_GET['class'])) return $_GET['class'];
+}
+
 if ($_SESSION['role'] <= 10
     || (empty($_SESSION['bdPermit'])
-    && ($_POST['class'] === 'bart' || $_GET['class'] === 'bart'))) {
+    && (getClass() === 'bart'))) {
     error_log('Unauthorized client tried to access newdef.php from ' . $_SERVER['HTTP_ORIGIN']);
     header('This is not for you', true, 403);
     exit;
