@@ -8,6 +8,7 @@ if ($_SESSION['role'] <= 10) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log('POST received ' . print_r($_POST, true));
     // TODO: this should reject early if no ID
     $id = intval($_POST['id']);
     $class = sprintf('SVBX\%sDeficiency', !empty($_POST['class']) ? $_POST['class'] : '');
@@ -20,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $def->set('updated_by', $_SESSION[$updatedByField]);
         if (empty($id)) throw new Exception('No ID found for update request');
 
-        $def->update();
+        error_log('Def #' . $def->get('id') . ' ready for update' . $def);
+        $success = $def->update();
+        error_log('Def #' . $def->get('id') . ' successfully updated');
+        
         // if UPDATE succesful, prepare, upload, and INSERT photo
         // TODO: make all this one transcaction handled by the Deficiency object
         // TODO: create classes for Comment and Attachment
