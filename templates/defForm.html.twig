@@ -28,7 +28,7 @@
 {% endblock %}
 
 {% block content %}
-    <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' onsubmit='' class='item-margin-bottom'>
+    <form name="defForm" action='{{ formAction }}' method='POST' enctype='multipart/form-data' class='item-margin-bottom'>
         {% block formControls %}
             <input type='hidden' name='id' value='{{ data.id }}'>
             <h4 class='pad grey-bg'>Required Information</h4>
