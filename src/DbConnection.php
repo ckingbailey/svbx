@@ -24,7 +24,6 @@ class DbConnection extends MysqliDb
         foreach ($orderBy as $condition) $this->orderBy(...$condition);
 
         $res = $this->get($tableName, $limit, $select);
-        echo $this->getLastQuery();
         return $res;
     }
 }

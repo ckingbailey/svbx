@@ -136,5 +136,9 @@ final class DbConnectionTest extends TestCase
         ));
 
         $this->assertIsArray($res);
+        $status = array_column($res, 'status');
+        $this->assertContainsOnly('int', $status);
+        $this->assertNotContains(2, array_column($res, 'status'));
+        $this->assertNotContains(3, array_column($res, 'status'));
     }
 }

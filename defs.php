@@ -2,6 +2,9 @@
 require_once 'vendor/autoload.php';
 require_once 'session.php';
 
+use SVBX\DbConnection;
+use SVBX\DefCollection;
+
 // check which view to show
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED) : '';
@@ -279,25 +282,25 @@ if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 $queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
 // function to get filter options to display in <select> elements
-function getFilterOptions($link, $queryParams) {
+function getFilterOptions($db, $queryParams) {
     $options = [];
     foreach ($queryParams as $fieldName => $params) {
         $table = $params['table'];
         $fields = $params['fields'];
         if (!empty($params['join']))
-            $link->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
+            $db->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
         if (!empty($params['where'])) {
             $whereParams = $params['where'];
             if (gettype($whereParams) === 'string')
             // if where is string, use it as raw where query
-                $link->where($whereParams);
+                $db->where($whereParams);
             elseif (!empty($whereParams['comparison']))
-                $link->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
-            else $link->where($whereParams['field'], $whereParams['value']);
+                $db->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
+            else $db->where($whereParams['field'], $whereParams['value']);
         }
-        if (!empty($params['groupBy'])) $link->groupBy($params['groupBy']);
-        if (!empty($params['orderBy'])) $link->orderBy($params['orderBy']);
-        if ($result = $link->get($table, null, $fields)) {
+        if (!empty($params['groupBy'])) $db->groupBy($params['groupBy']);
+        if (!empty($params['orderBy'])) $db->orderBy($params['orderBy']);
+        if ($result = $db->get($table, null, $fields)) {
             $options[$fieldName] = [];
             foreach ($result as $row) {
                 $fieldNames = array_keys($row);
@@ -313,14 +316,14 @@ function getFilterOptions($link, $queryParams) {
     return $options;
 }
 
-function getBartStatusCount($link) {
+function getBartStatusCount($db) {
     $table = 'BARTDL b';
     $fields = [
         'COUNT(CASE WHEN s.statusName = "open" THEN 1 ELSE NULL END) AS statusOpen',
         'COUNT(CASE WHEN s.statusName = "closed" THEN 1 ELSE NULL END) AS statusClosed'
     ];
-    $link->join('status s', 'b.status = s.statusID', 'LEFT');
-    return $link->getOne($table, $fields);
+    $db->join('status s', 'b.status = s.statusID', 'LEFT');
+    return $db->getOne($table, $fields);
 }
 
 // base context
@@ -347,16 +350,16 @@ $context = [
 ];
 
 try {
-    $link = new MySqliDB(DB_CREDENTIALS);
+    $db = new DbConnection(DB_CREDENTIALS);
 
-    if ($view === 'BART') $context['statusData'] = getBartStatusCount($link);
+    if ($view === 'BART') $context['statusData'] = getBartStatusCount($db);
 
     // get filter select options, showing those that are currently filtered on
-    $context['selectOptions'] = getFilterOptions($link, $filters);
+    $context['selectOptions'] = getFilterOptions($db, $filters);
 
     // build defs query
     foreach ($queryParams['joins'] as $tableName => $on) {
-        $link->join($tableName, $on, 'LEFT');
+        $db->join($tableName, $on, 'LEFT');
     }
 
     // filter on user-selected query params
@@ -365,7 +368,7 @@ try {
             if ($param === 'description'
                 || $param === 'defID'
                 || $param === 'bartDefID'
-                || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
+                || $param === 'specLoc') $db->where($param, "%{$val}%", 'LIKE');
             elseif ($param === 'systemAffected'
                 || $param === 'groupToResolve'
                 && is_array($val))
@@ -374,25 +377,25 @@ try {
                 foreach ($val as $extraVal) {
                     array_push($arrayVals, $extraVal);
                 }
-                $link->where("$tableAlias.$param", $arrayVals, 'IN');
+                $db->where("$tableAlias.$param", $arrayVals, 'IN');
             }
-            else $link->where("$tableAlias.$param", $val);
+            else $db->where("$tableAlias.$param", $val);
         }
     }
 
-    $link->where('status', '3', '<>');
+    $db->where('status', '3', '<>');
     if (!empty($orderBy)) {
         foreach ($orderBy as $field) {
-            $link->orderBy($field, 'ASC');
+            $db->orderBy($field, 'ASC');
         }
     }
-    $link->orderBy('ID', 'ASC');
+    $db->orderBy('ID', 'ASC');
     
     // fetch table data and append it to $context for display by Twig template
-    $data = $result = $link->get($table, null, $queryParams['fields']);
+    $data = $result = $db->get($table, null, $queryParams['fields']);
     $context['data'] = $data;
 
-    $context['count'] = $link->count;
+    $context['count'] = $db->count;
 
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
@@ -401,6 +404,6 @@ try {
     echo $e->getMessage();
 }
 
-$link->disconnect();
+$db->disconnect();
 
 exit;
