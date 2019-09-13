@@ -7,7 +7,8 @@ use SVBX\DefCollection;
 
 // check which view to show
 $view = !empty(($_GET['view']))
-    ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED) : '';
+    ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED)
+    : '';
 $orderBy = null;
 
 // check for search params
@@ -16,12 +17,15 @@ if(!empty($_GET)) {
     $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
     unset($get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
-    $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
-        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false)
+    // retrieve 'sort_' vars from $_GET, removing them from $_GET along the way
+    $orderBy = array_reduce(array_keys($get), function($acc, $key) use (&$get) {
+        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false) {
             $acc[$key] = $get[$key];
+            unset($get[$key]);
+        }
         return $acc;
     }, []);
-    unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
+    // unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else $get = null;
 
 // set view-dependent variables
