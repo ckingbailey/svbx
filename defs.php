@@ -13,10 +13,8 @@ $orderBy = null;
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET)) {
-    $get = array_filter($_GET, function ($val) {
-        return (gettype($val) === 'string' && $val !== '') || (bool) $val;
-    }); // filter to remove falsey values -- is this necessary?
-    unset($get['search'], $get['view']);
+    $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
+    unset($get['view']);
     $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
     $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
         if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false)
@@ -24,30 +22,7 @@ if(!empty($_GET)) {
         return $acc;
     }, []);
     unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
-} else {
-    $get = null;
-}
-
-// instantiate Twig
-$loader = new Twig_Loader_Filesystem('./templates');
-$twig = new Twig_Environment($loader,
-    [
-        'debug' => getenv('PHP_ENV') === 'dev'
-    ]
-);
-if (getenv('PHP_ENV')) {
-    $twig->addExtension(new Twig_Extension_Debug());
-}
-
-// add Twig filters
-$filter_decode = new Twig_Filter('safe', function($str) {
-    return html_entity_decode($str);
-});
-$zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
-    return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
-});
-$twig->addFilter($filter_decode);
-$twig->addFilter($zerofill);
+} else $get = null;
 
 // set view-dependent variables
 $bartTableHeadings = [
@@ -396,6 +371,24 @@ try {
     $context['data'] = $data;
 
     $context['count'] = $db->count;
+
+    // instantiate Twig
+    $twig = new Twig_Environment(new Twig_Loader_Filesystem('./templates'),
+        [
+            'debug' => getenv('PHP_ENV') === 'dev'
+        ]
+    );
+    if (getenv('PHP_ENV')) $twig->addExtension(new Twig_Extension_Debug());
+
+    // add Twig filters
+    $filter_decode = new Twig_Filter('safe', function($str) {
+        return html_entity_decode($str);
+    });
+    $zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
+        return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
+    });
+    $twig->addFilter($filter_decode);
+    $twig->addFilter($zerofill);
 
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
