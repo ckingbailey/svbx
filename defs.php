@@ -378,11 +378,9 @@ try {
 
     // instantiate Twig
     $twig = new Twig_Environment(new Twig_Loader_Filesystem('./templates'),
-        [
-            'debug' => getenv('PHP_ENV') === 'dev'
-        ]
+        [ 'debug' => getenv('PHP_ENV') === 'dev' ]
     );
-    if (getenv('PHP_ENV')) $twig->addExtension(new Twig_Extension_Debug());
+    if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
     // add Twig filters
     $filter_decode = new Twig_Filter('safe', function($str) {
