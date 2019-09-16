@@ -44,6 +44,21 @@ final class DeficiencyTest extends TestCase
             'on' => 'CDL.safetyCert = safetyCert.yesNoID',
             'type' => 'LEFT'
         ], $joins);
+        $this->assertContains([
+            'table' => 'location',
+            'on' => 'CDL.location = location.locationID',
+            'type' => 'LEFT'
+        ], $joins);
+        $this->assertContains([
+            'table' => 'requiredBy',
+            'on' => 'CDL.requiredBy = requiredBy.reqByID',
+            'type' => 'LEFT'
+        ], $joins);
+        $this->assertContains([
+            'table' => 'users_enc AS created_by',
+            'on' => 'CDL.created_by = created_by.username',
+            'type' => 'LEFT'
+        ], $joins);
     }
 
     public function testGetLookupReturnsExpectedValues() : void

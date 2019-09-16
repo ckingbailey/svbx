@@ -32,17 +32,21 @@ class DefCollection
         $fetchable = [
             'table' => Deficiency::getTable(),
             'select' => array_reduce($select,
-                function ($output, $field) use ($defFields) {
+                function ($output, $field) use ($defFields, $lookup) {
+                    echo 'iterating field ' . $field . PHP_EOL;
                     if (!empty($defFields[$field])) {
                         $output[] = "CDL.$defFields[$field]"
                         . ($defFields[$field] === $field ? '' : " $field");
-                    } elseif (stristr($field, 'concat(') === 0) {
-                        $fieldArr = preg_split('/\) /', $field);
+                    } elseif (stripos($field, 'concat(') === 0) {
+                        $fieldArr = preg_split('/(?<=\)) /', $field);
+                        echo 'stripos(field, "concat(" === 0 ' . PHP_EOL . print_r($fieldArr, true);
 
-                        if (array_search($table = $fieldArr[1], $lookup)) {
-                            $alias = implode(array_map(function ($str) use ($table) {
-                                return trim($str) === '' ? $str : "$table.$str";
-                            }, explode(', ', substr($fieldArr[1], strpos('}') + 1, -1))));
+                        echo $fieldArr[1];
+                        print_r($lookup);
+                        if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
+                            $alias = implode(array_map(function ($str) use ($fieldArr) {
+                                return trim($str) === '' ? $str : "{$fieldArr[1]}.$str";
+                            }, explode(', ', substr($fieldArr[0], strpos($fieldArr[0], '(') + 1, -1))));
                             $output[] = "{$fieldArr[0]} $alias";
                         }
                     } elseif (count($fieldArr = explode(' ', $field)) === 2) {

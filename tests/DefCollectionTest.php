@@ -38,6 +38,16 @@ final class DefCollectionTest extends TestCase
         $this->assertNotContains('midiclorians', array_column($fetchable['where'], 1));
     }
 
+    public function testGetFetchableAssocReturnsWell_formedJoinedCols() : void
+    {
+        $fetchable = DefCollection::getFetchableAssoc(
+            [ 'id', 'status', 'locationName location', 'CONCAT(firstname, " ", lastname) updated_by', 'yesNoName safetyCert' ]
+        );
+
+        // print_r($fetchable);
+        $this->assertContains('location.locationName location', $fetchable['select']);
+    }
+
     public function testArrayWhereReturnsArrayWhere() : void
     {
         $fetchable = DefCollection::getFetchableAssoc(

@@ -573,15 +573,15 @@ class Deficiency
         }
     }
 
-    public static function getTable() {
+    public static function getTable() : string {
         return static::$table;
     }
 
-    public static function getFields() {
+    public static function getFields() : array {
         return static::$fields;
     }
 
-    public static function getLookup() {
+    public static function getLookup() : array {
         $foreignKeys = static::$foreignKeys;
         return array_reduce(array_keys(static::$foreignKeys),
         function ($output, $key) use ($foreignKeys) {
@@ -623,7 +623,7 @@ class Deficiency
         }, $fieldList);
     }
     
-    public function __toString() {
+    public function __toString() : string {
         return print_r($this->get(), true);
     }
 
