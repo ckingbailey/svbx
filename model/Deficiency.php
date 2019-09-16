@@ -162,10 +162,12 @@ class Deficiency
     protected static $foreignKeys = [
         'safetyCert' => [
             'table' => 'yesNo',
+            'alias' => 'safetyCert',
             'fields' => ['yesNoID', 'yesNoName']
         ],
         'systemAffected' => [
             'table' => 'system',
+            'alias' => 'systemAffected',
             'fields' => ['systemID', 'systemName']
         ],
         'groupToResolve' => [
@@ -214,13 +216,13 @@ class Deficiency
         ],
         'created_by' => [
             'table' => 'users_enc',
-            'alias' => 'cb',
+            'alias' => 'created_by',
             'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
             'concat' => true
         ],
         'updated_by' => [
             'table' => 'users_enc',
-            'alias' => 'ub',
+            'alias' => 'users_enc',
             'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
             'concat' => true
         ]
@@ -577,18 +579,6 @@ class Deficiency
 
     public static function getFields() {
         return static::$fields;
-    }
-
-    public static function getLookupMap() : array
-    {
-        $foreignKeys = static::$foreignKeys;
-        return array_reduce(array_keys($foreignKeys),
-            function ($lookups, $field) use ($foreignKeys) {
-                $lookups[$field] = !empty($foreignKeys[$field]['concat']) && $foreignKeys[$field]['concat'] === true
-                ? implode(array_slice($foreignKeys[$field]['fields'], 1))
-                : $foreignKeys[$field]['fields'][1];
-                return $lookups;
-            }, []);
     }
 
     public static function getJoins(array $fields = []): array {

@@ -35,15 +35,10 @@ final class DeficiencyTest extends TestCase
         $this->assertEquals($fields['id'], 'defID');
     }
 
-    public function testCanGetLookupMap() : void
-    {
-        $lookupMap = Deficiency::getLookupMap();
-        $this->assertIsArray($lookupMap);
-    }
-
     public function testCanGetJoins(): void
     {
         $joins = Deficiency::getJoins();
+        print_r($joins);
         $this->assertIsArray($joins);
         $this->assertContains([
             'table' => 'yesNo',

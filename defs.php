@@ -28,6 +28,26 @@ if(!empty($_GET)) {
     // unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else $get = null;
 
+$params = [
+    'select' => [
+        'id',
+        'bartDefID',
+        'locationName',
+        'severityName',
+        'statusName',
+        'systemAffected',
+        'groupToResolve',
+        'description',
+        'specLoc',
+        'requiredBy',
+        'dueDate'
+    ],
+    'where' => [],
+    'groupBy' => null,
+    'orderBy' => [],
+    'limit' => null
+];
+
 // set view-dependent variables
 $bartTableHeadings = [
     'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?bartDefID=' ],
