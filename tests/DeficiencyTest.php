@@ -41,7 +41,7 @@ final class DeficiencyTest extends TestCase
         print_r($joins);
         $this->assertIsArray($joins);
         $this->assertContains([
-            'table' => 'yesNo',
+            'table' => 'yesNo AS safetyCert',
             'on' => 'CDL.safetyCert = yesNo.yesNoID',
             'type' => 'LEFT'
         ], $joins);
