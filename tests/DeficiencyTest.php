@@ -46,6 +46,15 @@ final class DeficiencyTest extends TestCase
         ], $joins);
     }
 
+    public function testGetLookupReturnsExpectedValues() : void
+    {
+        $lookup = Deficiency::getLookup();
+        $this->assertIsArray($lookup);
+        $this->assertEquals('locationName', $lookup['location']);
+        $this->assertEquals('yesNoName', $lookup['safetyCert']);
+        $this->assertEquals('CONCAT(firstname, " ", lastname)', $lookup['created_by']);
+    }
+
     public function testCanGetJoinsFromList(): void
     {
         $joins = Deficiency::getJoins([ 'location', 'status', 'groupToResolve' ]);
