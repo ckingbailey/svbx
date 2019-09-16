@@ -38,11 +38,10 @@ final class DeficiencyTest extends TestCase
     public function testCanGetJoins(): void
     {
         $joins = Deficiency::getJoins();
-        print_r($joins);
         $this->assertIsArray($joins);
         $this->assertContains([
             'table' => 'yesNo AS safetyCert',
-            'on' => 'CDL.safetyCert = yesNo.yesNoID',
+            'on' => 'CDL.safetyCert = safetyCert.yesNoID',
             'type' => 'LEFT'
         ], $joins);
     }

@@ -138,6 +138,8 @@ final class DbConnectionTest extends TestCase
         $this->assertIsArray($res);
         $status = array_column($res, 'status');
         $this->assertContainsOnly('int', $status);
+
+        // assert 'status' does not contain values that were not in the where clause
         $this->assertNotContains(2, array_column($res, 'status'));
         $this->assertNotContains(3, array_column($res, 'status'));
     }

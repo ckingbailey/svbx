@@ -27,6 +27,7 @@ class DefCollection
         if (empty($orderBy)) $orderBy = [ 'id ASC' ];
         // get fields from Def and return those that match strings in $select
         $defFields = Deficiency::getFields();
+        $lookup = Deficiency::getLookup();
 
         $fetchable = [
             'table' => Deficiency::getTable(),
@@ -34,7 +35,20 @@ class DefCollection
                 function ($output, $field) use ($defFields) {
                     if (!empty($defFields[$field])) {
                         $output[] = "CDL.$defFields[$field]"
-                        . ($defFields[$field] === $field ? '' : " AS $field");
+                        . ($defFields[$field] === $field ? '' : " $field");
+                    } elseif (stristr($field, 'concat(') === 0) {
+                        $fieldArr = preg_split('/\) /', $field);
+
+                        if (array_search($table = $fieldArr[1], $lookup)) {
+                            $alias = implode(array_map(function ($str) use ($table) {
+                                return trim($str) === '' ? $str : "$table.$str";
+                            }, explode(', ', substr($fieldArr[1], strpos('}') + 1, -1))));
+                            $output[] = "{$fieldArr[0]} $alias";
+                        }
+                    } elseif (count($fieldArr = explode(' ', $field)) === 2) {
+                        if (array_search($table = $fieldArr[1], $lookup)) {
+                            $output[] = "$table.{$fieldArr[0]} {$fieldArr[1]}";
+                        }
                     }
                     return $output;
                 }, [])

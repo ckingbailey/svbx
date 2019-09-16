@@ -13,8 +13,6 @@ final class DefCollectionTest extends TestCase
             [ 'safetyCert' => 2, 'id' => 1 ]
         );
 
-        print_r($fetchable);
-
         $this->assertIsArray($fetchable);
         $this->assertEquals('CDL', $fetchable['table']);
         $this->assertArrayHasKey('select', $fetchable);

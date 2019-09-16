@@ -581,6 +581,23 @@ class Deficiency
         return static::$fields;
     }
 
+    public static function getLookup() {
+        $foreignKeys = static::$foreignKeys;
+        return array_reduce(array_keys(static::$foreignKeys),
+        function ($output, $key) use ($foreignKeys) {
+            if (!empty($foreignKeys[$key]['concat']) && $foreignKeys[$key]['concat'] === true) {
+                $output[$key] = 'CONCAT('
+                . implode(
+                    ', ', 
+                    array_map(function ($field) {
+                        return trim($field) === '' ? '" "' : $field;
+                    }, array_slice($foreignKeys[$key]['fields'], 1)))
+                . ')';
+            } else $output[$key] = $foreignKeys[$key]['fields'][1];
+            return $output;
+        }, []);
+    }
+
     public static function getJoins(array $fields = []): array {
         $keys = array_keys(static::$foreignKeys);
         $fieldList = empty($fields)
