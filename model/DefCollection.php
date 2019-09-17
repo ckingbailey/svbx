@@ -63,7 +63,7 @@ class DefCollection
             function ($output, $field) use ($where, $select, $fetchable, $defFields) {
                 if (!empty($defFields[$field])) {
                     $comparator = static::getComparator($field, $where[$field]);
-                    $val = $where[$field];
+                    $val = $comparator === 'LIKE' ? "%{$where[$field]}%" : $where[$field];
                     $field = "CDL.{$defFields[$field]}";
                     $output[] = [
                         $field,

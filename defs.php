@@ -395,6 +395,7 @@ try {
             null,
             $orderBy
         ));
+        error_log($db->getLastQuery());
     }
 
     // get filter select options, showing those that are currently filtered on
