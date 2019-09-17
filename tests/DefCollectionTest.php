@@ -44,7 +44,7 @@ final class DefCollectionTest extends TestCase
             [ 'id', 'status', 'locationName location', 'CONCAT(firstname, " ", lastname) updated_by', 'yesNoName safetyCert' ]
         );
 
-        // print_r($fetchable);
+        print_r($fetchable);
         $this->assertContains('location.locationName location', $fetchable['select']);
     }
 

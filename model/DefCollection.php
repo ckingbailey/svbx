@@ -41,13 +41,15 @@ class DefCollection
                         $fieldArr = preg_split('/(?<=\)) /', $field);
                         echo 'stripos(field, "concat(" === 0 ' . PHP_EOL . print_r($fieldArr, true);
 
-                        echo $fieldArr[1];
+                        echo $fieldArr[1] . PHP_EOL;
                         print_r($lookup);
                         if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
-                            $alias = implode(array_map(function ($str) use ($fieldArr) {
-                                return trim($str) === '' ? $str : "{$fieldArr[1]}.$str";
-                            }, explode(', ', substr($fieldArr[0], strpos($fieldArr[0], '(') + 1, -1))));
-                            $output[] = "{$fieldArr[0]} $alias";
+                            $select = 'CONCAT('
+                            . implode(', ', array_map(function ($str) use ($fieldArr) {
+                                    return $str === '" "' ? $str : "{$fieldArr[1]}.$str";
+                                }, explode(', ', substr($fieldArr[0], strpos($fieldArr[0], '(') + 1, -1))))
+                            . ')';
+                            $output[] = "$select {$fieldArr[1]}";
                         }
                     } elseif (count($fieldArr = explode(' ', $field)) === 2) {
                         if (array_search($table = $fieldArr[1], $lookup)) {
