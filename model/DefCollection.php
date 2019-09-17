@@ -39,10 +39,10 @@ class DefCollection
                         . ($defFields[$field] === $field ? '' : " $field");
                     } elseif (stripos($field, 'concat(') === 0) {
                         $fieldArr = preg_split('/(?<=\)) /', $field);
-                        echo 'stripos(field, "concat(" === 0 ' . PHP_EOL . print_r($fieldArr, true);
+                        // echo 'stripos(field, "concat(" === 0 ' . PHP_EOL . print_r($fieldArr, true);
 
-                        echo $fieldArr[1] . PHP_EOL;
-                        print_r($lookup);
+                        // echo $fieldArr[1] . PHP_EOL;
+                        // print_r($lookup);
                         if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
                             $select = 'CONCAT('
                             . implode(', ', array_map(function ($str) use ($fieldArr) {
@@ -52,6 +52,7 @@ class DefCollection
                             $output[] = "$select {$fieldArr[1]}";
                         }
                     } elseif (count($fieldArr = explode(' ', $field)) === 2) {
+                        echo 'MATCH count(explode(field)) === 2' . PHP_EOL;
                         if (array_search($table = $fieldArr[1], $lookup)) {
                             $output[] = "$table.{$fieldArr[0]} {$fieldArr[1]}";
                         }
