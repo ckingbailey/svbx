@@ -28,7 +28,7 @@
         </div>
         <div id="container_select_status" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Status</label>
-            <select name="status" class="form-control">
+            <select name="status[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 <option></option>
                 {% for value, text in selectOptions.status %}
                     {% set selected = (not values.status is empty and values.status == value)
