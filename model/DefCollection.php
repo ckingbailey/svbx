@@ -25,6 +25,7 @@ class DefCollection
         $orderBy = [ 'id ASC' ]) : array
     {
         if (empty($orderBy)) $orderBy = [ 'id ASC' ];
+        if (empty($where)) $where = [];
         // get fields from Def and return those that match strings in $select
         $defFields = Deficiency::getFields();
         $lookup = Deficiency::getLookup();

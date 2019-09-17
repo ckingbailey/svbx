@@ -14,19 +14,19 @@ $orderBy = null;
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET)) {
-    $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
-    unset($get['view']);
-    $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
+    // $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
+    // unset($get['view']);
+    $where = filter_var_array($_GET, FILTER_SANITIZE_SPECIAL_CHARS);
     // retrieve 'sort_' vars from $_GET, removing them from $_GET along the way
-    $orderBy = array_reduce(array_keys($get), function($acc, $key) use (&$get) {
-        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false) {
-            $acc[$key] = $get[$key];
-            unset($get[$key]);
+    $orderBy = array_reduce(array_keys($_GET), function($acc, $key) use (&$where) {
+        if (strpos($key, 'sort_') === 0 && array_search($where[$key], $acc) === false) {
+            $acc[$key] = $where[$key];
+            unset($where[$key]);
         }
         return $acc;
     }, []);
     // unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
-} else $get = null;
+} else $where = null;
 
 $params = [
     'select' => [
@@ -334,8 +334,8 @@ $context = [
     'addPath' => $addPath,
     // filter vars
     'resetScript' => 'resetSearch',
-    'values' => $get,
-    'collapse' => empty($get),
+    'values' => $where,
+    'collapse' => empty($where),
     'view' => $view,
     'sortOptions' => $sortOptions,
     'curSort' => $orderBy,
@@ -351,48 +351,57 @@ $context = [
 try {
     $db = new DbConnection(DB_CREDENTIALS);
 
-    if ($view === 'BART') $context['statusData'] = getBartStatusCount($db);
+    // TODO: this should instead return an object that $db can use to fetch
+    if ($view === 'BART') {
+        $context['statusData'] = getBartStatusCount($db);
+    } else {
+        $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
+            [ 'id', 'bartDefID', 'locationName', 'severityName', 'statusName', 'systemAffected', 'groupToResolve', 'description', 'specLoc', 'requiredBy', 'dueDate' ],
+            $where,
+            null,
+            $orderBy
+        ));
+    }
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($db, $filters);
 
     // build defs query
-    foreach ($queryParams['joins'] as $tableName => $on) {
-        $db->join($tableName, $on, 'LEFT');
-    }
+    // foreach ($queryParams['joins'] as $tableName => $on) {
+    //     $db->join($tableName, $on, 'LEFT');
+    // }
 
-    // filter on user-selected query params
-    if (!empty($get)) {
-        foreach ($get as $param => $val) {
-            if ($param === 'description'
-                || $param === 'defID'
-                || $param === 'bartDefID'
-                || $param === 'specLoc') $db->where($param, "%{$val}%", 'LIKE');
-            elseif ($param === 'systemAffected'
-                || $param === 'groupToResolve'
-                && is_array($val))
-            {
-                $arrayVals = [ array_shift($val) ];
-                foreach ($val as $extraVal) {
-                    array_push($arrayVals, $extraVal);
-                }
-                $db->where("$tableAlias.$param", $arrayVals, 'IN');
-            }
-            else $db->where("$tableAlias.$param", $val);
-        }
-    }
+    // // filter on user-selected query params
+    // if (!empty($get)) {
+    //     foreach ($get as $param => $val) {
+    //         if ($param === 'description'
+    //             || $param === 'defID'
+    //             || $param === 'bartDefID'
+    //             || $param === 'specLoc') $db->where($param, "%{$val}%", 'LIKE');
+    //         elseif ($param === 'systemAffected'
+    //             || $param === 'groupToResolve'
+    //             && is_array($val))
+    //         {
+    //             $arrayVals = [ array_shift($val) ];
+    //             foreach ($val as $extraVal) {
+    //                 array_push($arrayVals, $extraVal);
+    //             }
+    //             $db->where("$tableAlias.$param", $arrayVals, 'IN');
+    //         }
+    //         else $db->where("$tableAlias.$param", $val);
+    //     }
+    // }
 
-    $db->where('status', '3', '<>');
-    if (!empty($orderBy)) {
-        foreach ($orderBy as $field) {
-            $db->orderBy($field, 'ASC');
-        }
-    }
-    $db->orderBy('ID', 'ASC');
+    // $db->where('status', '3', '<>');
+    // if (!empty($orderBy)) {
+    //     foreach ($orderBy as $field) {
+    //         $db->orderBy($field, 'ASC');
+    //     }
+    // }
+    // $db->orderBy('ID', 'ASC');
     
-    // fetch table data and append it to $context for display by Twig template
-    $data = $result = $db->get($table, null, $queryParams['fields']);
-    $context['data'] = $data;
+    // // fetch table data and append it to $context for display by Twig template
+    // $context['data'] = $db->get($table, null, $queryParams['fields']);
 
     $context['count'] = $db->count;
 
