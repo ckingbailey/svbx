@@ -53,8 +53,8 @@ class DefCollection
                         }
                     } elseif (count($fieldArr = explode(' ', $field)) === 2) {
                         echo 'MATCH count(explode(field)) === 2' . PHP_EOL;
-                        if (array_search($table = $fieldArr[1], $lookup)) {
-                            $output[] = "$table.{$fieldArr[0]} {$fieldArr[1]}";
+                        if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
+                            $output[] = "$fieldArr[1].{$fieldArr[0]} {$fieldArr[1]}";
                         }
                     }
                     return $output;
