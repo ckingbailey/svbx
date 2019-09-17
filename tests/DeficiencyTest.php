@@ -39,26 +39,25 @@ final class DeficiencyTest extends TestCase
     {
         $joins = Deficiency::getJoins();
         $this->assertIsArray($joins);
-        print_r($joins);
         $this->assertContains([
-            'table' => 'yesNo AS safetyCert',
-            'on' => 'CDL.safetyCert = safetyCert.yesNoID',
-            'type' => 'LEFT'
+            'yesNo AS safetyCert',
+            'CDL.safetyCert = safetyCert.yesNoID',
+            'LEFT'
         ], $joins);
         $this->assertContains([
-            'table' => 'location',
-            'on' => 'CDL.location = location.locationID',
-            'type' => 'LEFT'
+            'location',
+            'CDL.location = location.locationID',
+            'LEFT'
         ], $joins);
         $this->assertContains([
-            'table' => 'requiredBy',
-            'on' => 'CDL.requiredBy = requiredBy.reqByID',
-            'type' => 'LEFT'
+            'requiredBy',
+            'CDL.requiredBy = requiredBy.reqByID',
+            'LEFT'
         ], $joins);
         $this->assertContains([
-            'table' => 'users_enc AS created_by',
-            'on' => 'CDL.created_by = created_by.username',
-            'type' => 'LEFT'
+            'users_enc AS created_by',
+            'CDL.created_by = created_by.username',
+            'LEFT'
         ], $joins);
     }
 
@@ -66,7 +65,6 @@ final class DeficiencyTest extends TestCase
     {
         $lookup = Deficiency::getLookup();
         $this->assertIsArray($lookup);
-        print_r($lookup);
         $this->assertEquals('locationName', $lookup['location']);
         $this->assertEquals('yesNoName', $lookup['safetyCert']);
         $this->assertEquals('CONCAT(firstname, " ", lastname)', $lookup['created_by']);
@@ -77,9 +75,9 @@ final class DeficiencyTest extends TestCase
         $joins = Deficiency::getJoins([ 'location', 'status', 'groupToResolve' ]);
         $this->assertEquals(3, count($joins));
         $this->assertContains([
-            'table' => 'location',
-            'on' => 'CDL.location = location.locationID',
-            'type' => 'LEFT'
+            'location',
+            'CDL.location = location.locationID',
+            'LEFT'
         ], $joins);
     }
 
@@ -88,14 +86,14 @@ final class DeficiencyTest extends TestCase
         $joins = Deficiency::getJoins([ 'severity', 'foobar', 'hamSandwich', 'contractID' ]);
         $this->assertEquals([
             [
-                'table' => 'severity',
-                'on' => 'CDL.severity = severity.severityID',
-                'type' =>   'LEFT'
+                'severity',
+                'CDL.severity = severity.severityID',
+                'LEFT'
             ],
             [
-                'table' => 'contract',
-                'on' => 'CDL.contractID = contract.contractID',
-                'type' =>   'LEFT'
+                'contract',
+                'CDL.contractID = contract.contractID',
+                'LEFT'
             ]
             ], $joins);
     }

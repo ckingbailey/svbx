@@ -222,7 +222,7 @@ class Deficiency
         ],
         'updated_by' => [
             'table' => 'users_enc',
-            'alias' => 'users_enc',
+            'alias' => 'updated_by',
             'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
             'concat' => true
         ]
@@ -621,9 +621,9 @@ class Deficiency
             : [ $join['table'], $join['table'] ];
             
             return [
-                'table' => $parentTable,
-                'on' => static::$table . ".$childField = $alias.{$join['fields'][0]}",
-                'type' => 'LEFT'
+                $parentTable,
+                static::$table . ".$childField = $alias.{$join['fields'][0]}",
+                'LEFT'
             ];
         }, $fieldList);
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 use SVBX\DbConnection;
 use SVBX\DefCollection;
 use SVBX\Deficiency;
-use MysqliDb;
 use PHPUnit\Framework\TestCase;
 
 final class DbConnectionTest extends TestCase
@@ -125,6 +124,7 @@ final class DbConnectionTest extends TestCase
     {
         $db = new DbConnection(DB_CREDENTIALS);
         $this->assertInstanceOf(DbConnection::class, $db);
+        $db->disconnect();
     }
 
     public function testLazyGetReturnsArrayResults() : void
@@ -136,11 +136,25 @@ final class DbConnectionTest extends TestCase
         ));
 
         $this->assertIsArray($res);
-        $status = array_column($res, 'status');
-        $this->assertContainsOnly('int', $status);
+        $this->assertContainsOnly('int', array_column($res, 'status'));
 
         // assert 'status' does not contain values that were not in the where clause
         $this->assertNotContains(2, array_column($res, 'status'));
         $this->assertNotContains(3, array_column($res, 'status'));
+        $db->disconnect();
+    }
+
+    public function testCanFetchDefCollectionOnJoins() : void
+    {
+        $db = new DbConnection(DB_CREDENTIALS);
+        $res = $db->lazyGet(...DefCollection::getFetchableNum(
+            [ 'id', 'status', 'locationName location', 'severity', 'CONCAT(firstname, " ", lastname) updated_by', 'yesNoName safetyCert' ],
+            [ 'severity' => [ 1, 2, 3 ] ]
+        ));
+
+        print_r($res);
+        $this->assertNotContains(4, array_column($res, 'severity'));
+
+        $db->disconnect();
     }
 }

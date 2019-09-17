@@ -42,9 +42,9 @@ $params = [
         'requiredBy',
         'dueDate'
     ],
-    'where' => [],
+    'where' => [], // will be set by GET params
     'groupBy' => null,
-    'orderBy' => [],
+    'orderBy' => [], // will be set by GET params
     'limit' => null
 ];
 
