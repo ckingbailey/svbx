@@ -9,7 +9,7 @@ use SVBX\DefCollection;
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED)
     : '';
-$orderBy = null;
+$orderBy = [ 'id ASC' ];
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
@@ -18,13 +18,13 @@ if(!empty($_GET)) {
     // unset($get['view']);
     $where = filter_var_array($_GET, FILTER_SANITIZE_SPECIAL_CHARS);
     // retrieve 'sort_' vars from $_GET, removing them from $_GET along the way
-    $orderBy = array_reduce(array_keys($_GET), function($acc, $key) use (&$where) {
+    $orderBy = $orderBy + array_reduce(array_keys($_GET), function($acc, $key) use (&$where) {
         if (strpos($key, 'sort_') === 0 && array_search($where[$key], $acc) === false) {
             $acc[$key] = $where[$key];
             unset($where[$key]);
         }
         return $acc;
-    }, []) + [ 'id', 'ASC' ];
+    }, []);
     // unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
 } else $where = null;
 
@@ -63,33 +63,19 @@ $bartFields = [
     'n.nextStepName AS next_step'
 ];
 
-$projectFields = [
-    "c.defID AS ID",
-    "c.bartDefID AS bartDefID",
-    "l.locationName AS location",
-    "s.severityName AS severity",
-    "t.statusName AS status",
-    "y.systemName AS systemAffected",
-    "g.systemName AS groupToResolve",
-    "c.description AS description",
-    "c.specLoc AS specLoc",
-    "r.requiredBy AS requiredBy",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
-];
-
-$select = [
-    'id',
-    'bartDefID',
-    'locationName location',
-    'severityName severity',
-    'statusName status',
-    'systemName systemAffected',
-    'systemName groupToResolve',
-    'description',
-    'specLoc',
-    'requiredBy',
-    'dueDate'
-];
+// $projectFields = [
+//     "c.defID AS ID",
+//     "c.bartDefID AS bartDefID",
+//     "l.locationName AS location",
+//     "s.severityName AS severity",
+//     "t.statusName AS status",
+//     "y.systemName AS systemAffected",
+//     "g.systemName AS groupToResolve",
+//     "c.description AS description",
+//     "c.specLoc AS specLoc",
+//     "r.requiredBy AS requiredBy",
+//     "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
+// ];
 
 $bartJoins = [
     'status s' => 'b.status = s.statusID',
@@ -268,7 +254,7 @@ $projectSort = [
 
 list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, null, $projectFilters, $projectSort ];
+    : [ null, null, 'newDef.php', $projectTableHeadings, null, null, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
@@ -388,12 +374,23 @@ try {
         $db->where('status', 3, '<>');
 
         $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
-            $select,
+            [
+                'id',
+                'bartDefID',
+                'locationName location',
+                'severityName severity',
+                'statusName status',
+                'systemName systemAffected',
+                'systemName groupToResolve',
+                'description',
+                'specLoc',
+                'requiredBy requiredBy', // because the name in the database is anti-pattern
+                'dueDate'
+            ],
             $where,
             null,
             $orderBy
         ));
-        error_log(print_r($context, true));
     }
 
     // get filter select options, showing those that are currently filtered on
