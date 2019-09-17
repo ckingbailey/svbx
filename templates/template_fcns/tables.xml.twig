@@ -79,8 +79,8 @@
     {# id field must exist and must be named 'ID' #}
     {% set equalSign = '=' %}
     {% set id %}
-        {% if not row.ID is empty %}
-            {{ row.ID is iterable ? row.ID.value|trim : row.ID|trim }}
+        {% if not row.id is empty %}
+            {{ row.id is iterable ? row.id.value|trim : row.id|trim }}
         {% else %}{% endif %}
     {% endset %}
     <tr>

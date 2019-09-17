@@ -68,4 +68,42 @@ final class DefCollectionTest extends TestCase
 
         $this->assertIsArray($numeric);
     }
+
+    public function testSelectRequiredByAliasReturnsRequiredByName() : void
+    {
+        $fetchable = DefCollection::getFetchableNum(
+            [ 'requiredBy requiredBy' ]
+        );
+
+        $this->assertContains('requiredBy.requiredBy requiredBy', $fetchable[1]);
+    }
+
+    public function testSelectRequiredByNameAndWhereRequiredByNumDoNotCollide() : void
+    {
+        $fetchable = DefCollection::getFetchableNum(
+            [ 'requiredBy requiredBy' ],
+            [ 'requiredBy' => 10 ]
+        );
+
+        $this->assertContains([
+            'CDL.requiredBy',
+            '10',
+            '='
+        ], $fetchable[3]);
+    }
+
+    public function testCanPassRawWhereConditionAsString() : void
+    {
+        $fetchable = DefCollection::getFetchableNum(
+            [ 'requiredBy requiredBy' ],
+            [ 'requiredBy < 40' ]
+        );
+
+        print_r($fetchable);
+        $this->assertContains([
+            'CDL.requiredBy',
+            '40',
+            '<'
+        ], $fetchable[3]);
+    }
 }

@@ -152,7 +152,6 @@ final class DbConnectionTest extends TestCase
             [ 'severity' => [ 1, 2, 3 ] ]
         ));
 
-        print_r($res);
         $this->assertNotContains(4, array_column($res, 'severity'));
 
         $db->disconnect();
