@@ -9,7 +9,7 @@ use SVBX\DefCollection;
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED)
     : '';
-$orderBy = [ 'id ASC' ];
+$orderBy = [];
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
@@ -55,12 +55,12 @@ $projectTableHeadings = [
 ];
 
 $bartFields = [
-    'ID',
-    's.statusName as status',
+    'id',
+    's.statusName status',
     'date_created',
     'descriptive_title_vta',
     'resolution_vta',
-    'n.nextStepName AS next_step'
+    'n.nextStepName next_step'
 ];
 
 // $projectFields = [
@@ -334,6 +334,7 @@ try {
     // TODO: this should instead return an object that $db can use to fetch
     if ($view === 'BART') {
         $context['statusData'] = getBartStatusCount($db);
+
         // build defs query
         foreach ($queryParams['joins'] as $tableName => $on) {
             $db->join($tableName, $on, 'LEFT');
@@ -360,18 +361,20 @@ try {
             }
         }
     
-        $db->where('status', '3', '<>');
+        $db->where('status', 3, '<>');
         if (!empty($orderBy)) {
             foreach ($orderBy as $field) {
                 $db->orderBy($field, 'ASC');
             }
         }
-        $db->orderBy('ID', 'ASC');
+        $db->orderBy('id', 'ASC');
         
         // fetch table data and append it to $context for display by Twig template
         $context['data'] = $db->get($table, null, $queryParams['fields']);
+        error_log($db->getLastQuery());
     } else {
         $db->where('status', 3, '<>');
+        $db->orderBy('id', 'ASC');
 
         $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
             [
