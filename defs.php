@@ -9,6 +9,7 @@ use SVBX\DefCollection;
 $view = !empty(($_GET['view']))
     ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED)
     : '';
+unset($_GET['view']);
 $orderBy = [];
 
 // check for search params
@@ -341,8 +342,8 @@ try {
         }
     
         // filter on user-selected query params
-        if (!empty($get)) {
-            foreach ($get as $param => $val) {
+        if (!empty($where)) {
+            foreach ($where as $param => $val) {
                 if ($param === 'description'
                     || $param === 'defID'
                     || $param === 'bartDefID'
