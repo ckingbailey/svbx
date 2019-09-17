@@ -372,10 +372,8 @@ try {
         
         // fetch table data and append it to $context for display by Twig template
         $context['data'] = $db->get($table, null, $queryParams['fields']);
-        error_log($db->getLastQuery());
     } else {
         $db->where('status', 3, '<>');
-        $db->orderBy('id', 'ASC');
 
         $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
             [
@@ -393,7 +391,7 @@ try {
             ],
             $where,
             null,
-            $orderBy
+            $orderBy + [ 'id ASC' ]
         ));
         error_log($db->getLastQuery());
     }

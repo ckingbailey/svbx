@@ -80,6 +80,7 @@ class DefCollection
         if (!empty($orderBy)) {
             $fetchable['orderBy'] = array_map(function ($str) {
                 $arr = explode(' ', $str);
+                if (empty($arr[1])) $arr[1] = 'ASC';
                 return [ $arr[0], $arr[1] ];
             }, $orderBy);
         }
