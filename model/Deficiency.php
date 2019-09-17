@@ -603,8 +603,13 @@ class Deficiency
         $fieldList = empty($fields)
         ? $keys
         : array_reduce($fields, function ($output, $field) use ($keys) {
-            if (array_search($field, $keys) !== FALSE)
+            if (array_search($field, $keys) !== false)
                 $output[] = $field;
+            if (($i = strrpos($field, ' ')) !== false
+            && strlen($alias = substr($field, $i + 1)) > 0
+            && array_search($alias, $keys) !== false) {
+                $output[] = $alias;
+            }
             return $output;
         }, []);
 

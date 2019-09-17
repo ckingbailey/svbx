@@ -33,16 +33,12 @@ class DefCollection
             'table' => Deficiency::getTable(),
             'select' => array_reduce($select,
                 function ($output, $field) use ($defFields, $lookup) {
-                    echo 'iterating field ' . $field . PHP_EOL;
                     if (!empty($defFields[$field])) {
                         $output[] = "CDL.$defFields[$field]"
                         . ($defFields[$field] === $field ? '' : " $field");
                     } elseif (stripos($field, 'concat(') === 0) {
                         $fieldArr = preg_split('/(?<=\)) /', $field);
-                        // echo 'stripos(field, "concat(" === 0 ' . PHP_EOL . print_r($fieldArr, true);
 
-                        // echo $fieldArr[1] . PHP_EOL;
-                        // print_r($lookup);
                         if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
                             $select = 'CONCAT('
                             . implode(', ', array_map(function ($str) use ($fieldArr) {
@@ -52,7 +48,6 @@ class DefCollection
                             $output[] = "$select {$fieldArr[1]}";
                         }
                     } elseif (count($fieldArr = explode(' ', $field)) === 2) {
-                        echo 'MATCH count(explode(field)) === 2' . PHP_EOL;
                         if (!empty($lookup[$fieldArr[1]]) && $lookup[$fieldArr[1]] = $fieldArr[0]) {
                             $output[] = "$fieldArr[1].{$fieldArr[0]} {$fieldArr[1]}";
                         }

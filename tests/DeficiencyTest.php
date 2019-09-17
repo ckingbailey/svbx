@@ -39,6 +39,7 @@ final class DeficiencyTest extends TestCase
     {
         $joins = Deficiency::getJoins();
         $this->assertIsArray($joins);
+        print_r($joins);
         $this->assertContains([
             'table' => 'yesNo AS safetyCert',
             'on' => 'CDL.safetyCert = safetyCert.yesNoID',
@@ -65,6 +66,7 @@ final class DeficiencyTest extends TestCase
     {
         $lookup = Deficiency::getLookup();
         $this->assertIsArray($lookup);
+        print_r($lookup);
         $this->assertEquals('locationName', $lookup['location']);
         $this->assertEquals('yesNoName', $lookup['safetyCert']);
         $this->assertEquals('CONCAT(firstname, " ", lastname)', $lookup['created_by']);
