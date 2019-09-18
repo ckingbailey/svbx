@@ -19,7 +19,7 @@ final class DefCollectionTest extends TestCase
         $this->assertArrayHasKey('join', $fetchable);
         $this->assertArrayHasKey('where', $fetchable);
         $this->assertContains([ 'CDL.safetyCert', 2, '=' ], $fetchable['where']);
-        $this->assertContains([ 'CDL.defID', 1, 'LIKE' ], $fetchable['where']);
+        $this->assertContains([ 'CDL.defID', '%1%', 'LIKE' ], $fetchable['where']);
     }
 
     public function testGetFetchableIgnoresInvalidFields(): void
