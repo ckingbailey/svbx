@@ -64,34 +64,10 @@ $bartFields = [
     'n.nextStepName next_step'
 ];
 
-// $projectFields = [
-//     "c.defID AS ID",
-//     "c.bartDefID AS bartDefID",
-//     "l.locationName AS location",
-//     "s.severityName AS severity",
-//     "t.statusName AS status",
-//     "y.systemName AS systemAffected",
-//     "g.systemName AS groupToResolve",
-//     "c.description AS description",
-//     "c.specLoc AS specLoc",
-//     "r.requiredBy AS requiredBy",
-//     "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
-// ];
-
 $bartJoins = [
     'status s' => 'b.status = s.statusID',
     'bdNextStep n' => 'b.next_step = n.bdNextStepID'
 ];
-
-// $projectJoins = [
-//     "location l" => "c.location = l.locationID",
-//     "requiredBy r" => "c.requiredBy = r.reqByID",
-//     "severity s" => "c.severity = s.severityID",
-//     "status t" => "c.status = t.statusID",
-//     "system y" => "c.systemAffected = y.systemID",
-//     "system g" => "c.groupToResolve = g.systemID",
-//     'defType type' => 'c.defType = type.defTypeID'
-// ];
 
 $bartFilters = [
     'status' => [
@@ -332,8 +308,8 @@ $context = [
 try {
     $db = new DbConnection(DB_CREDENTIALS);
 
-    // TODO: this should instead return an object that $db can use to fetch
     if ($view === 'BART') {
+        // TODO: this should instead return an object that $db can use to fetch
         $context['statusData'] = getBartStatusCount($db);
 
         // build defs query
@@ -373,7 +349,7 @@ try {
         // fetch table data and append it to $context for display by Twig template
         $context['data'] = $db->get($table, null, $queryParams['fields']);
     } else {
-        $db->where('status', 3, '<>');
+        $db->where('status', 3, '<>'); // TODO: DefCollection should be able to process raw where conditions as strings
 
         $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
             [
@@ -393,7 +369,6 @@ try {
             null,
             $orderBy + [ 'id ASC' ]
         ));
-        error_log($db->getLastQuery());
     }
 
     // get filter select options, showing those that are currently filtered on
@@ -419,11 +394,10 @@ try {
 
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
-    echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
-} catch (Exception $e) {
-    echo $e->getMessage();
+    error_log($e->getTemplateLine() . ' ' . $e->getRawMessage());
+} catch (Exception | Error $e) {
+    error_log($e->getMessage());
+} finally {
+    if (!empty($db) && is_a($db, 'MysqliDB')) $db->disconnect();
+    exit;
 }
-
-$db->disconnect();
-
-exit;
