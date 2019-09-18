@@ -107,27 +107,23 @@ try {
             && is_array($val))
             {
                 // fetch systemIDs because they are not in the view
+                $lowerKey = strtolower($key);
                 $tableLookup = [
-                    'systemAffected' => 'system',
-                    'groupToResolve' => 'system',
+                    'systemaffected' => 'system',
+                    'grouptoresolve' => 'system',
                     'status' => 'status'
                 ];
-                $table = $tableLookup[$key];
+                $table = $tableLookup[$lowerKey];
+
                 $link2 = new MySqliDB(DB_CREDENTIALS);
                 $lookup = $link2->get($table, null, [ "{$table}ID id", "{$table}Name name" ]);
                 $link2->disconnect();
-                // $lookup = array_reduce($lookup, function ($dict, $row) use ($table) {
-                //     $dict[$row["id"]] = $row["name"];
-                //     return $dict;
-                // }, []);
+
                 $lookup = array_combine(array_column($lookup, 'id'), array_column($lookup, 'name'));
-                //  [ $lookup[array_shift($val)] ];
-                // foreach ($val as $extraVal) {
-                //     $arrayVals[] = $system[$extraVal];
-                // }
                 $namedVals = array_map(function ($num) use ($lookup) {
                     return $lookup[$num];
                 }, $val);
+
                 $link->where($key, $namedVals, 'IN');
             } elseif (strcasecmp($key, 'requiredBy') === 0) {
                 $table = 'requiredBy'; // mind the capitalization
