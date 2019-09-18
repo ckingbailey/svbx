@@ -395,7 +395,6 @@ try {
     $twig->addFilter($filter_decode);
     $twig->addFilter($zerofill);
 
-    error_log(print_r($context['data'], true));
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
     error_log($e->getTemplateLine() . ' ' . $e->getRawMessage());
