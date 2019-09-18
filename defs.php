@@ -378,7 +378,10 @@ try {
 
     // instantiate Twig
     $twig = new Twig_Environment(new Twig_Loader_Filesystem('./templates'),
-        [ 'debug' => getenv('PHP_ENV') === 'dev' ]
+        [
+            'debug' => getenv('PHP_ENV') === 'dev',
+            'autoescape' => false
+        ]
     );
     if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
@@ -392,6 +395,7 @@ try {
     $twig->addFilter($filter_decode);
     $twig->addFilter($zerofill);
 
+    error_log(print_r($context['data'], true));
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
     error_log($e->getTemplateLine() . ' ' . $e->getRawMessage());

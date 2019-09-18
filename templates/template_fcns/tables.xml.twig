@@ -105,7 +105,7 @@
                 {% if headings[fieldName].filter | slice(0, 10) == 'zerofill_4' %}
                     {{ cell | zerofill_4() }}
                 {% else %}
-                    {{ cell | safe }}
+                    {{ cell }}
                 {% endif %}
             {% endset %}
             
@@ -115,7 +115,7 @@
                     {% if not href is empty %}
                         {{ tables.anchorTag(href, id | trim) }}
                     {% elseif not cell is empty and not cell is same as('0000-00-00') %}
-                        {{ cellVal | trim | raw | nl2br }}
+                        {{- cellVal | trim | nl2br | safe -}}
                     {% else %}
                         {{ '—' }}
                     {% endif %}
