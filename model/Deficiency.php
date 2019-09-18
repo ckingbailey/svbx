@@ -433,7 +433,6 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             $link->where(static::$fields['id'], $this->props['id']);
             if (!$success = $link->update(static::$table, $updatableData)) {
-                error_log($link->getLastQuery());
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
             $this->__construct($this->props['id']);

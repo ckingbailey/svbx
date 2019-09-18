@@ -103,21 +103,32 @@ try {
                 $link->where($key, "%{$val}%", 'LIKE');
             } elseif (strcasecmp($key, 'systemAffected') === 0
             || strcasecmp($key, 'groupToResolve') === 0
+            || (strcasecmp($key, 'status') === 0 && $view === 'deficiency')
             && is_array($val))
             {
                 // fetch systemIDs because they are not in the view
+                $tableLookup = [
+                    'systemAffected' => 'system',
+                    'groupToResolve' => 'system',
+                    'status' => 'status'
+                ];
+                $table = $tableLookup[$key];
                 $link2 = new MySqliDB(DB_CREDENTIALS);
-                $system = $link2->get('system', null, [ 'systemID', 'systemName' ]);
+                $lookup = $link2->get($table, null, [ "{$table}ID id", "{$table}Name name" ]);
                 $link2->disconnect();
-                $system = array_reduce($system, function ($dict, $sys) {
-                    $dict[$sys['systemID']] = $sys['systemName'];
-                    return $dict;
-                }, []);
-                $arrayVals = [ $system[array_shift($val)] ];
-                foreach ($val as $extraVal) {
-                    $arrayVals[] = $system[$extraVal];
-                }
-                $link->where($key, $arrayVals, 'IN');
+                // $lookup = array_reduce($lookup, function ($dict, $row) use ($table) {
+                //     $dict[$row["id"]] = $row["name"];
+                //     return $dict;
+                // }, []);
+                $lookup = array_combine(array_column($lookup, 'id'), array_column($lookup, 'name'));
+                //  [ $lookup[array_shift($val)] ];
+                // foreach ($val as $extraVal) {
+                //     $arrayVals[] = $system[$extraVal];
+                // }
+                $namedVals = array_map(function ($num) use ($lookup) {
+                    return $lookup[$num];
+                }, $val);
+                $link->where($key, $namedVals, 'IN');
             } elseif (strcasecmp($key, 'requiredBy') === 0) {
                 $table = 'requiredBy'; // mind the capitalization
                 $id = 'reqById';
@@ -141,9 +152,8 @@ try {
                     return $dict;
                 }, []);
                 $link->where('nextStep', $lookup[$val]);
-            } elseif (($view === 'deficiency'
-            && strcasecmp($key, 'safetyCert') !== 0)
-            || strcasecmp($key, 'status') === 0) {
+            } elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
+            || ($view === 'bart_def' && strcasecmp($key, 'status') === 0)) {
                 $table = $key;
                 $id = "{$table}ID";
                 $name = "{$table}Name";
@@ -207,11 +217,11 @@ try {
 } catch (\Exception $e) {
     error_log($e);
     http_response_code(500);
-    echo $e;
+    // echo $e;
 } catch (\Error $e) {
     error_log($e);
     http_response_code(500);
-    echo $e;
+    // echo $e;
 } finally {
     if (is_a($link, 'MySqliDB')) $link->disconnect();
     exit;
