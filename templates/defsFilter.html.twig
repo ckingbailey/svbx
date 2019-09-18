@@ -20,7 +20,7 @@
     <div class="row item-margin-bottom">
         <div id="container_input_defID" class="col-6 col-sm-1 pl-1 pr-1">
             <label>Def #</label>
-            <input type="text" name="defID" class="form-control" value="{{values.defID}}">
+            <input type="text" name="id" class="form-control" value="{{values.id}}">
         </div>
         <div id="container_input_bartID" class="col-6 col-sm-1 pl-1 pr-1">
             <label>BART ID</label>
@@ -28,10 +28,9 @@
         </div>
         <div id="container_select_status" class="col-6 col-sm-2 pl-1 pr-1">
             <label>Status</label>
-            <select name="status" class="form-control">
-                <option></option>
+            <select name="status[]" title="" class="form-control selectpicker" data-style="btn-form-control" multiple>
                 {% for value, text in selectOptions.status %}
-                    {% set selected = (not values.status is empty and values.status == value)
+                    {% set selected = (not values.status is empty and value in values.status)
                         ? ' selected' : '' %}
                     <option value="{{value}}"{{selected}}>{{text}}</option>
                 {% endfor %}

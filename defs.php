@@ -2,53 +2,36 @@
 require_once 'vendor/autoload.php';
 require_once 'session.php';
 
+use SVBX\DbConnection;
+use SVBX\DefCollection;
+
 // check which view to show
 $view = !empty(($_GET['view']))
-    ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED) : '';
-$orderBy = null;
+    ? filter_var($_GET['view'], FILTER_SANITIZE_ENCODED)
+    : '';
+unset($_GET['view']);
+$orderBy = [];
 
 // check for search params
 // if no search params show all defs that are not 'deleted'
 if(!empty($_GET)) {
-    $get = array_filter($_GET, function ($val) {
-        return (gettype($val) === 'string' && $val !== '') || (bool) $val;
-    }); // filter to remove falsey values -- is this necessary?
-    unset($get['search'], $get['view']);
-    $get = filter_var_array($get, FILTER_SANITIZE_SPECIAL_CHARS);
-    $orderBy = array_reduce(array_keys($get), function($acc, $key) use ($get) {
-        if (strpos($key, 'sort_') === 0 && array_search($get[$key], $acc) === false)
-            $acc[$key] = $get[$key];
+    // $get = array_filter($_GET); // filter to remove falsey values -- is this necessary?
+    // unset($get['view']);
+    $where = filter_var_array($_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+    // retrieve 'sort_' vars from $_GET, removing them from $_GET along the way
+    $orderBy = $orderBy + array_reduce(array_keys($_GET), function($acc, $key) use (&$where) {
+        if (strpos($key, 'sort_') === 0 && array_search($where[$key], $acc) === false) {
+            $acc[$key] = $where[$key];
+            unset($where[$key]);
+        }
         return $acc;
     }, []);
-    unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
-} else {
-    $get = null;
-}
-
-// instantiate Twig
-$loader = new Twig_Loader_Filesystem('./templates');
-$twig = new Twig_Environment($loader,
-    [
-        'debug' => getenv('PHP_ENV') === 'dev'
-    ]
-);
-if (getenv('PHP_ENV')) {
-    $twig->addExtension(new Twig_Extension_Debug());
-}
-
-// add Twig filters
-$filter_decode = new Twig_Filter('safe', function($str) {
-    return html_entity_decode($str);
-});
-$zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
-    return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
-});
-$twig->addFilter($filter_decode);
-$twig->addFilter($zerofill);
+    // unset($get['sort_1'], $get['sort_2'], $get['sort_3']);
+} else $where = null;
 
 // set view-dependent variables
 $bartTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?bartDefID=' ],
+    'id' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?bartDefID=' ],
     'status' => [ 'value' => 'Status', 'cellWd' => '2' ],
     'date_created'=> [ 'value' => 'Date created', 'cellWd' => '3', 'collapse' => 'xs' ],
     'descriptive_title_vta' => [ 'value' => 'Description', 'cellWd' => '', 'classList' => 'def-table__crop-content' ],
@@ -58,7 +41,7 @@ $bartTableHeadings = [
 ];
 
 $projectTableHeadings = [
-    'ID' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
+    'id' => [ 'value' => 'ID', 'cellWd' => '1', 'collapse' => 'none def-table__col-id', 'href' => '/def.php?defID=' ],
     'bartDefID' => [ 'value' => 'BART ID', 'filter' => 'zerofill_4', 'cellWd' => '1', 'collapse' => 'sm' ],
     'location' => [ 'value' => 'Location', 'cellWd' => '2', 'collapse' => 'sm' ],
     'severity' => [ 'value' => 'Severity', 'cellWd' => '1', 'collapse' => 'xs' ],
@@ -73,41 +56,17 @@ $projectTableHeadings = [
 ];
 
 $bartFields = [
-    'ID',
-    's.statusName as status',
+    'id',
+    's.statusName status',
     'date_created',
     'descriptive_title_vta',
     'resolution_vta',
-    'n.nextStepName AS next_step'
-];
-
-$projectFields = [
-    "c.defID AS ID",
-    "c.bartDefID AS bartDefID",
-    "l.locationName AS location",
-    "s.severityName AS severity",
-    "t.statusName AS status",
-    "y.systemName AS systemAffected",
-    "g.systemName AS groupToResolve",
-    "c.description AS description",
-    "c.specLoc AS specLoc",
-    "r.requiredBy AS requiredBy",
-    "DATE_FORMAT(c.dueDate, '%d %b %Y') AS dueDate"
+    'n.nextStepName next_step'
 ];
 
 $bartJoins = [
     'status s' => 'b.status = s.statusID',
     'bdNextStep n' => 'b.next_step = n.bdNextStepID'
-];
-
-$projectJoins = [
-    "location l" => "c.location = l.locationID",
-    "requiredBy r" => "c.requiredBy = r.reqByID",
-    "severity s" => "c.severity = s.severityID",
-    "status t" => "c.status = t.statusID",
-    "system y" => "c.systemAffected = y.systemID",
-    "system g" => "c.groupToResolve = g.systemID",
-    'defType type' => 'c.defType = type.defTypeID'
 ];
 
 $bartFilters = [
@@ -272,32 +231,32 @@ $projectSort = [
 
 list($table, $tableAlias, $addPath, $tableHeadings, $fields, $joins, $filters, $sortOptions) = $view === 'BART'
     ? [ 'BARTDL b', 'b', 'newDef.php?class=bart', $bartTableHeadings, $bartFields, $bartJoins, $bartFilters, [] ]
-    : [ 'CDL c', 'c', 'newDef.php', $projectTableHeadings, $projectFields, $projectJoins, $projectFilters, $projectSort ];
+    : [ null, null, 'newDef.php', $projectTableHeadings, null, null, $projectFilters, $projectSort ];
 
 if ($_SESSION['role'] <= 10) unset($tableHeadings['edit']);
 
 $queryParams = [ 'fields' => $fields, 'joins' => $joins ];
 
 // function to get filter options to display in <select> elements
-function getFilterOptions($link, $queryParams) {
+function getFilterOptions($db, $queryParams) { // TODO: this logic should all live in Deficiency class
     $options = [];
     foreach ($queryParams as $fieldName => $params) {
         $table = $params['table'];
         $fields = $params['fields'];
         if (!empty($params['join']))
-            $link->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
+            $db->join($params['join']['joinTable'], $params['join']['joinOn'], $params['join']['joinType']);
         if (!empty($params['where'])) {
             $whereParams = $params['where'];
             if (gettype($whereParams) === 'string')
             // if where is string, use it as raw where query
-                $link->where($whereParams);
+                $db->where($whereParams);
             elseif (!empty($whereParams['comparison']))
-                $link->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
-            else $link->where($whereParams['field'], $whereParams['value']);
+                $db->where($whereParams['field'], $whereParams['value'], $whereParams['comparison']);
+            else $db->where($whereParams['field'], $whereParams['value']);
         }
-        if (!empty($params['groupBy'])) $link->groupBy($params['groupBy']);
-        if (!empty($params['orderBy'])) $link->orderBy($params['orderBy']);
-        if ($result = $link->get($table, null, $fields)) {
+        if (!empty($params['groupBy'])) $db->groupBy($params['groupBy']);
+        if (!empty($params['orderBy'])) $db->orderBy($params['orderBy']);
+        if ($result = $db->get($table, null, $fields)) {
             $options[$fieldName] = [];
             foreach ($result as $row) {
                 $fieldNames = array_keys($row);
@@ -313,14 +272,14 @@ function getFilterOptions($link, $queryParams) {
     return $options;
 }
 
-function getBartStatusCount($link) {
+function getBartStatusCount($db) { // TODO: this should instead return an object that can be consumed by $db
     $table = 'BARTDL b';
     $fields = [
         'COUNT(CASE WHEN s.statusName = "open" THEN 1 ELSE NULL END) AS statusOpen',
         'COUNT(CASE WHEN s.statusName = "closed" THEN 1 ELSE NULL END) AS statusClosed'
     ];
-    $link->join('status s', 'b.status = s.statusID', 'LEFT');
-    return $link->getOne($table, $fields);
+    $db->join('status s', 'b.status = s.statusID', 'LEFT');
+    return $db->getOne($table, $fields);
 }
 
 // base context
@@ -332,8 +291,8 @@ $context = [
     'addPath' => $addPath,
     // filter vars
     'resetScript' => 'resetSearch',
-    'values' => $get,
-    'collapse' => empty($get),
+    'values' => $where,
+    'collapse' => empty($where),
     'view' => $view,
     'sortOptions' => $sortOptions,
     'curSort' => $orderBy,
@@ -347,60 +306,98 @@ $context = [
 ];
 
 try {
-    $link = new MySqliDB(DB_CREDENTIALS);
+    $db = new DbConnection(DB_CREDENTIALS);
 
-    if ($view === 'BART') $context['statusData'] = getBartStatusCount($link);
+    if ($view === 'BART') {
+        // TODO: this should instead return an object that $db can use to fetch
+        $context['statusData'] = getBartStatusCount($db);
+
+        // build defs query
+        foreach ($queryParams['joins'] as $tableName => $on) {
+            $db->join($tableName, $on, 'LEFT');
+        }
+    
+        // filter on user-selected query params
+        if (!empty($where)) {
+            foreach ($where as $param => $val) {
+                if ($param === 'description'
+                    || $param === 'defID'
+                    || $param === 'bartDefID'
+                    || $param === 'specLoc') $db->where($param, "%{$val}%", 'LIKE');
+                elseif ($param === 'systemAffected'
+                    || $param === 'groupToResolve'
+                    && is_array($val))
+                {
+                    $arrayVals = [ array_shift($val) ];
+                    foreach ($val as $extraVal) {
+                        array_push($arrayVals, $extraVal);
+                    }
+                    $db->where("$tableAlias.$param", $arrayVals, 'IN');
+                }
+                else $db->where("$tableAlias.$param", $val);
+            }
+        }
+    
+        $db->where('status', 3, '<>');
+        if (!empty($orderBy)) {
+            foreach ($orderBy as $field) {
+                $db->orderBy($field, 'ASC');
+            }
+        }
+        $db->orderBy('id', 'ASC');
+        
+        // fetch table data and append it to $context for display by Twig template
+        $context['data'] = $db->get($table, null, $queryParams['fields']);
+    } else {
+        $db->where('status', 3, '<>'); // TODO: DefCollection should be able to process raw where conditions as strings
+
+        $context['data'] = $db->lazyGet(...DefCollection::getFetchableNum(
+            [
+                'id',
+                'bartDefID',
+                'locationName location',
+                'severityName severity',
+                'statusName status',
+                'systemName systemAffected',
+                'systemName groupToResolve',
+                'description',
+                'specLoc',
+                'requiredBy requiredBy', // because the name in the database is anti-pattern
+                'dueDate'
+            ],
+            $where,
+            null,
+            $orderBy + [ 'id ASC' ]
+        ));
+    }
 
     // get filter select options, showing those that are currently filtered on
-    $context['selectOptions'] = getFilterOptions($link, $filters);
+    $context['selectOptions'] = getFilterOptions($db, $filters);
 
-    // build defs query
-    foreach ($queryParams['joins'] as $tableName => $on) {
-        $link->join($tableName, $on, 'LEFT');
-    }
+    $context['count'] = $db->count;
 
-    // filter on user-selected query params
-    if (!empty($get)) {
-        foreach ($get as $param => $val) {
-            if ($param === 'description'
-                || $param === 'defID'
-                || $param === 'bartDefID'
-                || $param === 'specLoc') $link->where($param, "%{$val}%", 'LIKE');
-            elseif ($param === 'systemAffected'
-                || $param === 'groupToResolve'
-                && is_array($val))
-            {
-                $arrayVals = [ array_shift($val) ];
-                foreach ($val as $extraVal) {
-                    array_push($arrayVals, $extraVal);
-                }
-                $link->where("$tableAlias.$param", $arrayVals, 'IN');
-            }
-            else $link->where("$tableAlias.$param", $val);
-        }
-    }
+    // instantiate Twig
+    $twig = new Twig_Environment(new Twig_Loader_Filesystem('./templates'),
+        [ 'debug' => getenv('PHP_ENV') === 'dev' ]
+    );
+    if (getenv('PHP_ENV') === 'dev') $twig->addExtension(new Twig_Extension_Debug());
 
-    $link->where('status', '3', '<>');
-    if (!empty($orderBy)) {
-        foreach ($orderBy as $field) {
-            $link->orderBy($field, 'ASC');
-        }
-    }
-    $link->orderBy('ID', 'ASC');
-    
-    // fetch table data and append it to $context for display by Twig template
-    $data = $result = $link->get($table, null, $queryParams['fields']);
-    $context['data'] = $data;
-
-    $context['count'] = $link->count;
+    // add Twig filters
+    $filter_decode = new Twig_Filter('safe', function($str) {
+        return html_entity_decode($str);
+    });
+    $zerofill = new Twig_Filter('zerofill_*', function($num, $str) {
+        return $str ? str_pad($str, $num, '0', STR_PAD_LEFT) : $str;
+    });
+    $twig->addFilter($filter_decode);
+    $twig->addFilter($zerofill);
 
     $twig->display('defs.html.twig', $context);
 } catch (Twig_Error $e) {
-    echo $e->getTemplateLine() . ' ' . $e->getRawMessage();
-} catch (Exception $e) {
-    echo $e->getMessage();
+    error_log($e->getTemplateLine() . ' ' . $e->getRawMessage());
+} catch (Exception | Error $e) {
+    error_log($e->getMessage());
+} finally {
+    if (!empty($db) && is_a($db, 'MysqliDB')) $db->disconnect();
+    exit;
 }
-
-$link->disconnect();
-
-exit;

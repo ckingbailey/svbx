@@ -7,22 +7,16 @@ use PHPUnit\Framework\TestCase;
 
 final class DeficiencyTest extends TestCase
 {
-    protected $newDefID;
     protected $bartDefID;
     protected static $dateFormat = 'Y-m-d';
 
-    protected function setUp(): void
-    {
-        $this->newDefID = null;
-    }
-
-    protected function tearDown(): void
+    protected function tearDown() : void
     {
         try {
             $db = new MysqliDb(DB_CREDENTIALS);
 
-            $db->where('defID', $this->newDefID);
             $db->delete('CDL');
+            $db->query('ALTER TABLE CDL AUTO_INCREMENT = 1');
         } catch (Exception $e) {
             error_log(print_r($e, true));
             throw $e;
@@ -32,6 +26,76 @@ final class DeficiencyTest extends TestCase
         } finally {
             if (!empty($link) && is_a($link, 'MysqliDb')) $db->disconnect();
         }
+    }
+
+    public function testCanGetFields() : void
+    {
+        $fields = Deficiency::getFields();
+        $this->assertIsArray($fields);
+        $this->assertEquals($fields['id'], 'defID');
+    }
+
+    public function testCanGetJoins(): void
+    {
+        $joins = Deficiency::getJoins();
+        $this->assertIsArray($joins);
+        $this->assertContains([
+            'yesNo AS safetyCert',
+            'CDL.safetyCert = safetyCert.yesNoID',
+            'LEFT'
+        ], $joins);
+        $this->assertContains([
+            'location',
+            'CDL.location = location.locationID',
+            'LEFT'
+        ], $joins);
+        $this->assertContains([
+            'requiredBy',
+            'CDL.requiredBy = requiredBy.reqByID',
+            'LEFT'
+        ], $joins);
+        $this->assertContains([
+            'users_enc AS created_by',
+            'CDL.created_by = created_by.username',
+            'LEFT'
+        ], $joins);
+    }
+
+    public function testGetLookupReturnsExpectedValues() : void
+    {
+        $lookup = Deficiency::getLookup();
+        $this->assertIsArray($lookup);
+        $this->assertEquals('locationName', $lookup['location']);
+        $this->assertEquals('yesNoName', $lookup['safetyCert']);
+        $this->assertEquals('CONCAT(firstname, " ", lastname)', $lookup['created_by']);
+    }
+
+    public function testCanGetJoinsFromList(): void
+    {
+        $joins = Deficiency::getJoins([ 'location', 'status', 'groupToResolve' ]);
+        $this->assertEquals(3, count($joins));
+        $this->assertContains([
+            'location',
+            'CDL.location = location.locationID',
+            'LEFT'
+        ], $joins);
+    }
+
+    public function testGetJoinsIgnoresInvalidFields(): void
+    {
+        $joins = Deficiency::getJoins([ 'severity', 'foobar', 'hamSandwich', 'contractID' ]);
+        $this->assertEquals([
+            [
+                'severity',
+                'CDL.severity = severity.severityID',
+                'LEFT'
+            ],
+            [
+                'contract',
+                'CDL.contractID = contract.contractID',
+                'LEFT'
+            ]
+            ], $joins);
     }
 
     public function testCanCreateNewWithRequiredProps(): void
@@ -58,7 +122,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertNewWithStatusOpen(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -75,9 +139,9 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
         
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $this->assertEqualsIgnoringCase(
             $newDef->getReadable([ 'status' ])['status'],
             'open'
@@ -91,7 +155,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertWithNullRepo() : void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -109,12 +173,12 @@ final class DeficiencyTest extends TestCase
             'repo' => null
         ]))->insert();
         
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
     }
 
     public function testInsertWithStatusClosedGetsTimestamp(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -134,9 +198,9 @@ final class DeficiencyTest extends TestCase
             'evidenceID' => 'aaa000-bbb999' // required closure info
         ]))->insert();
 
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
         
-        $dateClosed = (new Deficiency($this->newDefID))->get('dateClosed');
+        $dateClosed = (new Deficiency($newDefID))->get('dateClosed');
         $d = DateTime::createFromFormat(static::$dateFormat, $dateClosed);
 
         $this->assertInstanceOf('DateTime', $d);
@@ -145,7 +209,7 @@ final class DeficiencyTest extends TestCase
 
     public function testUpdateWithStatusClosedGetsTimestamp(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -162,7 +226,7 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $newDef->set('status', 2);
         $newDef->set('repo', 1);
         $newDef->set('evidenceType', 1);
@@ -179,7 +243,7 @@ final class DeficiencyTest extends TestCase
 
     public function testCanInsertWithBartId(): void
     {
-        $this->newDefID = (new Deficiency(false, [
+        $newDefID = (new Deficiency(false, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -197,12 +261,12 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $this->assertNotEquals(intval($this->newDefID), 0);
+        $this->assertNotEquals(intval($newDefID), 0);
     }
 
     public function testEmptyBartIdDoesNotInsertZero(): void
     {
-        $this->newDefID = (new Deficiency(null, [
+        $newDefID = (new Deficiency(null, [
             'safetyCert' => 1,
             'systemAffected' => 1,
             'location' => 1,
@@ -220,7 +284,7 @@ final class DeficiencyTest extends TestCase
             'created_by' => 'test_user', // required creation info
         ]))->insert();
 
-        $newDef = new Deficiency($this->newDefID);
+        $newDef = new Deficiency($newDefID);
         $this->assertNotEquals($newDef->get('bartDefID'), 0);
         $this->assertEquals($newDef->get('bartDefID'), null);
     }

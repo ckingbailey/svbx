@@ -5,7 +5,7 @@ use MysqliDb;
 
 class Deficiency
 {
-    protected $table = 'CDL';
+    protected static $table = 'CDL';
     public $commentsTable = [
         'table' => 'cdlComments',
         'field' => 'cdlCommText',
@@ -103,7 +103,7 @@ class Deficiency
     ];
 
     // maps object props to database fields
-    protected $fields = [
+    protected static $fields = [
         'id' =>  'defID',
         'safetyCert' => 'safetyCert',
         'systemAffected' => 'systemAffected',
@@ -162,10 +162,12 @@ class Deficiency
     protected static $foreignKeys = [
         'safetyCert' => [
             'table' => 'yesNo',
+            'alias' => 'safetyCert',
             'fields' => ['yesNoID', 'yesNoName']
         ],
         'systemAffected' => [
             'table' => 'system',
+            'alias' => 'systemAffected',
             'fields' => ['systemID', 'systemName']
         ],
         'groupToResolve' => [
@@ -214,18 +216,18 @@ class Deficiency
         ],
         'created_by' => [
             'table' => 'users_enc',
-            'alias' => 'cb',
+            'alias' => 'created_by',
             'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
             'concat' => true
         ],
         'updated_by' => [
             'table' => 'users_enc',
-            'alias' => 'ub',
+            'alias' => 'updated_by',
             'fields' => [ 'username', 'firstname', ' ', 'lastname' ],
             'concat' => true
         ]
     ];
-    
+
     public function __construct($id = null, array $data = []) {
         if (!empty($id) && !empty($data)) { // This is a known Def
             $this->props['id'] = $id;
@@ -236,9 +238,9 @@ class Deficiency
         } elseif (!empty($id)) { // This is a known Def. Query for its data
             try {
                 $link = new MysqliDb(DB_CREDENTIALS);
-                $fields = $this->fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
+                $fields = static::$fields + [static::TIMESTAMP_FIELD => static::TIMESTAMP_FIELD];
                 $link->where($fields['id'], $id);
-                if ($data = $link->getOne($this->table, array_values($fields))) {
+                if ($data = $link->getOne(static::$table, array_values($fields))) {
                     $this->props['id'] = $id;
                     $this->set($data);
                 } else throw new \Exception("No Deficiency record found @ ID = $id");
@@ -272,7 +274,7 @@ class Deficiency
                 if (is_string($key)
                     && ($propsKey = key_exists($key, $this->props)
                         ? $key
-                        : array_search($key, $this->fields))
+                        : array_search($key, static::$fields))
                 ) {
                     $this->props[$propsKey] = empty($numericProps[$propsKey])
                         ? trim($value)
@@ -287,9 +289,9 @@ class Deficiency
     private function propsToFields($props = null) {
         $props = $props ?: array_keys($this->props);
         return array_reduce($props, function($acc, $prop) {
-            if (!empty($this->fields[$prop]) && $this->props[$prop] !== null) {
+            if (!empty(static::$fields[$prop]) && $this->props[$prop] !== null) {
                 $val = $this->props[$prop] !== '' ? $this->props[$prop] : null;
-                $acc[$this->fields[$prop]] = $val;
+                $acc[static::$fields[$prop]] = $val;
             }
             return $acc;
         }, []);
@@ -297,10 +299,10 @@ class Deficiency
 
     public function sanitize($props = null) {
         $props = $props ?: $this->props;
-        $reverseLookup = array_flip($this->fields);
+        $reverseLookup = array_flip(static::$fields);
         return array_reduce(array_keys($props), function($acc, $key) use ($props) {
             // if $key is not in filters, look it up its corresponding prop name in fields
-            $propName = !empty($this->filters[$key]) ? $key : array_search($key, $this->fields);
+            $propName = !empty($this->filters[$key]) ? $key : array_search($key, static::$fields);
             $filter = $this->filters[$propName];
             if (strpos($filter, 'FILTER') === 0)
                 $acc[$key] = filter_var($props[$key], constant($filter)) ?: null;
@@ -397,14 +399,14 @@ class Deficiency
 
         $insertableData = $this->propsToFields();
         unset(
-            $insertableData[$this->fields['id']],
-            $insertableData[$this->fields['lastUpdated']]
+            $insertableData[static::$fields['id']],
+            $insertableData[static::$fields['lastUpdated']]
         );
         $insertableData = $this->sanitize($insertableData);
         
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            if ($newID = $link->insert($this->table, $insertableData)) {
+            if ($newID = $link->insert(static::$table, $insertableData)) {
                 $this->set('id', $newID);
             } else {
                 throw new \Exception('There was a problem inserting the deficiency: ' . $link->getLastError());
@@ -429,9 +431,8 @@ class Deficiency
 
         try {
             $link = new MysqliDb(DB_CREDENTIALS);
-            $link->where($this->fields['id'], $this->props['id']);
-            if (!$success = $link->update($this->table, $updatableData)) {
-                error_log($link->getLastQuery());
+            $link->where(static::$fields['id'], $this->props['id']);
+            if (!$success = $link->update(static::$table, $updatableData)) {
                 throw new \Exception("There was a problem updating the Deficiency {$this->props['id']}");
             }
             $this->__construct($this->props['id']);
@@ -526,7 +527,7 @@ class Deficiency
             $link = new MysqliDb(DB_CREDENTIALS);
             
             if (empty($this->props['id'])) throw new \Exception('No ID found for Deficiency');
-            $link->where($this->fields['id'], $this->props['id']);
+            $link->where(static::$fields['id'], $this->props['id']);
             
             $lookupFields = [];
             
@@ -549,7 +550,7 @@ class Deficiency
 
                 $join = $lookupTable . ($alias ? " AS {$alias}" : '');
                 $joinOn = sprintf("%s.%s = %s.%s",
-                    $this->table,
+                    static::$table,
                     $childField,
                     ($alias ?: $lookupTable),
                     $lookupKey
@@ -560,7 +561,7 @@ class Deficiency
                 $lookupFields[] = $selectField . ' AS ' . $childField;
             }
 
-            if (!$readable = $link->getOne($this->table, $lookupFields))
+            if (!$readable = $link->getOne(static::$table, $lookupFields))
                 throw new \Exception('There was a problem fetching on the lookup fields: ' . $link->getLastQuery());
             
             return $readable + $this->get();
@@ -570,8 +571,63 @@ class Deficiency
             if (!empty($link) && is_a($link, 'MysqliDb')) $link->disconnect();
         }
     }
+
+    public static function getTable() : string {
+        return static::$table;
+    }
+
+    public static function getFields() : array {
+        return static::$fields;
+    }
+
+    public static function getLookup() : array {
+        $foreignKeys = static::$foreignKeys;
+        return array_reduce(array_keys(static::$foreignKeys),
+        function ($output, $key) use ($foreignKeys) {
+            if (!empty($foreignKeys[$key]['concat']) && $foreignKeys[$key]['concat'] === true) {
+                $output[$key] = 'CONCAT('
+                . implode(
+                    ', ', 
+                    array_map(function ($field) {
+                        return trim($field) === '' ? '" "' : $field;
+                    }, array_slice($foreignKeys[$key]['fields'], 1)))
+                . ')';
+            } else $output[$key] = $foreignKeys[$key]['fields'][1];
+            return $output;
+        }, []);
+    }
+
+    public static function getJoins(array $fields = []): array {
+        $keys = array_keys(static::$foreignKeys);
+        $fieldList = empty($fields)
+        ? $keys
+        : array_reduce($fields, function ($output, $field) use ($keys) {
+            if (array_search($field, $keys) !== false)
+                $output[] = $field;
+            if (($i = strrpos($field, ' ')) !== false
+            && strlen($alias = substr($field, $i + 1)) > 0
+            && array_search($alias, $keys) !== false) {
+                $output[] = $alias;
+            }
+            return $output;
+        }, []);
+
+        return array_map(function ($childField) {
+            $join = static::$foreignKeys[$childField];
+
+            list($parentTable, $alias) = !empty($join['alias'])
+            ? [ "{$join['table']} AS {$join['alias']}", $join['alias'] ]
+            : [ $join['table'], $join['table'] ];
+            
+            return [
+                $parentTable,
+                static::$table . ".$childField = $alias.{$join['fields'][0]}",
+                'LEFT'
+            ];
+        }, $fieldList);
+    }
     
-    public function __toString() {
+    public function __toString() : string {
         return print_r($this->get(), true);
     }
 

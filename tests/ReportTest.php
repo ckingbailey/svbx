@@ -10,8 +10,7 @@ final class ReportTest extends TestCase
     protected static $dateFormat = 'Y-m-d';
     protected static $severityOrder = ['Minor', 'Major', 'Critical', 'Blocker'];
     protected static $systemOrder = ['Electrical', 'Mechanical', 'SCADA', 'Fire Protection'];
-    private static $fixtureIDs = [];
-    private static $fixtureData = [
+    private static $_staticProvider = [
         [
             'dateCreated' => '2019-01-01',
             'status' => 1,
@@ -87,14 +86,15 @@ final class ReportTest extends TestCase
         ],
     ];
 
+    /**
+     * Set up a bunch of test data to run reports against
+     */
     public static function setUpBeforeClass(): void
     {
-        self::$fixtureIDs = [];
-
         try {
             $db = new MysqliDb(DB_CREDENTIALS);
 
-            foreach (self::$fixtureData as $defData) {
+            foreach (self::$_staticProvider as $defData) {
                 $def = new Deficiency(null, $defData + [
                     'safetyCert' => 1,
                     'systemAffected' => 1,
@@ -109,7 +109,7 @@ final class ReportTest extends TestCase
                     'created_by' => 'test_user'
                 ]);
 
-                array_push(self::$fixtureIDs, $def->insert());
+                $def->insert();
             }
     
         } catch (Exception $e) {
@@ -128,19 +128,16 @@ final class ReportTest extends TestCase
         try {
             $db = new MysqliDb(DB_CREDENTIALS);
     
-            foreach (self::$fixtureIDs as $id) {
-                $db->where('defID', $id);
-                $db->delete('CDL');
-            }
+            $db->delete('CDL');
+            $db->query('ALTER TABLE CDL AUTO_INCREMENT = 1');
         } catch (Exception $e) {
-            error_log(print_r($e, true));
+            print_r($e);
             throw $e;
         } catch (Error $e) {
-            error_log(print_r($e, true));
+            print_r($e);
             throw $e;
         } finally {
             if (!empty($db) && is_a($db, 'MysqliDb')) $db->disconnect();
-            self::$fixtureIDs = [];
         }
     }
 
@@ -153,8 +150,8 @@ final class ReportTest extends TestCase
         
         $endDate = date(static::$dateFormat);
         $startDate = DateTime
-        ::createFromFormat(static::$dateFormat, $endDate)
-        ->sub(new DateInterval('P7D'));
+            ::createFromFormat(static::$dateFormat, $endDate)
+            ->sub(new DateInterval('P7D'));
         $expected = [ 'severity', $startDate->format(static::$dateFormat) , $endDate ];
         $headings = array_shift($reportData);
 
