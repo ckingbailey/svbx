@@ -38,6 +38,7 @@
     <script src="js/dedupe_selection.js"></script>
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="js/pie_chart.js"></script>
+    <script src="js/get_csv.js"></script>
     <script>
         document.forms.filterForm.addEventListener('submit', {{submitScript.function | default("unnameEmptyFormControls") | raw}})
         document.getElementById('reset-btn').addEventListener('click', ev => {
@@ -49,51 +50,7 @@
                 dedupeSelection(ev.target, collection, {{sortOptions | json_encode() | raw}})
             })
         })
-        document.getElementById('getCsvBtn').addEventListener('click', event => {
-            const view = getQueryValue('view')
-            const fields = view && view === 'BART'
-                ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
-                : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve,description,specloc,requiredby,duedate,deftype,actionowner,comment'
-
-            let filters = window.location.search
-                .toLowerCase()
-                .slice(1)
-                .replace('view=bart', '')
-            filters = filters.split('&')
-            if (filters[filters.indexOf('defid')])
-                filters[filters.indexOf('defid')] = filters[filters.indexOf('defid')].replace('defid', 'id')
-            filters = filters.join('&')
-            filters = filters.startsWith('&') ? filters : `&${filters}`
-
-            const querystring = '?fields=' + fields + filters
-            const url = '/api/def.php' + querystring
-            fetch(url, {
-                credentials: 'same-origin',
-                headers: { 'Accept': 'text/csv' }
-            }).then(res => {
-                if (!res.ok) {
-                    console.error(`${res.status}: ${res.statusText}`)
-                    throw res.text()
-                }
-                return res.text()
-            }).then(text => {
-                const d = new Date()
-                const timestamp = d.getFullYear()
-                    + '' + (d.getMonth() + 1)
-                    + '' + d.getDate()
-                    + '' + (d.getHours() < 10 ? '0' + d.getHours() : d.getHours())
-                    + '' + (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes())
-                    + '' + (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds())
-                download(text, `${view || ''}defs_summary_${timestamp}.csv`, 'text/csv')
-            }).catch(err => {
-                if (typeof err.then === 'function') {
-                    err.then(text => {
-                        console.error(text)
-                    })
-                }
-                else console.error(err)
-            })
-        })
+        document.getElementById('getCsvBtn').addEventListener('click', getCsv)
         function getQueryValue(key) {
             if (!window.location.search) return false
             const qs = qsToObj()

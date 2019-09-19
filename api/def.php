@@ -28,7 +28,6 @@ if (strcasecmp($_SERVER['REQUEST_METHOD'], 'GET')) {
 }
 
 try {
-    // check Session vars against DB
     $link = new MySqliDB(DB_CREDENTIALS);
 
     if (empty($_GET['fields'])) {
@@ -56,8 +55,15 @@ try {
         'dueDate' => 'Due Date',
         'defType' => 'Type',
         'actionOwner' => 'Action Owner',
+        // closure infos
+        'evidenceID' => 'Document ID',
+        'evidenceType' => 'Evidence Type',
+        'repo' => 'Evidence Repository',
+        'evidenceLink' => 'Document Link',
+        'closureComments' => 'Closure Comments',
         'comment' => 'Comments'
     ];
+
     if (!empty($get['view'])) {
         if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
@@ -91,6 +97,13 @@ try {
         $link->where('id', $to, '<=');
         unset($get['range']);
     }
+
+    // order fields according to headings order
+    $fields = array_values(array_intersect(
+        array_replace(
+            array_change_key_case($headings), array_change_key_case(array_combine(array_flip($fields), $fields)
+        )), $fields
+    ));
 
     // filter defs with remaining GET params
     if (!empty($get)) {
