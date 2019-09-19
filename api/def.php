@@ -64,13 +64,6 @@ try {
         'comment' => 'Comments'
     ];
 
-    // order fields according to headings order
-    $fields = array_values(array_intersect(
-        array_replace(
-            array_change_key_case($headings), array_change_key_case(array_combine(array_flip($fields), $fields)
-        )), $fields
-    ));
-
     if (!empty($get['view'])) {
         if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
@@ -104,6 +97,13 @@ try {
         $link->where('id', $to, '<=');
         unset($get['range']);
     }
+
+    // order fields according to headings order
+    $fields = array_values(array_intersect(
+        array_replace(
+            array_change_key_case($headings), array_change_key_case(array_combine(array_flip($fields), $fields)
+        )), $fields
+    ));
 
     // filter defs with remaining GET params
     if (!empty($get)) {
