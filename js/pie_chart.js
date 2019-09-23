@@ -3,31 +3,45 @@
     - dataToRender will be passed from php MySQL query
     - this will require refactoring fileend.php into a fcn
 */
-function PieChart(d3, id, d, palette, wd = '200', ht = '200') {
-    let data = Object.keys(d).map((el, i, arr) => {
+function PieChart(d3, id, data, palette, width = '200', height = '200') {
+    // data must come in sorted
+    const d = Object.keys(data).map((key) => {
         return {
-            label: el,
-            count: +d[el]
+            label: key,
+            count: +d[key]
         }
     });
-    let width = wd;
-    let height = ht;
-    let container = document.getElementById(id);
-    let colors = Object.values(palette);
-    
+    const container = document.getElementById(id);
+    // let colors = Object.values(palette);
+    const colorPicker = (data, colors) => {
+        const d = Object.keys(data)
+        if (colors.length <= 1)
+            throw Error('More than 1 color is required to create color scale. Colors: ' + colors)
+        // if colors data and colors are the same length, create ordinal scale from colors
+        if (d.length === colors.length)
+            return d3.scaleOrdinal(colors)
+        // if colors.length is 2 and data.length > 2, create quantize scale from colors as range
+        if (d.length > colors.length)
+            return d3.scaleQuantize().domain(d).range(colors)
+    }
     
     // TODO: setData(), setColors(), setDims(), setWd(), setHt(), setContainer()
     // and get...() for all of the above
-    const public = {
+    return {
         draw: function(options = []) {
             const radius = Math.min(width, height)/2;
-            const color = d3.scaleOrdinal(colors);
+            // const color = d3.scaleOrdinal(colors);
+            const color = colorPicker(data, palette)
+            // d3.scaleQuantize()
+            // .domain(Object.keys(data))
+            // .range(paletteRange);
             
             const chart = d3.select(container)
                 .append('svg')
                 .attr('width', width)
                 .attr('height', height)
                 .append('g')
+                // move the group to the middle of the svg element
                 .attr('transform', `translate(${width/2},${height/2})`);
                 
             const arc = d3.arc()
@@ -39,7 +53,7 @@ function PieChart(d3, id, d, palette, wd = '200', ht = '200') {
                 .sort(null);
                 
             const path = chart.selectAll('path')
-                .data(pie(data))
+                .data(pie(d))
                 .enter()
                 .append('path')
                 .attr('d', arc)
@@ -51,7 +65,7 @@ function PieChart(d3, id, d, palette, wd = '200', ht = '200') {
             return container;
         },
         getData: () => {
-            return data;
+            return d;
         }
     };
     
