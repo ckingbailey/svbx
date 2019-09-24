@@ -4,14 +4,18 @@
     - this will require refactoring fileend.php into a fcn
 */
 function PieChart(d3, id, data, palette, width = '200', height = '200') {
+    console.log('input data', data)
     // data must come in sorted
     const d = Object.keys(data).map((key) => {
         return {
             label: key,
-            count: +d[key]
+            count: +data[key]
         }
-    });
-    const container = document.getElementById(id);
+    })
+    console.log('data for d3 consumption', d)
+    const container = document.getElementById(id)
+    palette = Object.values(palette)
+    console.log('color palette', palette)
     // let colors = Object.values(palette);
     const colorPicker = (data, colors) => {
         const d = Object.keys(data)
@@ -20,9 +24,14 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
         // if colors data and colors are the same length, create ordinal scale from colors
         if (d.length === colors.length)
             return d3.scaleOrdinal(colors)
-        // if colors.length is 2 and data.length > 2, create quantize scale from colors as range
+        // if more data than colors, scale data range to color range
         if (d.length > colors.length)
-            return d3.scaleQuantize().domain(d).range(colors)
+            return d3.scaleLinear(
+                Array(colors.length).fill(0).map((el, i) => {
+                    return (d.length - 1) * (i / (colors.length - 1))
+                }),
+                colors
+            )
     }
     
     // TODO: setData(), setColors(), setDims(), setWd(), setHt(), setContainer()
@@ -57,9 +66,12 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
                 .enter()
                 .append('path')
                 .attr('d', arc)
-                .attr('fill', d => color(d.data.label));
+                .attr('fill', d => {
+                    console.log('data point', d)
+                    return color(d.index)
+                });
                 
-            drawLegend(container, data, colors);
+            drawLegend(container, d, palette);
         },
         getContainer: function() {
             return container;
@@ -85,8 +97,6 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
             label.insertAdjacentElement('afterbegin', swatch)
         })
     }
-    
-    return public;
 };
 
 function drawOpenCloseChart(d3, open, closed) {

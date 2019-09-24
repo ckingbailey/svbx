@@ -117,7 +117,18 @@
 <script src='https://d3js.org/d3.v5.js'></script>
 <script src='js/pie_chart.js'></script>
 <script>
-    drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    // drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    const statusChart = new PieChart(
+        window.d3,
+        'open-closed-graph',
+        {
+            open: {{ data.totalOpen }},
+            VTA_CLOSED: 2,
+            closed: {{ data.totalClosed }}
+        },
+        [ '#bd0026', '#feb24c', '#58bf73' ]
+        )
+    statusChart.draw()
     drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 
     function downloadReport() {
