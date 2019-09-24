@@ -15,7 +15,7 @@
                     </li>
                     {% for status in data.status %}
                     <li class='row thin-grey-separator text-center dash__list-row'>
-                        <span class='col-6'>{{ status.statusName }}</span>
+                        <span class='col-6'>{{ status.label }}</span>
                         <span class='col-6'>{{ status.count }}</span>
                     </li>
                     {% endfor %}
@@ -43,7 +43,7 @@
                     </li>
                     {% for severity in data.severity %}
                     <li class='row thin-grey-separator text-center dash__list-row'>
-                        <span class='col-6'>{{ severity.severityName }}</span>
+                        <span class='col-6'>{{ severity.label }}</span>
                         <span class='col-6'>{{ severity.count }}</span>
                     </li>
                     {% endfor %}
@@ -121,23 +121,26 @@
     const statusChart = new PieChart(
         window.d3,
         'open-closed-graph',
-        {
-            closed: {{ data.totalClosed }},
-            open: {{ data.totalOpen }},
-        },
+        {{ data.status | json_encode | raw }},
+        // {
+        //     closed: {{ data.totalClosed }},
+        //     open: {{ data.totalOpen }},
+        // },
         [ '#3CBE79', '#F4E49E', '#BD0026' ]
     )
     statusChart.draw()
 
+
     const sevChart = new PieChart(
         window.d3,
         'severity-graph',
-        {
-            blocker: {{ data.totalBlocker }},
-            critical: {{ data.totalCrit }},
-            major: {{ data.totalMajor }},
-            minor: {{ data.totalMinor }}
-        },
+        {{ data.severity | json_encode | raw }},
+        // {
+        //     blocker: {{ data.totalBlocker }},
+        //     critical: {{ data.totalCrit }},
+        //     major: {{ data.totalMajor }},
+        //     minor: {{ data.totalMinor }}
+        // },
         [ '#BD0026', '#F4E49E' ]
     )
     sevChart.draw()

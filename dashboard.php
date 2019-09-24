@@ -46,13 +46,13 @@ $context['data']['status'] = $link->
   groupBy('statusName')->
   where('CDL.status', '3', '<>')->
   join('CDL', 'status.statusID = CDL.status', 'LEFT')->
-  get('status', null, ['statusName', 'COUNT(CDL.status) as count']);
+  get('status', null, ['statusName label', 'COUNT(CDL.status) count']);
 
 $context['data']['severity'] = $link->
   orderBy('severityName', 'ASC')->
   groupBy('severityName')->
   join('CDL', 'severity.severityID = CDL.severity', 'LEFT')->
-  get('severity', null, ['severityName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
+  get('severity', null, ['severityName label', 'COUNT(IF(status = 1, 1, NULL)) count']);
 
 $context['data']['system'] = $link->
   orderBy('systemName', 'ASC')->
@@ -69,15 +69,28 @@ $context['data']['location'] = $link->
   join('CDL', 'location.locationID = CDL.location', 'LEFT')->
   get('location', null, ['locationName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
-$statusName = array_column($context['data']['status'], 'statusName');
-$context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
-$context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', $statusName)]['count']; // where statusName === 'closed'
+// $statusName = array_column($context['data']['status'], 'label');
+// $context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
+// $context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', $statusName)]['count']; // where statusName === 'closed'
 
-$severityName = array_column($context['data']['severity'], 'severityName');
-$context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', $severityName)]['count'];
-$context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', $severityName)]['count'];
-$context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', $severityName)]['count'];
-$context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', $severityName)]['count'];
+error_log(print_r($context['data']['status'], true));
+error_log(print_r($context['data']['severity'], true));
+
+$statusOrder = [
+  'Open',
+  'VTA_PPR_PNDG',
+  'VTA_CLOSED',
+  'Closed'
+];
+
+usort($context['data']['status'], function($a, $b) use ($statusOrder) {
+  return array_search($a['label'], $statusOrder) - array_search($b['label'], $statusOrder);
+});
+// $severityName = array_column($context['data']['severity'], 'label');
+// $context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', $severityName)]['count'];
+// $context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', $severityName)]['count'];
+// $context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', $severityName)]['count'];
+// $context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', $severityName)]['count'];
 
 // instantiate Twig
 $loader = new Twig_Loader_Filesystem('templates');

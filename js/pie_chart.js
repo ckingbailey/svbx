@@ -3,15 +3,14 @@
     - dataToRender will be passed from php MySQL query
     - this will require refactoring fileend.php into a fcn
 */
-function PieChart(d3, id, data, palette, width = '200', height = '200') {
-    console.log(id)
+function PieChart(d3, id, d, palette, width = '200', height = '200') {
     // data must come in sorted
-    const d = Object.keys(data).map((key) => {
-        return {
-            label: key,
-            count: +data[key]
-        }
-    })
+    // const d = Object.keys(data).map((key) => {
+    //     return {
+    //         label: key,
+    //         count: +data[key]
+    //     }
+    // })
     const container = document.getElementById(id)
     palette = Object.values(palette)
 
@@ -20,7 +19,7 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
         if (colors.length <= 1)
             throw Error('More than 1 color is required to create color scale. Colors: ' + colors)
 
-        let domain = [ 0, Object.keys(data).length - 1]
+        let domain = [ 0, data.length - 1]
 
         if (colors.length > 2)
             return d3.scaleSequential(domain, d3.interpolateRgbBasis(colors))
@@ -34,7 +33,7 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
         draw: function(options = []) {
             const radius = Math.min(width, height)/2;
             // const color = d3.scaleOrdinal(colors);
-            const color = colorPicker(data, palette)
+            const color = colorPicker(d, palette)
             // d3.scaleQuantize()
             // .domain(Object.keys(data))
             // .range(paletteRange);
@@ -60,7 +59,7 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
                 .enter()
                 .append('path')
                 .attr('d', arc)
-                .attr('fill', d =>  color(d.index))
+                .attr('fill', d =>  d3.color(color(d.index)).formatHex())
                 
             drawLegend(container.nextElementSibling, d, color);
         },
@@ -73,12 +72,10 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
     };
     
     function drawLegend(element, d, color) {
-        console.log(element)
         // var legend = container.appendChild(document.createElement('div'));
         var legend = d3.select(element)
         .append('div')
         .classed('d-flex flex-column flex-wrap mt-3', true)
-        console.log(legend)
 
         var pees = legend.selectAll('p')
         .data(d)
