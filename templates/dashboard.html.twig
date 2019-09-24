@@ -122,14 +122,26 @@
         window.d3,
         'open-closed-graph',
         {
+            closed: {{ data.totalClosed }},
             open: {{ data.totalOpen }},
-            VTA_CLOSED: 2,
-            closed: {{ data.totalClosed }}
         },
-        [ '#bd0026', '#feb24c', '#58bf73' ]
-        )
+        [ '#3CBE79', '#F4E49E', '#BD0026' ]
+    )
     statusChart.draw()
-    drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
+
+    const sevChart = new PieChart(
+        window.d3,
+        'severity-graph',
+        {
+            blocker: {{ data.totalBlocker }},
+            critical: {{ data.totalCrit }},
+            major: {{ data.totalMajor }},
+            minor: {{ data.totalMinor }}
+        },
+        [ '#BD0026', '#F4E49E' ]
+    )
+    sevChart.draw()
+    // drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 
     function downloadReport() {
         fetch('/api/report.php?field={{- data.selected.field -}}&milestone={{- data.selected.milestone -}}&to={{- data.selected.to -}}&from={{- data.selected.from -}}&format=csv&type=delta', {

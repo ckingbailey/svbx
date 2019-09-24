@@ -4,7 +4,7 @@
     - this will require refactoring fileend.php into a fcn
 */
 function PieChart(d3, id, data, palette, width = '200', height = '200') {
-    console.log('input data', data)
+    console.log(id)
     // data must come in sorted
     const d = Object.keys(data).map((key) => {
         return {
@@ -12,26 +12,20 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
             count: +data[key]
         }
     })
-    console.log('data for d3 consumption', d)
     const container = document.getElementById(id)
     palette = Object.values(palette)
-    console.log('color palette', palette)
-    // let colors = Object.values(palette);
+
+    // create domain from range of data's indexes
     const colorPicker = (data, colors) => {
-        const d = Object.keys(data)
         if (colors.length <= 1)
             throw Error('More than 1 color is required to create color scale. Colors: ' + colors)
-        // if colors data and colors are the same length, create ordinal scale from colors
-        if (d.length === colors.length)
-            return d3.scaleOrdinal(colors)
-        // if more data than colors, scale data range to color range
-        if (d.length > colors.length)
-            return d3.scaleLinear(
-                Array(colors.length).fill(0).map((el, i) => {
-                    return (d.length - 1) * (i / (colors.length - 1))
-                }),
-                colors
-            )
+
+        let domain = [ 0, Object.keys(data).length - 1]
+
+        if (colors.length > 2)
+            return d3.scaleSequential(domain, d3.interpolateRgbBasis(colors))
+
+        return d3.scaleLinear(domain, colors)
     }
     
     // TODO: setData(), setColors(), setDims(), setWd(), setHt(), setContainer()
@@ -61,17 +55,14 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
                 .value(d => d.count)
                 .sort(null);
                 
-            const path = chart.selectAll('path')
+            chart.selectAll('path')
                 .data(pie(d))
                 .enter()
                 .append('path')
                 .attr('d', arc)
-                .attr('fill', d => {
-                    console.log('data point', d)
-                    return color(d.index)
-                });
+                .attr('fill', d =>  color(d.index))
                 
-            drawLegend(container, d, palette);
+            drawLegend(container.nextElementSibling, d, color);
         },
         getContainer: function() {
             return container;
@@ -81,21 +72,26 @@ function PieChart(d3, id, data, palette, width = '200', height = '200') {
         }
     };
     
-    function drawLegend(container, data, colorScheme) {
-        var legend = container.appendChild(document.createElement('div'));
-        legend.classList.add('d-flex', 'flex-column', 'flex-wrap', 'mt-3');
-    
-        data.forEach((datum, i) => {
-            const label = legend.appendChild(document.createElement('span'))
-            const swatch = document.createElement('i')
-            
-            label.classList.add('mr-2', 'mb-1', 'ml-2')
-            label.textContent = `${datum.count} ${datum.label}`
-    
-            swatch.classList.add('legend-swatch')
-            swatch.style.backgroundColor = colorScheme[i]
-            label.insertAdjacentElement('afterbegin', swatch)
-        })
+    function drawLegend(element, d, color) {
+        console.log(element)
+        // var legend = container.appendChild(document.createElement('div'));
+        var legend = d3.select(element)
+        .append('div')
+        .classed('d-flex flex-column flex-wrap mt-3', true)
+        console.log(legend)
+
+        var pees = legend.selectAll('p')
+        .data(d)
+        .enter()
+        .append('p')
+        .classed('mr-2 mb-1 ml-2', true)
+        
+        pees.append('i')
+        .classed('legend-swatch', true)
+        .attr('style', (d, i) => 'background-color:' + color(i))
+
+        pees.append('span')
+        .text(d => `${d.count} ${d.label}`)
     }
 };
 
