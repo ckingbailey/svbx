@@ -15,7 +15,7 @@
                     </li>
                     {% for status in data.status %}
                     <li class='row thin-grey-separator text-center dash__list-row'>
-                        <span class='col-6'>{{ status.statusName }}</span>
+                        <span class='col-6'>{{ status.label }}</span>
                         <span class='col-6'>{{ status.count }}</span>
                     </li>
                     {% endfor %}
@@ -43,7 +43,7 @@
                     </li>
                     {% for severity in data.severity %}
                     <li class='row thin-grey-separator text-center dash__list-row'>
-                        <span class='col-6'>{{ severity.severityName }}</span>
+                        <span class='col-6'>{{ severity.label }}</span>
                         <span class='col-6'>{{ severity.count }}</span>
                     </li>
                     {% endfor %}
@@ -117,8 +117,23 @@
 <script src='https://d3js.org/d3.v5.js'></script>
 <script src='js/pie_chart.js'></script>
 <script>
-    drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
-    drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
+    // drawOpenCloseChart(window.d3, {{ data.totalOpen }}, {{ data.totalClosed }})
+    const statusChart = new PieChart(
+        window.d3,
+        'open-closed-graph',
+        {{ data.status | json_encode | raw }},
+        [ '#3CBE79', '#ffeda0', '#BD0026' ]
+    )
+    statusChart.draw()
+
+
+    const sevChart = new PieChart(
+        window.d3,
+        'severity-graph',
+        {{ data.severity | json_encode | raw }},
+        [ '#BD0026', '#fe4e2a', '#ffeda0' ]
+    )
+    sevChart.draw()
 
     function downloadReport() {
         fetch('/api/report.php?field={{- data.selected.field -}}&milestone={{- data.selected.milestone -}}&to={{- data.selected.to -}}&from={{- data.selected.from -}}&format=csv&type=delta', {

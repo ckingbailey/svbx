@@ -72,8 +72,8 @@
         const openCloseChart = new PieChart(
                 window.d3,
                 'dataContainer',
-                { open: '{{ statusData.statusOpen }}', closed: '{{ statusData.statusClosed }}' },
-                { red: 'var(--red)', green: 'var(--green)' }
+                {{ statusData | json_encode | raw }},
+                { red: '#3CBE79', yellow: '#ffeda0', green: '#BD0026' }
             );
         openCloseChart.draw();
     {% endif %}

@@ -101,7 +101,8 @@ try {
     // order fields according to headings order
     $fields = array_values(array_intersect(
         array_replace(
-            array_change_key_case($headings), array_change_key_case(array_combine(array_flip($fields), $fields)
+            array_change_key_case($headings),
+            array_change_key_case(array_combine(array_flip($fields), $fields)
         )), $fields
     ));
 
