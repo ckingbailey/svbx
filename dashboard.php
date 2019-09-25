@@ -69,13 +69,6 @@ $context['data']['location'] = $link->
   join('CDL', 'location.locationID = CDL.location', 'LEFT')->
   get('location', null, ['locationName', 'COUNT(IF(status = 1, 1, NULL)) as count']);
 
-// $statusName = array_column($context['data']['status'], 'label');
-// $context['data']['totalOpen'] = $context['data']['status'][array_search('Open', $statusName)]['count']; // where statusName === 'open'
-// $context['data']['totalClosed'] = $context['data']['status'][array_search('Closed', $statusName)]['count']; // where statusName === 'closed'
-
-error_log(print_r($context['data']['status'], true));
-error_log(print_r($context['data']['severity'], true));
-
 $statusOrder = [
   'Open',
   'VTA_PPR_PNDG',
@@ -83,14 +76,90 @@ $statusOrder = [
   'Closed'
 ];
 
+$severityOrder = [
+  'Blocker',
+  'PRO_BLOCKER',
+  'RSD_BLOCKER',
+  'Critical',
+  'PRO_CRITICAL',
+  'RSD_CRITICAL',
+  'Major',
+  'PRO_MAJOR',
+  'RSD_MAJOR',
+  'Minor'
+];
+
+// TEST DATA
+// $context['data']['status'] = [
+//   [
+//     'label' => 'Open',
+//     'count' => 874
+//   ],
+//   [
+//     'label' => 'VTA_PPR_PNDG',
+//     'count' => 263
+//   ],
+//   [
+//     'label' => 'VTA_CLOSED',
+//     'count' => 94
+//   ],
+//   [
+//     'label' => 'Closed',
+//     'count' => 2134
+//   ]
+// ];
+
+// $context['data']['severity'] = [
+//   [
+//     'label' => 'Blocker',
+//     'count' => 35
+//   ],
+//   [
+//     'label' => 'Critical',
+//     'count' => 135
+//   ],
+//   [
+//     'label' => 'Major',
+//     'count' => 362
+//   ],
+//   [
+//     'label' => 'Minor',
+//     'count' => 342
+//   ],
+//   [
+//     'label' => 'PRO_BLOCKER',
+//     'count' => 25
+//   ],
+//   [
+//     'label' => 'PRO_CRITICAL',
+//     'count' => 75
+//   ],
+//   [
+//     'label' => 'PRO_MAJOR',
+//     'count' => 45
+//   ],
+//   [
+//     'label' => 'RSD_BLOCKER',
+//     'count' => 123
+//   ],
+//   [
+//     'label' => 'RSD_CRITICAL',
+//     'count' => 67
+//   ],
+//   [
+//     'label' => 'RSD_MAJOR',
+//     'count' => 108
+//   ]
+// ];
+// END TEST DATA
+
 usort($context['data']['status'], function($a, $b) use ($statusOrder) {
   return array_search($a['label'], $statusOrder) - array_search($b['label'], $statusOrder);
 });
-// $severityName = array_column($context['data']['severity'], 'label');
-// $context['data']['totalBlocker'] = $context['data']['severity'][array_search('Blocker', $severityName)]['count'];
-// $context['data']['totalCrit'] = $context['data']['severity'][array_search('Critical', $severityName)]['count'];
-// $context['data']['totalMajor'] = $context['data']['severity'][array_search('Major', $severityName)]['count'];
-// $context['data']['totalMinor'] = $context['data']['severity'][array_search('Minor', $severityName)]['count'];
+
+usort($context['data']['severity'], function($a, $b) use ($severityOrder) {
+  return array_search($a['label'], $severityOrder) - array_search($b['label'], $severityOrder);
+});
 
 // instantiate Twig
 $loader = new Twig_Loader_Filesystem('templates');
