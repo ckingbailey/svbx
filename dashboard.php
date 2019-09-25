@@ -76,89 +76,8 @@ $statusOrder = [
   'Closed'
 ];
 
-$severityOrder = [
-  'Blocker',
-  'PRO_BLOCKER',
-  'RSD_BLOCKER',
-  'Critical',
-  'PRO_CRITICAL',
-  'RSD_CRITICAL',
-  'Major',
-  'PRO_MAJOR',
-  'RSD_MAJOR',
-  'Minor'
-];
-
-// TEST DATA
-// $context['data']['status'] = [
-//   [
-//     'label' => 'Open',
-//     'count' => 874
-//   ],
-//   [
-//     'label' => 'VTA_PPR_PNDG',
-//     'count' => 263
-//   ],
-//   [
-//     'label' => 'VTA_CLOSED',
-//     'count' => 94
-//   ],
-//   [
-//     'label' => 'Closed',
-//     'count' => 2134
-//   ]
-// ];
-
-// $context['data']['severity'] = [
-//   [
-//     'label' => 'Blocker',
-//     'count' => 35
-//   ],
-//   [
-//     'label' => 'Critical',
-//     'count' => 135
-//   ],
-//   [
-//     'label' => 'Major',
-//     'count' => 362
-//   ],
-//   [
-//     'label' => 'Minor',
-//     'count' => 342
-//   ],
-//   [
-//     'label' => 'PRO_BLOCKER',
-//     'count' => 25
-//   ],
-//   [
-//     'label' => 'PRO_CRITICAL',
-//     'count' => 75
-//   ],
-//   [
-//     'label' => 'PRO_MAJOR',
-//     'count' => 45
-//   ],
-//   [
-//     'label' => 'RSD_BLOCKER',
-//     'count' => 123
-//   ],
-//   [
-//     'label' => 'RSD_CRITICAL',
-//     'count' => 67
-//   ],
-//   [
-//     'label' => 'RSD_MAJOR',
-//     'count' => 108
-//   ]
-// ];
-// END TEST DATA
-
 usort($context['data']['status'], function($a, $b) use ($statusOrder) {
   return array_search($a['label'], $statusOrder) - array_search($b['label'], $statusOrder);
-});
-
-usort($context['data']['severity'], function($a, $b) use ($severityOrder) {
-  return array_search($a['label'], $severityOrder) - array_search($b['label'], $severityOrder);
 });
 
 // instantiate Twig

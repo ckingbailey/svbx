@@ -273,13 +273,17 @@ function getFilterOptions($db, $queryParams) { // TODO: this logic should all li
 }
 
 function getBartStatusCount($db) { // TODO: this should instead return an object that can be consumed by $db
-    $table = 'BARTDL b';
+    $table = 'BARTDL bart';
     $fields = [
         'COUNT(CASE WHEN s.statusName = "open" THEN 1 ELSE NULL END) AS statusOpen',
         'COUNT(CASE WHEN s.statusName = "closed" THEN 1 ELSE NULL END) AS statusClosed'
     ];
-    $db->join('status s', 'b.status = s.statusID', 'LEFT');
-    return $db->getOne($table, $fields);
+    $db->join('status stat', 'bart.status = stat.statusID', 'LEFT');
+    $db->groupBy('bart.status');
+    return $db->get($table, null, [
+        'statusName label',
+        'count(bart.status) count'
+    ]);
 }
 
 // base context

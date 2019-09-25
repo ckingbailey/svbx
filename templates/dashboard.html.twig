@@ -122,11 +122,7 @@
         window.d3,
         'open-closed-graph',
         {{ data.status | json_encode | raw }},
-        // {
-        //     closed: {{ data.totalClosed }},
-        //     open: {{ data.totalOpen }},
-        // },
-        [ '#3CBE79', '#F4E49E', '#BD0026' ]
+        [ '#3CBE79', '#ffeda0', '#BD0026' ]
     )
     statusChart.draw()
 
@@ -135,16 +131,9 @@
         window.d3,
         'severity-graph',
         {{ data.severity | json_encode | raw }},
-        // {
-        //     blocker: {{ data.totalBlocker }},
-        //     critical: {{ data.totalCrit }},
-        //     major: {{ data.totalMajor }},
-        //     minor: {{ data.totalMinor }}
-        // },
-        [ '#BD0026', '#F4E49E' ]
+        [ '#BD0026', '#fe4e2a', '#ffeda0' ]
     )
     sevChart.draw()
-    // drawSeverityChart(window.d3, {{ data.totalBlocker }}, {{ data.totalCrit }}, {{ data.totalMajor }}, {{ data.totalMinor }})
 
     function downloadReport() {
         fetch('/api/report.php?field={{- data.selected.field -}}&milestone={{- data.selected.milestone -}}&to={{- data.selected.to -}}&from={{- data.selected.from -}}&format=csv&type=delta', {

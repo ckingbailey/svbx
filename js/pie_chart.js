@@ -1,20 +1,29 @@
-/* eventually this module should work by:
-    - taking args (elementToSelect, dataToRender)
-    - dataToRender will be passed from php MySQL query
-    - this will require refactoring fileend.php into a fcn
+/*
+** Takes arguments:
+**  `d3` library
+**  `id` of element that will contain pie chart
+**      element to contain legend should be next sibling of chart container
+**  `d` data in the shape of
+**      { 'label': <str>, 'count': <int> }
+**      Sorted in the order of colors as they correspond to labels
+**  `palette` color palette in the shape of
+**      [ '<str> color spec', '<str> color spec', ... ]
+**      If more than 2 colors passed,
+**      colors will be passed to an interpolator to map them to a color space
+**  `width` of pie chart in pixels
+**  `height` of pie chart in pixels
+**      max dimension will be used
 */
 function PieChart(d3, id, d, palette, width = '200', height = '200') {
-    // data must come in sorted
-    // const d = Object.keys(data).map((key) => {
-    //     return {
-    //         label: key,
-    //         count: +data[key]
-    //     }
-    // })
+    console.log(d)
     const container = document.getElementById(id)
+
+    // in case palette is an object-object
     palette = Object.values(palette)
+    console.log(palette)
 
     // create domain from range of data's indexes
+    // use interpolator if more than 2 colors
     const colorPicker = (data, colors) => {
         if (colors.length <= 1)
             throw Error('More than 1 color is required to create color scale. Colors: ' + colors)
@@ -30,13 +39,9 @@ function PieChart(d3, id, d, palette, width = '200', height = '200') {
     // TODO: setData(), setColors(), setDims(), setWd(), setHt(), setContainer()
     // and get...() for all of the above
     return {
-        draw: function(options = []) {
+        draw: function() {
             const radius = Math.min(width, height)/2;
-            // const color = d3.scaleOrdinal(colors);
             const color = colorPicker(d, palette)
-            // d3.scaleQuantize()
-            // .domain(Object.keys(data))
-            // .range(paletteRange);
             
             const chart = d3.select(container)
                 .append('svg')
@@ -72,7 +77,6 @@ function PieChart(d3, id, d, palette, width = '200', height = '200') {
     };
     
     function drawLegend(element, d, color) {
-        // var legend = container.appendChild(document.createElement('div'));
         var legend = d3.select(element)
         .append('div')
         .classed('d-flex flex-column flex-wrap mt-3', true)
@@ -91,109 +95,3 @@ function PieChart(d3, id, d, palette, width = '200', height = '200') {
         .text(d => `${d.count} ${d.label}`)
     }
 };
-
-function drawOpenCloseChart(d3, open, closed) {
-    var openCloseData = [
-        {label: 'open', count: open},
-        {label: 'closed', count: closed}
-    ]
-    
-    var container = document.getElementById('open-closed-graph')
-    
-    var width = "200"
-    var height = "200"
-    var radius = Math.min(width, height)/2
-    
-    var scheme = {
-        red: '#d73027',
-        green: '#58BF73'
-    }
-    var color = d3.scaleOrdinal(Object.values(scheme))
-    
-    var chart = d3.select(container)
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .append('g')
-        .attr('transform', `translate(${width/2},${height/2})`)
-        
-    var arc = d3.arc()
-        .innerRadius(0)
-        .outerRadius(radius)
-    
-    var pie = d3.pie()
-        .value(d => d.count)
-        .sort(null)
-        
-    var path = chart.selectAll('path')
-        .data(pie(openCloseData))
-        .enter()
-        .append('path')
-        .attr('d', arc)
-        .attr('fill', d => color(d.data.label))
-
-    drawLegend(container, openCloseData, Object.values(scheme))
-}
-
-function drawSeverityChart(d3, block, crit, maj, min) {
-    var severityData = [
-        {label: 'blocker', count: block},
-        {label: 'critical', count: crit},
-        {label: 'major', count: maj},
-        {label: 'minor', count: min}
-    ]
-    var scheme = {
-        red: '#bd0026',
-        redOrange: '#fc4e2a',
-        orange: '#feb24c',
-        yellow: '#ffeda0'
-    }
-    
-    var container = document.getElementById('severity-graph')
-    
-    var width = '200'
-    var height = '200'
-    var radius = Math.min(width, height)/2
-    
-    var color = d3.scaleOrdinal(Object.values(scheme))
-    
-    var chart = d3.select(container)
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .append('g')
-        .attr('transform', `translate(${width/2},${height/2})`)
-        
-    var arc = d3.arc()
-        .innerRadius(0)
-        .outerRadius(radius)
-    
-    var pie = d3.pie()
-        .value(d => d.count)
-        .sort(null)
-        
-    var path = chart.selectAll('path')
-        .data(pie(severityData))
-        .enter()
-        .append('path')
-        .attr('d', arc)
-        .attr('fill', d => color(d.data.label))
-        
-    drawLegend(container, severityData, Object.values(scheme))
-}
-
-function drawLegend(container, data, colorScheme) {
-    var legend = container.nextElementSibling
-
-    data.forEach((datum, i) => {
-        const label = legend.appendChild(document.createElement('span'))
-        const swatch = document.createElement('i')
-        
-        label.classList.add('legend-label')
-        label.textContent = datum.label
-
-        swatch.classList.add('legend-swatch')
-        swatch.style.backgroundColor = colorScheme[i]
-        label.insertAdjacentElement('afterbegin', swatch)
-    })
-}
