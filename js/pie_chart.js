@@ -15,12 +15,10 @@
 **      max dimension will be used
 */
 function PieChart(d3, id, d, palette, width = '200', height = '200') {
-    console.log(d)
     const container = document.getElementById(id)
 
     // in case palette is an object-object
     palette = Object.values(palette)
-    console.log(palette)
 
     // create domain from range of data's indexes
     // use interpolator if more than 2 colors
