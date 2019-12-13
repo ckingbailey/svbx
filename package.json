@@ -17,8 +17,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp",
     "migrate": "db-migrate",
-    "migrate:up": "npm migrate -- up",
-    "migrate:down": "npm migrate -- down"
+    "migrate:up": "db-migrate -- up",
+    "migrate:down": "db-migrate -- down"
   },
   "repository": {
     "type": "git",
