@@ -60,6 +60,7 @@ try {
         'evidenceType' => 'Evidence Type',
         'repo' => 'Evidence Repository',
         'evidenceLink' => 'Document Link',
+        'FinalGroup' => 'Final Group?',
         'closureComments' => 'Closure Comments',
         'comment' => 'Comments'
     ];
