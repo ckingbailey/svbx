@@ -10,7 +10,8 @@
 ##     'location' => @array,
 ##     'specLoc' => @array,
 ##     'identifiedBy' => @array,
-##     'requiredBy' => @array
+##     'requiredBy' => @array,
+##     'defType' => @array
 ## ],
 ## values => [],
 #}
@@ -122,6 +123,19 @@
         <div id="container_select_specLoc" class="col-6 col-sm-3 pl-1 pr-1">
             <label>Specific location</label>
             <input name="specLoc" type="text" value="{{values.specLoc}}" class="form-control" />
+        </div>
+        <div>
+            <label for="defType">Deficiency type</label>
+            <select name="defType" class="form-control">
+                <option></option>
+                {% for value, text in selectOptions.defType %}
+                {% set selected = (not values.defType is empty and values.defType == value)
+                    ? ' selected'
+                    : ''
+                %}
+                <option value="{{value}}"{{selected}}>{{text}}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
 {% endblock %}
