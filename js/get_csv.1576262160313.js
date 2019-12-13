@@ -5,7 +5,7 @@ const getCsv = ev => {
         ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
         : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve'
         + ',description,specloc,requiredby,duedate,deftype,actionowner,evidenceid'
-        + ',evidencetype,repo,evidencelink,closurecomments,comment'
+        + ',evidencetype,repo,evidencelink,FinalGroup,closurecomments,comment'
     fields = 'fields=' + fields
 
     let filters = window.location.search
