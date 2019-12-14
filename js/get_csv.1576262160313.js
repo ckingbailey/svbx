@@ -4,7 +4,7 @@ const getCsv = ev => {
     let fields = view && view === 'BART'
         ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
         : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve'
-        + ',description,specloc,requiredby,duedate,deftype,actionowner,evidenceid'
+        + ',description,specloc,requiredby,duedate,defType,actionowner,evidenceid'
         + ',evidencetype,repo,evidencelink,FinalGroup,closurecomments,comment'
     fields = 'fields=' + fields
 
