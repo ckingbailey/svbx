@@ -232,17 +232,24 @@ try {
         $defs = $output;
     }
 
+    error_log('combine $defs and $headings');
     array_unshift($defs, $headings);
 
+    error_log('instantiate CSV writer');
     $csv = Writer::createFromFileObject(new SplTempFileObject());
+    error_log('set new line chars');
     $csv->setNewline("\r\n");
+    error_log('write defs to CSV');
     $csv->insertAll($defs);
+    error_log('echo CSV');
     $csv->output("defs_summary_" . date('YmdHis') . ".csv");
 } catch (\Exception $e) {
+    error_log($link->getLastQuery());
     error_log($e);
     http_response_code(500);
     // echo $e;
 } catch (\Error $e) {
+    error_log($link->getLastQuery());
     error_log($e);
     http_response_code(500);
     // echo $e;
