@@ -387,7 +387,6 @@ try {
 
     // get filter select options, showing those that are currently filtered on
     $context['selectOptions'] = getFilterOptions($db, $filters);
-    error_log(print_r($context['selectOptions'], true));
 
     $context['count'] = $db->count;
 
