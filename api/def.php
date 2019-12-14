@@ -60,6 +60,7 @@ try {
         'evidenceType' => 'Evidence Type',
         'repo' => 'Evidence Repository',
         'evidenceLink' => 'Document Link',
+        'FinalGroup' => 'Final Group?',
         'closureComments' => 'Closure Comments',
         'comment' => 'Comments'
     ];
@@ -109,13 +110,17 @@ try {
     // filter defs with remaining GET params
     if (!empty($get)) {
         foreach ($get as $key => $val) {
+            // for these free text fields (and ID) use LIKE comparison
             if (strcasecmp($key, 'identifiedby') === 0
             || strcasecmp($key, 'specloc') === 0
             || strcasecmp($key, 'id') === 0
             || strcasecmp($key, 'bartDefID') === 0
             || strcasecmp($key, 'description') === 0) {
                 $link->where($key, "%{$val}%", 'LIKE');
-            } elseif (strcasecmp($key, 'systemAffected') === 0
+            }
+
+            // these fields allow selecting multiples for plain Def view
+            elseif (strcasecmp($key, 'systemAffected') === 0
             || strcasecmp($key, 'groupToResolve') === 0
             || (strcasecmp($key, 'status') === 0 && $view === 'deficiency')
             && is_array($val))
@@ -139,7 +144,10 @@ try {
                 }, $val);
 
                 $link->where($key, $namedVals, 'IN');
-            } elseif (strcasecmp($key, 'requiredBy') === 0) {
+            }
+            
+            // requiredBy uses a shortened naming anti-pattern
+            elseif (strcasecmp($key, 'requiredBy') === 0) {
                 $table = 'requiredBy'; // mind the capitalization
                 $id = 'reqById';
                 $name = 'requiredBy';
@@ -150,7 +158,10 @@ try {
                     return $dict;
                 }, []);
                 $link->where($key, $lookup[$val]);
-            } elseif (strcasecmp($key, 'next_step') === 0) {
+            }
+            
+            // next_step's col names don't match the table name
+            elseif (strcasecmp($key, 'next_step') === 0) {
                 $table = 'bdNextStep';
                 $id = 'bdNextStepID';
                 $name = 'nextStepName';
@@ -162,7 +173,10 @@ try {
                     return $dict;
                 }, []);
                 $link->where('nextStep', $lookup[$val]);
-            } elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
+            }
+            
+            // don't get safetyCert lookup coz safetyCert table is for something else entirely
+            elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
             || ($view === 'bart_def' && strcasecmp($key, 'status') === 0)) {
                 $table = $key;
                 $id = "{$table}ID";
