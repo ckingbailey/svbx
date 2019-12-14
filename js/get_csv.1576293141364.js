@@ -9,7 +9,6 @@ const getCsv = ev => {
     fields = 'fields=' + fields
 
     let filters = window.location.search
-        .toLowerCase()
         .slice(1)
         .replace('view=bart', '')
 
@@ -22,8 +21,7 @@ const getCsv = ev => {
         headers: { 'Accept': 'text/csv' }
     }).then(res => {
         if (!res.ok) {
-            console.error(`${res.status}: ${res.statusText}`)
-            throw res.text()
+            throw Error(`${res.status}: ${res.statusText} @ target ${url}`)
         }
         return res.text()
     }).then(text => {
@@ -36,11 +34,6 @@ const getCsv = ev => {
             + '' + (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds())
         download(text, `${view || ''}defs_summary_${timestamp}.csv`, 'text/csv')
     }).catch(err => {
-        if (typeof err.then === 'function') {
-            err.then(text => {
-                console.error(text)
-            })
-        }
-        else console.error(err)
+        console.error(err)
     })
 }

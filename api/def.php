@@ -37,6 +37,7 @@ try {
     }
 
     $get = $_GET;
+    error_log("GET params look like\n" . print_r($get, true));
     $fields = explode(',', $get['fields']);
     unset($get['fields']);
 
