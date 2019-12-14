@@ -110,6 +110,7 @@ try {
     // filter defs with remaining GET params
     if (!empty($get)) {
         foreach ($get as $key => $val) {
+            error_log('table key is ' . $key . ', and val is ' . $val);
             // for these free text fields (and ID) use LIKE comparison
             if (strcasecmp($key, 'identifiedby') === 0
             || strcasecmp($key, 'specloc') === 0
@@ -178,6 +179,7 @@ try {
             // don't get safetyCert lookup coz safetyCert table is for something else entirely
             elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
             || ($view === 'bart_def' && strcasecmp($key, 'status') === 0)) {
+                error_log(__LINE__ . '> did we hit the case we thought we\'d hit?');
                 $table = $key;
                 $id = "{$table}ID";
                 $name = "{$table}Name";
