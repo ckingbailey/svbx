@@ -20,11 +20,9 @@ const getCsv = ev => {
         credentials: 'same-origin',
         headers: { 'Accept': 'text/csv' }
     }).then(res => {
-        if (!res.ok) {
-            throw Error(`${res.status}: ${res.statusText} @ target ${url}`)
-        }
-        return res.text()
-    }).then(text => {
+        if (!res.ok) throw Error(`${res.status}: ${res.statusText} @ ${res.url}`)
+        return res.blob()
+    }).then(blob => {
         const d = new Date()
         const timestamp = d.getFullYear()
             + '' + (d.getMonth() + 1)
@@ -32,7 +30,7 @@ const getCsv = ev => {
             + '' + (d.getHours() < 10 ? '0' + d.getHours() : d.getHours())
             + '' + (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes())
             + '' + (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds())
-        download(text, `${view || ''}defs_summary_${timestamp}.csv`, 'text/csv')
+        download(blob, `${view || ''}defs_summary_${timestamp}.csv`, 'text/csv')
     }).catch(err => {
         console.error(err)
     })
