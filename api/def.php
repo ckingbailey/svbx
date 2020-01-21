@@ -197,10 +197,14 @@ try {
     }
 
     $link->orderBy('id', 'ASC');
+    if ($includeComments = (array_search('comment', $fields) !== false)) {
+        $link->orderBy('comment_date', 'DESC');
+    }
+
     $defs = $link->get($view, null, $fields);
 
     // if comments included, combine defs and put comments in extra cols
-    if (array_search('comment', $fields) !== false) {
+    if ($includeComments) {
         $next = null;
         $comments = [];
         $output = [];
