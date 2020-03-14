@@ -1,0 +1,3 @@
+/* CDL change oldID DOWN */
+ALTER TABLE CDL
+    CHANGE certElID oldID VARCHAR(24) DEFAULT NULL;
