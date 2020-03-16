@@ -59,12 +59,18 @@ try {
         'evidenceID' => 'Document ID',
         'evidenceType' => 'Evidence Type',
         'repo' => 'Evidence Repository',
+        'safetyCert' => 'Safety Cert.?',
+        'certElID' => 'Certifiable Element ID',
+        'CEID_PDCC' => 'CEID PDCC #',
         'evidenceLink' => 'Document Link',
         'FinalGroup' => 'Final Group?',
         'closureComments' => 'Closure Comments',
         'comment' => 'Comments'
     ];
 
+    /**
+     * Validate $view
+     */
     if (!empty($get['view'])) {
         if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
@@ -86,6 +92,9 @@ try {
         unset($get['view']);
     }
 
+    /**
+     * Validate and parse $range
+     */
     if (!empty($get['range'])) {
         $range = explode(',', $_GET['range']);
         if (count($range) > 2) {
