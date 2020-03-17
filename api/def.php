@@ -108,11 +108,19 @@ try {
         unset($get['range']);
     }
 
-    // order fields according to headings order
+    /**
+     * Order fields according to headings order
+     * 1. Map fields as keys back to fields, field names become both keys and vals
+     * 2. lowercase field names for matching with headings field names
+     * 3. lowercase headings, same purpose as previous step
+     * 4. map fields names to headings field names, fields names become ordered by headings field names order
+     * 5. intersect headings -> fields mapping with o.g. fields, we drop those headings fields are not in requested fields
+     * 6. extract values from intersected headings / fields, field names are the part that's useful to us
+     */
     $fields = array_values(array_intersect(
         array_replace(
             array_change_key_case($headings),
-            array_change_key_case(array_combine(array_flip($fields), $fields)
+            array_change_key_case(array_combine($fields, $fields)
         )), $fields
     ));
 
