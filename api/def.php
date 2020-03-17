@@ -117,7 +117,7 @@ try {
      * 5. intersect headings -> fields mapping with o.g. fields, we drop those headings fields are not in requested fields
      * 6. extract values from intersected headings / fields, field names are the part that's useful to us
      */
-    $fields = array_values(array_intersect(
+     $fields = array_values(array_intersect(
         array_replace(
             array_change_key_case($headings),
             array_change_key_case(array_combine($fields, $fields)
@@ -192,12 +192,22 @@ try {
                     return $dict;
                 }, []);
                 $link->where('nextStep', $lookup[$val]);
-            }
-            
-            // don't get safetyCert lookup coz safetyCert table is for something else entirely
-            elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
-            || ($view === 'bart_def' && strcasecmp($key, 'status') === 0)) {
+            } elseif ($view === 'bart_def' && strcasecmp($key, 'status') === 0) {
                 $table = $key;
+                $id = "{$table}ID";
+                $name = "{$table}Name";
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                $link->where($key, $lookup[$val]);
+            }
+            // safetyCert uses yesNo as lookup
+            elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') === 0)) {
+                $table = 'yesNo';
                 $id = "{$table}ID";
                 $name = "{$table}Name";
                 $link2 = new MySqliDB(DB_CREDENTIALS);
