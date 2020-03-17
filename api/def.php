@@ -124,7 +124,9 @@ try {
             || strcasecmp($key, 'specloc') === 0
             || strcasecmp($key, 'id') === 0
             || strcasecmp($key, 'bartDefID') === 0
-            || strcasecmp($key, 'description') === 0) {
+            || strcasecmp($key, 'description') === 0
+            || strcasecmp($key, 'CEID_PDCC') === 0
+            || strcasecmp($key, 'certElID') === 0) {
                 $link->where($key, "%{$val}%", 'LIKE');
             }
 

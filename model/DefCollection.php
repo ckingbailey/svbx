@@ -7,11 +7,14 @@ class DefCollection
 {
     protected $defs = [];
 
+    // These are the fields that use "LIKE %x%" in the WHERE clause
     protected static $whereLike = [
         'id',
         'bartDefID',
         'specLoc',
-        'description'
+        'description',
+        'certElID',
+        'CEID_PDCC'
     ];
 
     public function __construct($props) {
@@ -30,6 +33,8 @@ class DefCollection
         $defFields = Deficiency::getFields();
         $lookup = Deficiency::getLookup();
 
+        // This is the output array from this function
+        // it contains the input values to this object, transformed into a form the Db object understands
         $fetchable = [
             'table' => Deficiency::getTable(),
             'select' => array_reduce($select,

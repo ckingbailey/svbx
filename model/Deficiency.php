@@ -50,6 +50,7 @@ class Deficiency
         'evidenceID' => null,
         'evidenceLink' => null,
         'certElID' => null,
+        'CEID_PDCC' => null,
         'bartDefID' => null,
         'closureComments' => null,
         'created_by' => null, // validate: username
@@ -87,6 +88,7 @@ class Deficiency
         'evidenceID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'evidenceLink' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'certElID' => 'FILTER_SANITIZE_SPECIAL_CHARS',
+        'CEID_PDCC' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'bartDefID' => 'FILTER_SANITIZE_NUMBER_INT',
         'closureComments' => 'FILTER_SANITIZE_SPECIAL_CHARS',
         'created_by' => false,
@@ -125,6 +127,7 @@ class Deficiency
         'evidenceID' => 'evidenceID',
         'evidenceLink' => 'evidenceLink',
         'certElID' => 'certElID',
+        'CEID_PDCC' => 'CEID_PDCC',
         'bartDefID' => 'bartDefID',
         'closureComments' => 'closureComments',
         'created_by' => 'created_by',
