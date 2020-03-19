@@ -1,11 +1,12 @@
 const getCsv = ev => {
     ev.preventDefault()
     const view = getQueryValue('view')
+    const projectDefFields = 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve'
+    + ',description,specloc,requiredby,duedate,defType,actionowner,evidenceid,evidencetype'
+    + ',safetyCert,certElID,CEID_PDCC,repo,evidencelink,FinalGroup,closurecomments,comment'
     let fields = view && view === 'BART'
         ? 'id,status,date_created,description,resolution,nextStep,comment&view=BART'
-        : 'id,bartDefID,location,severity,status,systemaffected,grouptoresolve'
-        + ',description,specloc,requiredby,duedate,defType,actionowner,evidenceid'
-        + ',evidencetype,repo,evidencelink,FinalGroup,closurecomments,comment'
+        : projectDefFields
     fields = 'fields=' + fields
 
     let filters = window.location.search

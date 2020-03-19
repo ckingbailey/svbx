@@ -209,9 +209,9 @@
                     <div class='col-md-6'>
                         <div class='row item-margin-bottom'>
                             <div class='col-md-6'>
-                                <label for='oldID'>Old Id</label>
+                                <label for='oldID'>Certifiable Element ID</label>
                             </div>
-                            <div class='col-md-6'><input type='text' name='oldID' id='oldID' value='{{ data.oldID | raw }}' class='form-control'></div>
+                            <div class='col-md-6'><input type='text' name='certElID' id='certElID' maxlength="35" value='{{ data.certElID | raw }}' class='form-control'></div>
                         </div>
                     </div>
                     <div class='col-md-6'>
@@ -226,6 +226,16 @@
                     </div>
                 </div>
                 <div class='row item-margin-bottom'>
+                    <div class='col-md-6'>
+                        <div class='row item-margin-bottom'>
+                            <div class='col-md-6'>
+                                <label for='CEID_PDCC'>CEID PDCC#</label>
+                            </div>
+                            <div class='col-md-6'>
+                                <input type="text" name="CEID_PDCC" id="CEID_PDCC" maxlength="35" value="{{ data.CEID_PDCC | raw }}" class="form-control">
+                            </div>
+                        </div>
+                    </div>
                     <div class='col-md-6'>
                         <div class='row item-margin-bottom'>
                             <div class='col-md-6'>

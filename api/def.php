@@ -59,12 +59,18 @@ try {
         'evidenceID' => 'Document ID',
         'evidenceType' => 'Evidence Type',
         'repo' => 'Evidence Repository',
+        'safetyCert' => 'Safety Cert.?',
+        'certElID' => 'Certifiable Element ID',
+        'CEID_PDCC' => 'CEID PDCC #',
         'evidenceLink' => 'Document Link',
         'FinalGroup' => 'Final Group?',
         'closureComments' => 'Closure Comments',
         'comment' => 'Comments'
     ];
 
+    /**
+     * Validate $view
+     */
     if (!empty($get['view'])) {
         if (strtolower($get['view']) === 'bart') {
             $view = 'bart_def';
@@ -86,6 +92,9 @@ try {
         unset($get['view']);
     }
 
+    /**
+     * Validate and parse $range
+     */
     if (!empty($get['range'])) {
         $range = explode(',', $_GET['range']);
         if (count($range) > 2) {
@@ -99,11 +108,19 @@ try {
         unset($get['range']);
     }
 
-    // order fields according to headings order
-    $fields = array_values(array_intersect(
+    /**
+     * Order fields according to headings order
+     * 1. Map fields as keys back to fields, field names become both keys and vals
+     * 2. lowercase field names for matching with headings field names
+     * 3. lowercase headings, same purpose as previous step
+     * 4. map fields names to headings field names, fields names become ordered by headings field names order
+     * 5. intersect headings -> fields mapping with o.g. fields, we drop those headings fields are not in requested fields
+     * 6. extract values from intersected headings / fields, field names are the part that's useful to us
+     */
+     $fields = array_values(array_intersect(
         array_replace(
             array_change_key_case($headings),
-            array_change_key_case(array_combine(array_flip($fields), $fields)
+            array_change_key_case(array_combine($fields, $fields)
         )), $fields
     ));
 
@@ -115,7 +132,9 @@ try {
             || strcasecmp($key, 'specloc') === 0
             || strcasecmp($key, 'id') === 0
             || strcasecmp($key, 'bartDefID') === 0
-            || strcasecmp($key, 'description') === 0) {
+            || strcasecmp($key, 'description') === 0
+            || strcasecmp($key, 'CEID_PDCC') === 0
+            || strcasecmp($key, 'certElID') === 0) {
                 $link->where($key, "%{$val}%", 'LIKE');
             }
 
@@ -173,12 +192,22 @@ try {
                     return $dict;
                 }, []);
                 $link->where('nextStep', $lookup[$val]);
-            }
-            
-            // don't get safetyCert lookup coz safetyCert table is for something else entirely
-            elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') !== 0)
-            || ($view === 'bart_def' && strcasecmp($key, 'status') === 0)) {
+            } elseif ($view === 'bart_def' && strcasecmp($key, 'status') === 0) {
                 $table = $key;
+                $id = "{$table}ID";
+                $name = "{$table}Name";
+                $link2 = new MySqliDB(DB_CREDENTIALS);
+                $temp = $link2->get($table, null, [ $id, $name ]);
+                $link2->disconnect();
+                $lookup = array_reduce($temp, function ($dict, $row) use ($id, $name) {
+                    $dict[$row[$id]] = $row[$name];
+                    return $dict;
+                }, []);
+                $link->where($key, $lookup[$val]);
+            }
+            // safetyCert uses yesNo as lookup
+            elseif (($view === 'deficiency' && strcasecmp($key, 'safetyCert') === 0)) {
+                $table = 'yesNo';
                 $id = "{$table}ID";
                 $name = "{$table}Name";
                 $link2 = new MySqliDB(DB_CREDENTIALS);
