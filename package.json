@@ -4,7 +4,7 @@
   "description": "report and display deficiency data",
   "main": "index.php",
   "dependencies": {
-    "bootstrap-select": "^1.13.5",
+    "bootstrap-select": "^1.13.6",
     "d3": "^5.7.0"
   },
   "devDependencies": {
